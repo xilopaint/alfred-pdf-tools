@@ -47,6 +47,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>CEBD82BA-6268-426D-9BFE-62BCD4C27471</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<array>
 			<dict>
@@ -151,7 +164,20 @@
 				<false/>
 			</dict>
 		</array>
-		<key>8D545C66-55D5-4D53-8F9C-A97C6624CD83</key>
+		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>2412A11E-00A7-400B-90FD-BAEBC00EA23A</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
@@ -164,11 +190,11 @@
 				<false/>
 			</dict>
 		</array>
-		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
+		<key>CEBD82BA-6268-426D-9BFE-62BCD4C27471</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</string>
+				<string>B4CE4528-F602-48C2-BFB3-71BA78933B1E</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -298,27 +324,57 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>action</key>
+				<key>argumenttype</key>
 				<integer>0</integer>
-				<key>argument</key>
-				<integer>1</integer>
-				<key>hotkey</key>
-				<integer>0</integer>
-				<key>hotmod</key>
-				<integer>0</integer>
-				<key>leftcursor</key>
-				<false/>
-				<key>modsmode</key>
-				<integer>0</integer>
-				<key>relatedAppsMode</key>
-				<integer>0</integer>
+				<key>subtext</key>
+				<string>Enter the output filename without extension.</string>
+				<key>text</key>
+				<string>Merge selected PDF files</string>
+				<key>withspace</key>
+				<true/>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.trigger.hotkey</string>
+			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
-			<string>8D545C66-55D5-4D53-8F9C-A97C6624CD83</string>
+			<string>CEBD82BA-6268-426D-9BFE-62BCD4C27471</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>B4CE4528-F602-48C2-BFB3-71BA78933B1E</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>abs_paths</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>2412A11E-00A7-400B-90FD-BAEBC00EA23A</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -349,7 +405,7 @@
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>subtext</key>
-				<string>Enter the maximum amount of pages for each new PDF file</string>
+				<string>Enter the maximum amount of pages for each new PDF file.</string>
 				<key>text</key>
 				<string>Split the selected PDF file</string>
 				<key>withspace</key>
@@ -384,21 +440,18 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>lastpathcomponent</key>
-				<false/>
-				<key>onlyshowifquerypopulated</key>
-				<true/>
-				<key>removeextension</key>
-				<false/>
-				<key>text</key>
-				<string>{query}</string>
-				<key>title</key>
-				<string>Alfred PDF Suite</string>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>abs_path</key>
+					<string>{query}</string>
+				</dict>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.output.notification</string>
+			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
-			<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+			<string>0B7E15AA-EDD5-4EBD-90CE-C2DBD3484C16</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -423,18 +476,21 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>abs_path</key>
-					<string>{query}</string>
-				</dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>Alfred PDF Suite</string>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
+			<string>alfred.workflow.output.notification</string>
 			<key>uid</key>
-			<string>0B7E15AA-EDD5-4EBD-90CE-C2DBD3484C16</string>
+			<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -464,25 +520,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string>Enter the maximum file size in MB for each new PDF file</string>
-				<key>text</key>
-				<string>Split the selected PDF file</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>acceptsmulti</key>
 				<false/>
 				<key>filetypes</key>
@@ -496,6 +533,25 @@
 			<string>alfred.workflow.trigger.action</string>
 			<key>uid</key>
 			<string>D48F2872-A471-417E-A025-89F82414CD22</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string>Enter the maximum file size in MB for each new PDF file.</string>
+				<key>text</key>
+				<string>Split the selected PDF file</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -538,25 +594,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string>Enter start, stop and step arguments separated by commas (e.g., "1, 10, 1")</string>
-				<key>text</key>
-				<string>Slice the selected PDF document</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -576,6 +613,25 @@
 			<string>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string>Enter start, stop and step arguments separated by commas (e.g., "1, 10, 1").</string>
+				<key>text</key>
+				<string>Slice the selected PDF document</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -642,14 +698,14 @@
 			<key>xpos</key>
 			<integer>200</integer>
 			<key>ypos</key>
-			<integer>450</integer>
+			<integer>390</integer>
 		</dict>
 		<key>0B7E15AA-EDD5-4EBD-90CE-C2DBD3484C16</key>
 		<dict>
 			<key>xpos</key>
 			<integer>200</integer>
 			<key>ypos</key>
-			<integer>310</integer>
+			<integer>250</integer>
 		</dict>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
@@ -658,7 +714,14 @@
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>560</integer>
+			<integer>500</integer>
+		</dict>
+		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
+		<dict>
+			<key>xpos</key>
+			<integer>200</integer>
+			<key>ypos</key>
+			<integer>110</integer>
 		</dict>
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<dict>
@@ -667,28 +730,28 @@
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>420</integer>
+			<integer>360</integer>
 		</dict>
 		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>310</integer>
+			<integer>250</integer>
 		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>270</integer>
 			<key>ypos</key>
-			<integer>560</integer>
+			<integer>500</integer>
 		</dict>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>200</integer>
 			<key>ypos</key>
-			<integer>590</integer>
+			<integer>530</integer>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
@@ -697,49 +760,56 @@
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>280</integer>
+			<integer>220</integer>
 		</dict>
 		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>590</integer>
+			<integer>530</integer>
 		</dict>
 		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>450</integer>
+			<integer>390</integer>
 		</dict>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<dict>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>
-			<integer>280</integer>
-		</dict>
-		<key>8D545C66-55D5-4D53-8F9C-A97C6624CD83</key>
-		<dict>
-			<key>xpos</key>
-			<integer>50</integer>
-			<key>ypos</key>
-			<integer>140</integer>
+			<integer>220</integer>
 		</dict>
 		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>
-			<integer>20</integer>
+			<integer>80</integer>
 		</dict>
 		<key>A961741E-E065-4C7A-9D5B-6F59E283C2E0</key>
 		<dict>
 			<key>xpos</key>
 			<integer>700</integer>
 			<key>ypos</key>
-			<integer>300</integer>
+			<integer>290</integer>
+		</dict>
+		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
+		<dict>
+			<key>xpos</key>
+			<integer>420</integer>
+			<key>ypos</key>
+			<integer>110</integer>
+		</dict>
+		<key>CEBD82BA-6268-426D-9BFE-62BCD4C27471</key>
+		<dict>
+			<key>xpos</key>
+			<integer>270</integer>
+			<key>ypos</key>
+			<integer>80</integer>
 		</dict>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<dict>
@@ -748,39 +818,39 @@
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>70</integer>
+			<integer>80</integer>
 		</dict>
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<dict>
 			<key>xpos</key>
 			<integer>270</integer>
 			<key>ypos</key>
-			<integer>280</integer>
+			<integer>220</integer>
 		</dict>
 		<key>D48F2872-A471-417E-A025-89F82414CD22</key>
 		<dict>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>
-			<integer>420</integer>
+			<integer>360</integer>
 		</dict>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<dict>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>
-			<integer>560</integer>
+			<integer>500</integer>
 		</dict>
 		<key>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>270</integer>
 			<key>ypos</key>
-			<integer>420</integer>
+			<integer>360</integer>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>1.0</string>
+	<string>1.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>
