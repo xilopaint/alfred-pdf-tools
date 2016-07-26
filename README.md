@@ -14,10 +14,10 @@ Download the workflow file either from [GitHub releases][2] or [Packal][3] websi
 
 **Alfred PDF Tools** can be used by the following file actions:
 
-* `Merge PDF files`: Merge multiple PDF files and move the source files to trash;
-* `Split by page count`: Split the selected PDF file by entering the maximum amount of pages for each new PDF file;
-* `Split by file size`: Split the selected PDF file by entering the maximum file size in MB for each new PDF file;
-* `Slice`:  Slice the selected PDF document by entering start, stop and step arguments separated by commas (e.g., "10, 20, 1" will create a PDF file from pages 10 to 20 of the source file).
+* `Merge`: Merge the selected PDF files and move the source files to trash;
+* `Split by Page Count`: Split the selected PDF file by entering the maximum amount of pages for each new PDF file;
+* `Split by File Size`: Split the selected PDF file by entering the maximum file size in MB for each new PDF file;
+* `Slice`:  Slice the selected PDF file by entering start, stop and step arguments separated by commas (e.g., "10, 20, 1" will create a PDF file from pages 10 to 20 of the source file).
 
 ##Contribute
 

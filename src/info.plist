@@ -289,7 +289,7 @@
 					<string>com.adobe.pdf</string>
 				</array>
 				<key>name</key>
-				<string>Merge PDF files</string>
+				<string>Merge</string>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.trigger.action</string>
@@ -329,7 +329,7 @@
 				<key>subtext</key>
 				<string>Enter the output filename without extension.</string>
 				<key>text</key>
-				<string>Merge selected PDF files</string>
+				<string>Merge the selected PDF files</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -428,7 +428,7 @@
 					<string>com.adobe.pdf</string>
 				</array>
 				<key>name</key>
-				<string>Split by page count</string>
+				<string>Split by Page Count</string>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.trigger.action</string>
@@ -622,7 +622,7 @@
 				<key>subtext</key>
 				<string>Enter start, stop and step arguments separated by commas (e.g., "1, 10, 1").</string>
 				<key>text</key>
-				<string>Slice the selected PDF document</string>
+				<string>Slice the selected PDF file</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -850,7 +850,7 @@
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>1.1</string>
+	<string>1.1.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>
