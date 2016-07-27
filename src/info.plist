@@ -756,7 +756,7 @@
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
 			<key>note</key>
-			<string>Split by page count</string>
+			<string>Split by Page Count</string>
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
@@ -850,7 +850,7 @@
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>1.1.1</string>
+	<string>1.1.2</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>

@@ -36,10 +36,10 @@ def main():
         for pdf in files:
             merger.append(PdfFileReader(open(pdf, 'rb')))
 
-        merger.write(paths[0] + "/" + query + ".pdf")
-
         for pdf in files:
             send2trash(pdf)
+
+        merger.write(paths[0] + "/" + query + ".pdf")
 
     except SelectionError as err:
         print err
