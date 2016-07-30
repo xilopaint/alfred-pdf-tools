@@ -14,7 +14,7 @@ def main():
     query = os.environ['query']
     files = abs_paths.split('\t')
     paths = [get_path(path) for path in files]
-    merger = PdfFileMerger()
+    merger = PdfFileMerger(strict = False)
 
     class AlfredPdfSuiteError(Exception):
         pass
