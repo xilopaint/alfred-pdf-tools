@@ -1,35 +1,34 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 
 from __future__ import division
 import sys
+import os
 from PyPDF2 import PdfFileMerger, PdfFileReader
-import os.path
-
 
 def main():
 
     abs_path = os.environ['abs_path']
     query = os.environ['query']
-    page_count = int(query)
 
-    class AlfredPdfSuiteError(Exception):
+    class AlfredPdfToolsError(Exception):
         pass
 
-    class NegativeValueError(AlfredPdfSuiteError):
+    class NotIntegerError(AlfredPdfToolsError):
+        pass
+
+    class NegativeValueError(AlfredPdfToolsError):
         pass
 
     try:
 
-        if not abs_path:
-            raise NoFileError('You must select a PDF file.')
+        if not query.lstrip("+-").isdigit():
+            raise NotIntegerError('The argument is not an integer.')
 
-        if not abs_path.endswith('.pdf'):
-            raise NotPdfError('The selected object is not a PDF file.')
-
-        if page_count < 0:
+        if int(query) < 0:
             raise NegativeValueError('Negative integer is not a valid argument.')
 
+        page_count = int(query)
         start = 0
         stop = page_count
         inp_file = PdfFileReader(open(abs_path, 'rb'))
@@ -59,6 +58,9 @@ def main():
                 else:
                     start = int(quotient) * page_count
                     stop = num_pages
+
+    except NotIntegerError as err:
+        print err
 
     except NegativeValueError as err:
         print err

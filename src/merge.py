@@ -1,12 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 
 import sys
+import os
+import ntpath
 from PyPDF2 import PdfFileMerger, PdfFileReader
 from send2trash import send2trash
-import os.path
-import ntpath
-
 
 def main():
 
@@ -16,13 +15,13 @@ def main():
     paths = [get_path(path) for path in files]
     merger = PdfFileMerger(strict = False)
 
-    class AlfredPdfSuiteError(Exception):
+    class AlfredPdfToolsError(Exception):
         pass
 
-    class SelectionError(AlfredPdfSuiteError):
+    class SelectionError(AlfredPdfToolsError):
         pass
 
-    class MultiplePathsError(AlfredPdfSuiteError):
+    class MultiplePathsError(AlfredPdfToolsError):
         pass
 
     try:

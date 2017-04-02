@@ -1,34 +1,19 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 
 import sys
+import os
 from PyPDF2 import PdfFileMerger, PdfFileReader
-import os.path
 
 def main():
 
     abs_path = os.environ['abs_path']
     query = os.environ['query'].replace(',', '.')
-    arg_file_size = float(query)*1000000
-    no_ext_path = os.path.splitext(abs_path)[0]
-
-    class AlfredPdfSuiteError(Exception):
-        pass
-
-    class NegativeValueError(AlfredPdfSuiteError):
-        pass
 
     try:
 
-        if abs_path == 'more than one file':
-            raise MultipleFileError('You cannot select more than one file.')
-
-        if not abs_path.endswith('.pdf'):
-            raise NotPdfError('The selected object is not a PDF file.')
-
-        if arg_file_size < 0:
-            raise NegativeValueError('Negative value is not a valid argument.')
-
+        arg_file_size = float(query)*1000000
+        no_ext_path = os.path.splitext(abs_path)[0]
         inp_file = PdfFileReader(open(abs_path, 'rb'))
         num_pages = int(inp_file.getNumPages())
         start = 0
@@ -72,8 +57,8 @@ def main():
                     stop = stop + 1
                     page_number = page_number + 1
 
-    except NegativeValueError as err:
-        print err
+    except ValueError:
+        print 'The argument must be a positive numeric value.'
 
 if __name__ == '__main__':
     sys.exit(main())

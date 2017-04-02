@@ -8,6 +8,19 @@
 	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
+		<key>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>D4484868-27E4-45A9-8D6C-637B522C67BA</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>03FD1C11-F481-4640-8C86-A66946BB6BDB</key>
 		<array>
 			<dict>
@@ -38,7 +51,30 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
+				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
 				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>1C706960-938F-4C14-899F-4A2675685FBB</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -65,6 +101,16 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -164,6 +210,42 @@
 				<false/>
 			</dict>
 		</array>
+		<key>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>6FDFC63C-AF80-4ECA-9C00-9C778D158009</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
 		<array>
 			<dict>
@@ -177,6 +259,8 @@
 				<false/>
 			</dict>
 		</array>
+		<key>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</key>
+		<array/>
 		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
 		<array>
 			<dict>
@@ -215,12 +299,35 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
 		</array>
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
 				<string>2AAFDEB2-9F81-418F-B5D6-479D577D6454</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6FDFC63C-AF80-4ECA-9C00-9C778D158009</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -272,13 +379,110 @@
 	<key>createdby</key>
 	<string>Arthur Pinheiro</string>
 	<key>description</key>
-	<string>Merge, split and slice PDF files</string>
+	<string>Optimize and manipulate PDF files</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
 	<string>Alfred PDF Tools</string>
 	<key>objects</key>
 	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>subtext</key>
+				<string>Enter a resolution in dpi (e.g., 150)</string>
+				<key>text</key>
+				<string>Optimize the selected PDF file</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python deskew.py "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>optimize.py</string>
+				<key>type</key>
+				<integer>8</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>6FDFC63C-AF80-4ECA-9C00-9C778D158009</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<true/>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Optimize</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>1C706960-938F-4C14-899F-4A2675685FBB</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>D4484868-27E4-45A9-8D6C-637B522C67BA</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>abs_path</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -304,15 +508,15 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>111</integer>
+				<integer>0</integer>
 				<key>script</key>
-				<string>python merge.py {query}</string>
-				<key>scriptargtype</key>
-				<integer>0</integer>
-				<key>scriptfile</key>
 				<string></string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>merge.py</string>
 				<key>type</key>
-				<integer>0</integer>
+				<integer>8</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -382,15 +586,116 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>102</integer>
+				<integer>0</integer>
 				<key>script</key>
-				<string>python split_page_count.py</string>
+				<string>readonly remote_info_plist='https://raw.githubusercontent.com/xilopaint/alfred-pdf-tools/master/src/info.plist' # URL of remote info.plist
+readonly workflow_url='https://github.com/xilopaint/alfred-pdf-tools/raw/master/Alfred%20PDF%20Tools.alfredworkflow' # URL to directly download workflow or workflow download page
+readonly workflow_type='workflow' # Either 'workflow' if workflow_url points to direct download, or 'page' if it points to download page
+readonly frequency_check='15' # Days between update checks
+
+# FROM HERE ON, CODE SHOULD BE LEFT UNTOUCHED UNLESS YOU KNOW WHAT YOU ARE DOING
+function abort {
+  echo "${1}" &gt;&amp;2
+  exit 1
+}
+
+function url_exists {
+  curl --silent --location --output /dev/null --fail --range 0-0 "${1}"
+}
+
+function notification {
+  local readonly terminal_notifier="$(find . -name terminal-notifier.app)"
+
+  if [[ -n "${terminal_notifier}" ]]; then
+    "${terminal_notifier}"/Contents/MacOS/terminal-notifier -title "${alfred_workflow_name}" -subtitle 'A new version is available' -message "${1}"
+  else
+    osascript -e "display notification \"${1}\" with title \"${alfred_workflow_name}\" subtitle \"A new version is available\""
+  fi
+}
+
+# Local sanity checks
+readonly local_info_plist='info.plist'
+readonly local_version="$(/usr/libexec/PlistBuddy -c 'print version' "${local_info_plist}")"
+
+[[ -n "${local_version}" ]] || abort 'You need to set a workflow version in the configuration sheet.'
+[[ "${workflow_type}" =~ ^(workflow|page)$ ]] || abort "'workflow_type' (${workflow_type}) needs to be one of 'workflow' or 'page'."
+[[ "${frequency_check}" =~ ^[0-9]+$ ]] || abort "'frequency_check' (${frequency_check}) needs to be a number."
+
+# Check for updates
+if [[ $(find "${local_info_plist}" -mtime +"${frequency_check}"d) ]]; then
+  if ! url_exists "${remote_info_plist}"; then abort "'remote_info_plist' (${remote_info_plist}) appears to not be reachable."; fi # Remote sanity check
+
+  readonly tmp_file="$(mktemp)"
+  curl --silent --location --output "${tmp_file}" "${remote_info_plist}"
+  readonly remote_version="$(/usr/libexec/PlistBuddy -c 'print version' "${tmp_file}")"
+
+  if [[ "${local_version}" != "${remote_version}" ]]; then
+    if [[ "${workflow_type}" == 'page' ]]; then
+      notification 'Opening download page…'
+      open "${workflow_url}"
+    else
+      if url_exists "${workflow_url}"; then
+        notification 'Downloading and installing…'
+        curl --silent --location --output "${HOME}/Downloads/${alfred_workflow_name}.alfredworkflow" "${workflow_url}"
+        open "${HOME}/Downloads/${alfred_workflow_name}.alfredworkflow"
+      else
+        abort "'workflow_url' (${workflow_url}) appears to not be reachable."
+      fi # url_exists
+    fi # workflow_type
+  else
+    touch "${local_info_plist}" # Reset timer by touching local file
+  fi # diff
+fi #find</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
 				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>Alfred PDF Tools</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string></string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>split_page_count.py</string>
+				<key>type</key>
+				<integer>8</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -476,39 +781,18 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>lastpathcomponent</key>
-				<false/>
-				<key>onlyshowifquerypopulated</key>
-				<true/>
-				<key>removeextension</key>
-				<false/>
-				<key>text</key>
-				<string>{query}</string>
-				<key>title</key>
-				<string>Alfred PDF Suite</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.notification</string>
-			<key>uid</key>
-			<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>102</integer>
+				<integer>0</integer>
 				<key>script</key>
-				<string>python split_file_size.py</string>
-				<key>scriptargtype</key>
-				<integer>0</integer>
-				<key>scriptfile</key>
 				<string></string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>split_file_size.py</string>
 				<key>type</key>
-				<integer>0</integer>
+				<integer>8</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -597,15 +881,15 @@
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
-				<integer>102</integer>
+				<integer>0</integer>
 				<key>script</key>
-				<string>python slice.py</string>
+				<string></string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string></string>
+				<string>slice.py</string>
 				<key>type</key>
-				<integer>0</integer>
+				<integer>8</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -690,22 +974,73 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string></string>
+	<string># Alfred PDF Tools
+
+A workflow for [Alfred 3][1].  
+
+## Description
+
+Optimize and manipulate PDF files.
+
+## Download and Installation
+
+Download the workflow file either from [GitHub releases][2] or [Packal][3] website and install it by double-clicking on `Alfred PDF Tools.alfredworklow`.
+
+## Usage
+
+**Alfred PDF Tools** can be used by the following file actions:
+
+* `Optimize`: Compress and optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening.
+* `Merge`: Merge the selected PDF files and move the source files to trash;
+* `Split by Page Count`: Split the selected PDF file by entering the maximum amount of pages for each new PDF file;
+* `Split by File Size`: Split the selected PDF file by entering the maximum file size in MB for each new PDF file;
+* `Slice`:  Slice the selected PDF file by entering start, stop and step arguments separated by commas (e.g., "10, 20, 1" will create a PDF file from pages 10 to 20 of the source file).
+
+## Contribute
+
+To report a bug or submit a feature request, please [create an issue][4] or [submit a pull request][5] on GitHub.
+
+## Credits
+
+This workflow relies on [PyPDF2][6] library currently maintained by [Phaseit, Inc.][7], [K2pdfopt][8] by Johannes Buchnerand, [Send2Trash][9] by Virgil Dupras and [OneUpdater][10] by Vítor Galvão.
+
+## License
+
+**Alfred PDF Tools** code is released under the [MIT License][11].
+
+[1]: http://www.alfredapp.com/
+[2]: https://github.com/xilopaint/alfred-pdf-tools/releases/latest
+[3]: http://www.packal.org/workflow/alfred-pdf-tools
+[4]: https://github.com/xilopaint/alfred-pdf-tools/issues
+[5]: https://github.com/xilopaint/alfred-pdf-tools/pulls
+[6]: https://github.com/mstamy2/PyPDF2
+[7]:http://phaseit.net
+[8]:http://www.willus.com/k2pdfopt/
+[9]:https://github.com/hsoft/send2trash
+[10]:https://github.com/vitorgalvao/alfred-workflows/tree/master/OneUpdater
+[11]: https://opensource.org/licenses/MIT</string>
 	<key>uidata</key>
 	<dict>
+		<key>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</key>
+		<dict>
+			<key>xpos</key>
+			<integer>270</integer>
+			<key>ypos</key>
+			<integer>20</integer>
+		</dict>
 		<key>03FD1C11-F481-4640-8C86-A66946BB6BDB</key>
 		<dict>
 			<key>xpos</key>
 			<integer>200</integer>
 			<key>ypos</key>
-			<integer>390</integer>
+			<integer>470</integer>
 		</dict>
 		<key>0B7E15AA-EDD5-4EBD-90CE-C2DBD3484C16</key>
 		<dict>
 			<key>xpos</key>
 			<integer>200</integer>
 			<key>ypos</key>
-			<integer>250</integer>
+			<integer>330</integer>
 		</dict>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
@@ -714,14 +1049,21 @@
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>500</integer>
+			<integer>580</integer>
+		</dict>
+		<key>1C706960-938F-4C14-899F-4A2675685FBB</key>
+		<dict>
+			<key>xpos</key>
+			<integer>50</integer>
+			<key>ypos</key>
+			<integer>20</integer>
 		</dict>
 		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
 		<dict>
 			<key>xpos</key>
 			<integer>200</integer>
 			<key>ypos</key>
-			<integer>110</integer>
+			<integer>190</integer>
 		</dict>
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<dict>
@@ -730,28 +1072,28 @@
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>360</integer>
+			<integer>440</integer>
 		</dict>
 		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>250</integer>
+			<integer>330</integer>
 		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>270</integer>
 			<key>ypos</key>
-			<integer>500</integer>
+			<integer>580</integer>
 		</dict>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>200</integer>
 			<key>ypos</key>
-			<integer>530</integer>
+			<integer>610</integer>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
@@ -760,56 +1102,83 @@
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>220</integer>
+			<integer>300</integer>
 		</dict>
 		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>530</integer>
+			<integer>610</integer>
 		</dict>
 		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>390</integer>
+			<integer>470</integer>
 		</dict>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<dict>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>
-			<integer>220</integer>
+			<integer>300</integer>
+		</dict>
+		<key>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</key>
+		<dict>
+			<key>xpos</key>
+			<integer>200</integer>
+			<key>ypos</key>
+			<integer>50</integer>
+		</dict>
+		<key>6FDFC63C-AF80-4ECA-9C00-9C778D158009</key>
+		<dict>
+			<key>note</key>
+			<string>Optimize</string>
+			<key>xpos</key>
+			<integer>480</integer>
+			<key>ypos</key>
+			<integer>20</integer>
 		</dict>
 		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>
-			<integer>80</integer>
+			<integer>160</integer>
 		</dict>
 		<key>A961741E-E065-4C7A-9D5B-6F59E283C2E0</key>
 		<dict>
 			<key>xpos</key>
-			<integer>700</integer>
+			<integer>730</integer>
 			<key>ypos</key>
-			<integer>290</integer>
+			<integer>300</integer>
+		</dict>
+		<key>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>12</integer>
+			<key>note</key>
+			<string>OneUpdater</string>
+			<key>xpos</key>
+			<integer>880</integer>
+			<key>ypos</key>
+			<integer>300</integer>
 		</dict>
 		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>110</integer>
+			<integer>190</integer>
 		</dict>
 		<key>CEBD82BA-6268-426D-9BFE-62BCD4C27471</key>
 		<dict>
 			<key>xpos</key>
 			<integer>270</integer>
 			<key>ypos</key>
-			<integer>80</integer>
+			<integer>160</integer>
 		</dict>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<dict>
@@ -818,39 +1187,46 @@
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>80</integer>
+			<integer>160</integer>
 		</dict>
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<dict>
 			<key>xpos</key>
 			<integer>270</integer>
 			<key>ypos</key>
-			<integer>220</integer>
+			<integer>300</integer>
+		</dict>
+		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
+		<dict>
+			<key>xpos</key>
+			<integer>420</integer>
+			<key>ypos</key>
+			<integer>50</integer>
 		</dict>
 		<key>D48F2872-A471-417E-A025-89F82414CD22</key>
 		<dict>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>
-			<integer>360</integer>
+			<integer>440</integer>
 		</dict>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<dict>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>
-			<integer>500</integer>
+			<integer>580</integer>
 		</dict>
 		<key>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>270</integer>
 			<key>ypos</key>
-			<integer>360</integer>
+			<integer>440</integer>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>1.1.3</string>
+	<string>2.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>

@@ -1,26 +1,20 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 
 import sys
+import os
 from PyPDF2 import PdfFileMerger, PdfFileReader
-import os.path
-
 
 def main():
 
     abs_path = os.environ['abs_path']
     query = os.environ['query']
     args = [x.strip() for x in query.split(',')]
-    start = int(args[0])-1
-    stop = int(args[1])
-    step = int(args[2])
-    merger = PdfFileMerger()
-    inp_file = PdfFileReader(open(abs_path, 'rb'))
 
-    class AlfredPdfSuiteError(Exception):
+    class AlfredPdfToolsError(Exception):
         pass
 
-    class StartValueError(AlfredPdfSuiteError):
+    class StartValueError(AlfredPdfToolsError):
         pass
 
     class StepValueError(ValueError):
@@ -28,8 +22,11 @@ def main():
 
     try:
 
-        if not abs_path:
-            raise NoFileError('You must select a PDF file.')
+        start = int(args[0])-1
+        stop = int(args[1])
+        step = int(args[2])
+        merger = PdfFileMerger()
+        inp_file = PdfFileReader(open(abs_path, 'rb'))
 
         if start <= -1:
             raise StartValueError('Start argument cannot be zero or negative value.')
@@ -51,8 +48,10 @@ def main():
         print err
 
     except IndexError:
-        print 'Stop value out of range'
+        print 'Stop value out of range.'
+
+    except ValueError:
+        print 'Inappropriate argument value.'
 
 if __name__ == '__main__':
     sys.exit(main())
-
