@@ -48,4 +48,5 @@ def bash_cmd(command):
     call(command, shell=True, executable="/bin/bash", stdout=fnull, stderr=STDOUT)
 
 if __name__ == "__main__":
+
     sys.exit(main())

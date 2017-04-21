@@ -61,4 +61,5 @@ def main():
         print 'The argument must be a positive numeric value.'
 
 if __name__ == '__main__':
+
     sys.exit(main())

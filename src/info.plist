@@ -170,6 +170,16 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
 		</array>
 		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
 		<array>
@@ -246,6 +256,55 @@
 				<false/>
 			</dict>
 		</array>
+		<key>79C0A050-CA6C-4B0F-B567-3EA24D625B98</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>8C94D95D-1805-46BC-91D1-29027BFD475E</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
 		<array>
 			<dict>
@@ -266,6 +325,32 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C015C8BB-BE92-422F-B681-AC857DEABAC1</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>C015C8BB-BE92-422F-B681-AC857DEABAC1</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>79C0A050-CA6C-4B0F-B567-3EA24D625B98</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -379,7 +464,7 @@
 	<key>createdby</key>
 	<string>Arthur Pinheiro</string>
 	<key>description</key>
-	<string>Optimize and manipulate PDF files</string>
+	<string>Optimize, encrypt and manipulate PDF files</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -392,7 +477,7 @@
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>subtext</key>
-				<string>Enter a resolution in dpi (e.g., 150)</string>
+				<string>Enter a resolution in dpi (e.g., 150).</string>
 				<key>text</key>
 				<string>Optimize the selected PDF file</string>
 				<key>withspace</key>
@@ -480,6 +565,103 @@
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string></string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>encrypt.py</string>
+				<key>type</key>
+				<integer>8</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>79C0A050-CA6C-4B0F-B567-3EA24D625B98</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<false/>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Encrypt</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>8C94D95D-1805-46BC-91D1-29027BFD475E</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string>Enter a password.</string>
+				<key>text</key>
+				<string>Encrypt the selected PDF file</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>C015C8BB-BE92-422F-B681-AC857DEABAC1</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>abs_path</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -980,17 +1162,18 @@ A workflow for [Alfred 3][1].
 
 ## Description
 
-Optimize and manipulate PDF files.
+Optimize, encrypt and manipulate PDF files.
 
 ## Download and Installation
 
-Download the workflow file either from [GitHub releases][2] or [Packal][3] website and install it by double-clicking on `Alfred PDF Tools.alfredworklow`.
+Download the workflow file either from [GitHub releases][2] and install it by double-clicking on `Alfred PDF Tools.alfredworklow`.
 
 ## Usage
 
 **Alfred PDF Tools** can be used by the following file actions:
 
-* `Optimize`: Compress and optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening.
+* `Optimize`: Compress and optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening;
+* `Encrypt`: Encrypt the selected PDF file by entering a password;
 * `Merge`: Merge the selected PDF files and move the source files to trash;
 * `Split by Page Count`: Split the selected PDF file by entering the maximum amount of pages for each new PDF file;
 * `Split by File Size`: Split the selected PDF file by entering the maximum file size in MB for each new PDF file;
@@ -998,137 +1181,136 @@ Download the workflow file either from [GitHub releases][2] or [Packal][3] websi
 
 ## Contribute
 
-To report a bug or submit a feature request, please [create an issue][4] or [submit a pull request][5] on GitHub.
+To report a bug or submit a feature request, please [create an issue][3] or [submit a pull request][4] on GitHub.
 
 ## Credits
 
-This workflow relies on [PyPDF2][6] library currently maintained by [Phaseit, Inc.][7], [K2pdfopt][8] by Johannes Buchnerand, [Send2Trash][9] by Virgil Dupras and [OneUpdater][10] by Vítor Galvão.
+This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, Inc.][6], [K2pdfopt][7] by Johannes Buchnerand, [Send2Trash][8] by Virgil Dupras and [OneUpdater][9] by Vítor Galvão.
 
 ## License
 
-**Alfred PDF Tools** code is released under the [MIT License][11].
+**Alfred PDF Tools** code is released under the [MIT License][10].
 
-[1]: http://www.alfredapp.com/
-[2]: https://github.com/xilopaint/alfred-pdf-tools/releases/latest
-[3]: http://www.packal.org/workflow/alfred-pdf-tools
-[4]: https://github.com/xilopaint/alfred-pdf-tools/issues
-[5]: https://github.com/xilopaint/alfred-pdf-tools/pulls
-[6]: https://github.com/mstamy2/PyPDF2
-[7]:http://phaseit.net
-[8]:http://www.willus.com/k2pdfopt/
-[9]:https://github.com/hsoft/send2trash
-[10]:https://github.com/vitorgalvao/alfred-workflows/tree/master/OneUpdater
-[11]: https://opensource.org/licenses/MIT</string>
+[1]:http://www.alfredapp.com/
+[2]:https://github.com/xilopaint/alfred-pdf-tools/releases/latest
+[3]:https://github.com/xilopaint/alfred-pdf-tools/issues
+[4]:https://github.com/xilopaint/alfred-pdf-tools/pulls
+[5]:https://github.com/mstamy2/PyPDF2
+[6]:http://phaseit.net
+[7]:http://www.willus.com/k2pdfopt/
+[8]:https://github.com/hsoft/send2trash
+[9]:https://github.com/vitorgalvao/alfred-workflows/tree/master/OneUpdater
+[10]:https://opensource.org/licenses/MIT</string>
 	<key>uidata</key>
 	<dict>
 		<key>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</key>
 		<dict>
 			<key>xpos</key>
-			<integer>270</integer>
+			<integer>260</integer>
 			<key>ypos</key>
 			<integer>20</integer>
 		</dict>
 		<key>03FD1C11-F481-4640-8C86-A66946BB6BDB</key>
 		<dict>
 			<key>xpos</key>
-			<integer>200</integer>
+			<integer>190</integer>
 			<key>ypos</key>
-			<integer>470</integer>
+			<integer>610</integer>
 		</dict>
 		<key>0B7E15AA-EDD5-4EBD-90CE-C2DBD3484C16</key>
 		<dict>
 			<key>xpos</key>
-			<integer>200</integer>
+			<integer>190</integer>
 			<key>ypos</key>
-			<integer>330</integer>
+			<integer>470</integer>
 		</dict>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
 			<key>note</key>
 			<string>Slice</string>
 			<key>xpos</key>
-			<integer>480</integer>
+			<integer>470</integer>
 			<key>ypos</key>
-			<integer>580</integer>
+			<integer>720</integer>
 		</dict>
 		<key>1C706960-938F-4C14-899F-4A2675685FBB</key>
 		<dict>
 			<key>xpos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 			<key>ypos</key>
 			<integer>20</integer>
 		</dict>
 		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
 		<dict>
 			<key>xpos</key>
-			<integer>200</integer>
-			<key>ypos</key>
 			<integer>190</integer>
+			<key>ypos</key>
+			<integer>330</integer>
 		</dict>
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<dict>
 			<key>note</key>
 			<string>Split by File Size</string>
 			<key>xpos</key>
-			<integer>480</integer>
+			<integer>470</integer>
 			<key>ypos</key>
-			<integer>440</integer>
+			<integer>580</integer>
 		</dict>
 		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
 		<dict>
 			<key>xpos</key>
-			<integer>420</integer>
+			<integer>410</integer>
 			<key>ypos</key>
-			<integer>330</integer>
+			<integer>470</integer>
 		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
 			<key>xpos</key>
-			<integer>270</integer>
+			<integer>260</integer>
 			<key>ypos</key>
-			<integer>580</integer>
+			<integer>720</integer>
 		</dict>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
 			<key>xpos</key>
-			<integer>200</integer>
+			<integer>190</integer>
 			<key>ypos</key>
-			<integer>610</integer>
+			<integer>750</integer>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
 			<key>note</key>
 			<string>Split by Page Count</string>
 			<key>xpos</key>
-			<integer>480</integer>
+			<integer>470</integer>
 			<key>ypos</key>
-			<integer>300</integer>
+			<integer>440</integer>
 		</dict>
 		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
 		<dict>
 			<key>xpos</key>
-			<integer>420</integer>
+			<integer>410</integer>
 			<key>ypos</key>
-			<integer>610</integer>
+			<integer>750</integer>
 		</dict>
 		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
 		<dict>
 			<key>xpos</key>
-			<integer>420</integer>
+			<integer>410</integer>
 			<key>ypos</key>
-			<integer>470</integer>
+			<integer>610</integer>
 		</dict>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<dict>
 			<key>xpos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 			<key>ypos</key>
-			<integer>300</integer>
+			<integer>440</integer>
 		</dict>
 		<key>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</key>
 		<dict>
 			<key>xpos</key>
-			<integer>200</integer>
+			<integer>190</integer>
 			<key>ypos</key>
 			<integer>50</integer>
 		</dict>
@@ -1137,23 +1319,46 @@ This workflow relies on [PyPDF2][6] library currently maintained by [Phaseit, In
 			<key>note</key>
 			<string>Optimize</string>
 			<key>xpos</key>
-			<integer>480</integer>
+			<integer>470</integer>
 			<key>ypos</key>
 			<integer>20</integer>
+		</dict>
+		<key>79C0A050-CA6C-4B0F-B567-3EA24D625B98</key>
+		<dict>
+			<key>note</key>
+			<string>Encrypt</string>
+			<key>xpos</key>
+			<integer>470</integer>
+			<key>ypos</key>
+			<integer>160</integer>
+		</dict>
+		<key>8C94D95D-1805-46BC-91D1-29027BFD475E</key>
+		<dict>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>160</integer>
+		</dict>
+		<key>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</key>
+		<dict>
+			<key>xpos</key>
+			<integer>190</integer>
+			<key>ypos</key>
+			<integer>190</integer>
 		</dict>
 		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
 		<dict>
 			<key>xpos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 			<key>ypos</key>
-			<integer>160</integer>
+			<integer>300</integer>
 		</dict>
 		<key>A961741E-E065-4C7A-9D5B-6F59E283C2E0</key>
 		<dict>
 			<key>xpos</key>
-			<integer>730</integer>
+			<integer>740</integer>
 			<key>ypos</key>
-			<integer>300</integer>
+			<integer>370</integer>
 		</dict>
 		<key>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</key>
 		<dict>
@@ -1162,71 +1367,85 @@ This workflow relies on [PyPDF2][6] library currently maintained by [Phaseit, In
 			<key>note</key>
 			<string>OneUpdater</string>
 			<key>xpos</key>
-			<integer>880</integer>
+			<integer>890</integer>
 			<key>ypos</key>
-			<integer>300</integer>
+			<integer>370</integer>
 		</dict>
 		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
 		<dict>
 			<key>xpos</key>
-			<integer>420</integer>
+			<integer>410</integer>
+			<key>ypos</key>
+			<integer>330</integer>
+		</dict>
+		<key>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</key>
+		<dict>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>160</integer>
+		</dict>
+		<key>C015C8BB-BE92-422F-B681-AC857DEABAC1</key>
+		<dict>
+			<key>xpos</key>
+			<integer>410</integer>
 			<key>ypos</key>
 			<integer>190</integer>
 		</dict>
 		<key>CEBD82BA-6268-426D-9BFE-62BCD4C27471</key>
 		<dict>
 			<key>xpos</key>
-			<integer>270</integer>
+			<integer>260</integer>
 			<key>ypos</key>
-			<integer>160</integer>
+			<integer>300</integer>
 		</dict>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<dict>
 			<key>note</key>
 			<string>Merge</string>
 			<key>xpos</key>
-			<integer>480</integer>
+			<integer>470</integer>
 			<key>ypos</key>
-			<integer>160</integer>
+			<integer>300</integer>
 		</dict>
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<dict>
 			<key>xpos</key>
-			<integer>270</integer>
+			<integer>260</integer>
 			<key>ypos</key>
-			<integer>300</integer>
+			<integer>440</integer>
 		</dict>
 		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
 		<dict>
 			<key>xpos</key>
-			<integer>420</integer>
+			<integer>410</integer>
 			<key>ypos</key>
 			<integer>50</integer>
 		</dict>
 		<key>D48F2872-A471-417E-A025-89F82414CD22</key>
 		<dict>
 			<key>xpos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 			<key>ypos</key>
-			<integer>440</integer>
+			<integer>580</integer>
 		</dict>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<dict>
 			<key>xpos</key>
-			<integer>50</integer>
+			<integer>40</integer>
 			<key>ypos</key>
-			<integer>580</integer>
+			<integer>720</integer>
 		</dict>
 		<key>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</key>
 		<dict>
 			<key>xpos</key>
-			<integer>270</integer>
+			<integer>260</integer>
 			<key>ypos</key>
-			<integer>440</integer>
+			<integer>580</integer>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.0</string>
+	<string>2.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>

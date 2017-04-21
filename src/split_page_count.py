@@ -69,4 +69,5 @@ def main():
         print 'Zero is not a valid argument. Enter a positive integer instead.'
 
 if __name__ == '__main__':
+
     sys.exit(main())
