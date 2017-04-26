@@ -8,7 +8,7 @@ Optimize, encrypt and manipulate PDF files.
 
 ## Download and Installation
 
-Download the workflow file either from [GitHub releases][2] and install it by double-clicking on `Alfred PDF Tools.alfredworklow`.
+Download the workflow file from [GitHub releases][2] and install it by double-clicking on `Alfred PDF Tools.alfredworklow`.
 
 ## Usage
 
