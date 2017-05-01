@@ -31,8 +31,9 @@ def main():
         page_count = int(query)
         start = 0
         stop = page_count
-        inp_file = PdfFileReader(open(abs_path, 'rb'))
-        num_pages = int(inp_file.getNumPages())
+        inp_file = open(abs_path, 'rb')
+        reader = PdfFileReader(inp_file)
+        num_pages = int(reader.getNumPages())
         quotient = num_pages / page_count
 
         if quotient.is_integer():

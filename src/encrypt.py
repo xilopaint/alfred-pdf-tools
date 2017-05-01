@@ -16,15 +16,15 @@ def main():
     for n in xrange (file_count):
 
         inp_file = open(files[n], 'rb')
-        pdf_reader = PdfFileReader(inp_file, strict=False)
-        pdf_writer = PdfFileWriter()
+        reader = PdfFileReader(inp_file, strict=False)
+        writer = PdfFileWriter()
 
-        for pageNum in range(pdf_reader.numPages):
-            pdf_writer.addPage(pdf_reader.getPage(pageNum))
+        for pageNum in range(reader.numPages):
+            writer.addPage(reader.getPage(pageNum))
 
-        pdf_writer.encrypt(query)
+        writer.encrypt(query)
         out_file = open(no_ext_path[n][0] + ' (encrypted).pdf', 'wb')
-        pdf_writer.write(out_file)
+        writer.write(out_file)
         out_file.close()
 
 if __name__ == '__main__':

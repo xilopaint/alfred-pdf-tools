@@ -14,8 +14,9 @@ def main():
 
         arg_file_size = float(query)*1000000
         no_ext_path = os.path.splitext(abs_path)[0]
-        inp_file = PdfFileReader(open(abs_path, 'rb'))
-        num_pages = int(inp_file.getNumPages())
+        inp_file = open(abs_path, 'rb')
+        reader = PdfFileReader(inp_file)
+        num_pages = int(reader.getNumPages())
         start = 0
         stop = 1
         page_number = 0

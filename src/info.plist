@@ -21,19 +21,6 @@
 				<false/>
 			</dict>
 		</array>
-		<key>03FD1C11-F481-4640-8C86-A66946BB6BDB</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>0B7E15AA-EDD5-4EBD-90CE-C2DBD3484C16</key>
 		<array>
 			<dict>
@@ -75,6 +62,29 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -144,12 +154,35 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>386F09B0-747D-4863-9471-935F5C064F8C</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Enter page numbers and/or page ranges for a single slice (e.g. 2, 5-8).</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
 		</array>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
 				<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>386F09B0-747D-4863-9471-935F5C064F8C</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -407,6 +440,16 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Enter the maximum file size in MB for each new PDF file.</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
 		</array>
 		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
 		<array>
@@ -421,37 +464,11 @@
 				<false/>
 			</dict>
 		</array>
-		<key>D48F2872-A471-417E-A025-89F82414CD22</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>03FD1C11-F481-4640-8C86-A66946BB6BDB</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
 				<string>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -474,25 +491,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>subtext</key>
-				<string>Enter a resolution in dpi (e.g., 150).</string>
-				<key>text</key>
-				<string>Optimize the selected PDF file</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -512,6 +510,25 @@
 			<string>6FDFC63C-AF80-4ECA-9C00-9C778D158009</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>subtext</key>
+				<string>Enter a resolution in dpi (e.g., 150).</string>
+				<key>text</key>
+				<string>Optimize the selected PDF file</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -539,24 +556,6 @@
 				<string></string>
 				<key>variables</key>
 				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>D4484868-27E4-45A9-8D6C-637B522C67BA</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
 					<key>abs_path</key>
 					<string>{query}</string>
 				</dict>
@@ -571,25 +570,20 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>0</integer>
-				<key>script</key>
+				<key>argument</key>
 				<string></string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string>encrypt.py</string>
-				<key>type</key>
-				<integer>8</integer>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.action.script</string>
+			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
-			<string>79C0A050-CA6C-4B0F-B567-3EA24D625B98</string>
+			<string>D4484868-27E4-45A9-8D6C-637B522C67BA</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -632,20 +626,25 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
 				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>encrypt.py</string>
+				<key>type</key>
+				<integer>8</integer>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
+			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>C015C8BB-BE92-422F-B681-AC857DEABAC1</string>
+			<string>79C0A050-CA6C-4B0F-B567-3EA24D625B98</string>
 			<key>version</key>
-			<integer>1</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -668,19 +667,18 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<true/>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Merge</string>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
+			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
-			<string>A6A91646-8622-45F4-B763-4A6ACBAFD08C</string>
+			<string>C015C8BB-BE92-422F-B681-AC857DEABAC1</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -710,6 +708,25 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>acceptsmulti</key>
+				<true/>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Merge</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>A6A91646-8622-45F4-B763-4A6ACBAFD08C</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>subtext</key>
@@ -723,6 +740,24 @@
 			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
 			<string>CEBD82BA-6268-426D-9BFE-62BCD4C27471</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>abs_paths</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>2412A11E-00A7-400B-90FD-BAEBC00EA23A</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -747,20 +782,25 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
 				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>abs_paths</key>
-					<string>{query}</string>
-				</dict>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>split_page_count.py</string>
+				<key>type</key>
+				<integer>8</integer>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
+			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>2412A11E-00A7-400B-90FD-BAEBC00EA23A</string>
+			<string>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</string>
 			<key>version</key>
-			<integer>1</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -866,25 +906,39 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>0</integer>
-				<key>script</key>
+				<key>argument</key>
 				<string></string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string>split_page_count.py</string>
-				<key>type</key>
-				<integer>8</integer>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.action.script</string>
+			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
-			<string>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</string>
+			<string>2AAFDEB2-9F81-418F-B5D6-479D577D6454</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<false/>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Split</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>66FA4E4A-8144-4562-A253-E299707EBD64</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -908,25 +962,6 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<false/>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Split by Page Count</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>66FA4E4A-8144-4562-A253-E299707EBD64</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>variables</key>
@@ -939,24 +974,6 @@ fi #find</string>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>0B7E15AA-EDD5-4EBD-90CE-C2DBD3484C16</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>2AAFDEB2-9F81-418F-B5D6-479D577D6454</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -986,44 +1003,6 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<false/>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Split by File Size</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>D48F2872-A471-417E-A025-89F82414CD22</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string>Enter the maximum file size in MB for each new PDF file.</string>
-				<key>text</key>
-				<string>Split the selected PDF file</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>variables</key>
@@ -1042,24 +1021,6 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>abs_path</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>03FD1C11-F481-4640-8C86-A66946BB6BDB</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -1069,7 +1030,7 @@ fi #find</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
-				<string>slice.py</string>
+				<string>slice_multi.py</string>
 				<key>type</key>
 				<integer>8</integer>
 			</dict>
@@ -1083,19 +1044,18 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string>Enter start, stop and step arguments separated by commas (e.g., "1, 10, 1").</string>
-				<key>text</key>
-				<string>Slice the selected PDF file</string>
-				<key>withspace</key>
-				<true/>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
+			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
-			<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
+			<string>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1121,18 +1081,19 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string>Enter page numbers and/or page ranges for multiple slices (e.g. 2, 5-8).</string>
+				<key>text</key>
+				<string>Slice the selected PDF file</string>
+				<key>withspace</key>
+				<true/>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
+			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
-			<string>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</string>
+			<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1154,6 +1115,47 @@ fi #find</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string></string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>slice_single.py</string>
+				<key>type</key>
+				<integer>8</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>386F09B0-747D-4863-9471-935F5C064F8C</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string># Alfred PDF Tools
@@ -1172,16 +1174,15 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 
 **Alfred PDF Tools** can be used by the following file actions:
 
-* `Optimize`: Compress and optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening;
+* `Optimize`: Optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening;
 * `Encrypt`: Encrypt the selected PDF files by entering a password;
 * `Merge`: Merge the selected PDF files and move the source files to trash;
-* `Split by Page Count`: Split the selected PDF file by entering the maximum amount of pages for each new PDF file;
-* `Split by File Size`: Split the selected PDF file by entering the maximum file size in MB for each new PDF file;
-* `Slice`:  Slice the selected PDF file by entering start, stop and step arguments separated by commas (e.g., "10, 20, 1" will create a PDF file from pages 10 to 20 of the source file).
+* `Split`: Split the selected PDF file either by page count or file size (use the `⌘` modifier key in the latter case);
+* `Slice`:  Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8). For a single file/slice use the `⌘` modifier key.
 
 ## Contribute
 
-To report a bug or submit a feature request, please [create an issue][3] or [submit a pull request][4] on GitHub.
+To report a bug or request a feature, please [create an issue][3] or [submit a pull request][4] on GitHub.
 
 ## Credits
 
@@ -1210,26 +1211,19 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>20</integer>
 		</dict>
-		<key>03FD1C11-F481-4640-8C86-A66946BB6BDB</key>
-		<dict>
-			<key>xpos</key>
-			<integer>190</integer>
-			<key>ypos</key>
-			<integer>610</integer>
-		</dict>
 		<key>0B7E15AA-EDD5-4EBD-90CE-C2DBD3484C16</key>
 		<dict>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>470</integer>
+			<integer>540</integer>
 		</dict>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
 			<key>note</key>
-			<string>Slice</string>
+			<string>Multi-Slice</string>
 			<key>xpos</key>
-			<integer>470</integer>
+			<integer>480</integer>
 			<key>ypos</key>
 			<integer>720</integer>
 		</dict>
@@ -1239,6 +1233,15 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<integer>40</integer>
 			<key>ypos</key>
 			<integer>20</integer>
+		</dict>
+		<key>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</key>
+		<dict>
+			<key>note</key>
+			<string>Single-Slice</string>
+			<key>xpos</key>
+			<integer>480</integer>
+			<key>ypos</key>
+			<integer>860</integer>
 		</dict>
 		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
 		<dict>
@@ -1252,14 +1255,14 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>note</key>
 			<string>Split by File Size</string>
 			<key>xpos</key>
-			<integer>470</integer>
+			<integer>480</integer>
 			<key>ypos</key>
 			<integer>580</integer>
 		</dict>
 		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
 		<dict>
 			<key>xpos</key>
-			<integer>410</integer>
+			<integer>420</integer>
 			<key>ypos</key>
 			<integer>470</integer>
 		</dict>
@@ -1268,35 +1271,42 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>720</integer>
+			<integer>790</integer>
 		</dict>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>750</integer>
+			<integer>820</integer>
+		</dict>
+		<key>386F09B0-747D-4863-9471-935F5C064F8C</key>
+		<dict>
+			<key>xpos</key>
+			<integer>420</integer>
+			<key>ypos</key>
+			<integer>890</integer>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
 			<key>note</key>
 			<string>Split by Page Count</string>
 			<key>xpos</key>
-			<integer>470</integer>
+			<integer>480</integer>
 			<key>ypos</key>
 			<integer>440</integer>
 		</dict>
 		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
 		<dict>
 			<key>xpos</key>
-			<integer>410</integer>
+			<integer>420</integer>
 			<key>ypos</key>
 			<integer>750</integer>
 		</dict>
 		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
 		<dict>
 			<key>xpos</key>
-			<integer>410</integer>
+			<integer>420</integer>
 			<key>ypos</key>
 			<integer>610</integer>
 		</dict>
@@ -1305,7 +1315,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>440</integer>
+			<integer>510</integer>
 		</dict>
 		<key>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</key>
 		<dict>
@@ -1319,7 +1329,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>note</key>
 			<string>Optimize</string>
 			<key>xpos</key>
-			<integer>470</integer>
+			<integer>480</integer>
 			<key>ypos</key>
 			<integer>20</integer>
 		</dict>
@@ -1328,7 +1338,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>note</key>
 			<string>Encrypt</string>
 			<key>xpos</key>
-			<integer>470</integer>
+			<integer>480</integer>
 			<key>ypos</key>
 			<integer>160</integer>
 		</dict>
@@ -1356,9 +1366,9 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>A961741E-E065-4C7A-9D5B-6F59E283C2E0</key>
 		<dict>
 			<key>xpos</key>
-			<integer>740</integer>
+			<integer>810</integer>
 			<key>ypos</key>
-			<integer>370</integer>
+			<integer>440</integer>
 		</dict>
 		<key>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</key>
 		<dict>
@@ -1367,14 +1377,14 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>note</key>
 			<string>OneUpdater</string>
 			<key>xpos</key>
-			<integer>890</integer>
+			<integer>960</integer>
 			<key>ypos</key>
-			<integer>370</integer>
+			<integer>440</integer>
 		</dict>
 		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
 		<dict>
 			<key>xpos</key>
-			<integer>410</integer>
+			<integer>420</integer>
 			<key>ypos</key>
 			<integer>330</integer>
 		</dict>
@@ -1388,7 +1398,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>C015C8BB-BE92-422F-B681-AC857DEABAC1</key>
 		<dict>
 			<key>xpos</key>
-			<integer>410</integer>
+			<integer>420</integer>
 			<key>ypos</key>
 			<integer>190</integer>
 		</dict>
@@ -1404,7 +1414,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>note</key>
 			<string>Merge</string>
 			<key>xpos</key>
-			<integer>470</integer>
+			<integer>480</integer>
 			<key>ypos</key>
 			<integer>300</integer>
 		</dict>
@@ -1413,39 +1423,25 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>440</integer>
+			<integer>510</integer>
 		</dict>
 		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
 		<dict>
 			<key>xpos</key>
-			<integer>410</integer>
+			<integer>420</integer>
 			<key>ypos</key>
 			<integer>50</integer>
-		</dict>
-		<key>D48F2872-A471-417E-A025-89F82414CD22</key>
-		<dict>
-			<key>xpos</key>
-			<integer>40</integer>
-			<key>ypos</key>
-			<integer>580</integer>
 		</dict>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<dict>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>720</integer>
-		</dict>
-		<key>F01DC62C-462E-40B8-9BDE-FAF5660EC33C</key>
-		<dict>
-			<key>xpos</key>
-			<integer>260</integer>
-			<key>ypos</key>
-			<integer>580</integer>
+			<integer>790</integer>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.2</string>
+	<string>2.3</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>

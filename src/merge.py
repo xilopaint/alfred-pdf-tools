@@ -33,7 +33,8 @@ def main():
             raise MultiplePathsError('Cannot merge PDF files from multiple paths.')
 
         for pdf in files:
-            merger.append(PdfFileReader(open(pdf, 'rb')))
+            reader = PdfFileReader(open(pdf, 'rb'))
+            merger.append(reader)
 
         for pdf in files:
             send2trash(pdf)
