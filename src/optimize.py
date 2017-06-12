@@ -5,6 +5,7 @@ import sys
 import os
 from subprocess import call, STDOUT
 
+
 def main():
 
     abs_path = os.environ['abs_path']
@@ -42,10 +43,12 @@ def main():
     except NegativeValueError as err:
         print err
 
+
 def bash_cmd(command):
 
     fnull = open(os.devnull, 'w')
     call(command, shell=True, executable="/bin/bash", stdout=fnull, stderr=STDOUT)
+
 
 if __name__ == "__main__":
 

@@ -16,7 +16,7 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 
 * `Optimize`: Optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening;
 * `Encrypt`: Encrypt the selected PDF files by entering a password;
-* `Merge`: Merge the selected PDF files and move the source files to trash;
+* `Merge`: Merge the selected PDF files. Use the `⌘` modifier key if you also want to move the source files to Trash;
 * `Split`: Split the selected PDF file either by page count or file size (use the `⌘` modifier key in the latter case);
 * `Slice`:  Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8). For a single file/slice use the `⌘` modifier key.
 

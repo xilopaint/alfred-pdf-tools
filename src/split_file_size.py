@@ -5,6 +5,7 @@ import sys
 import os
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
+
 def main():
 
     abs_path = os.environ['abs_path']
@@ -12,7 +13,7 @@ def main():
 
     try:
 
-        arg_file_size = float(query)*1000000
+        arg_file_size = float(query) * 1000000
         no_ext_path = os.path.splitext(abs_path)[0]
         inp_file = open(abs_path, 'rb')
         reader = PdfFileReader(inp_file)
@@ -60,6 +61,7 @@ def main():
 
     except ValueError:
         print 'The argument must be a positive numeric value.'
+
 
 if __name__ == '__main__':
 

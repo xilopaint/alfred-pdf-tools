@@ -5,7 +5,7 @@ import sys
 import os
 import ntpath
 from PyPDF2 import PdfFileMerger, PdfFileReader
-from send2trash import send2trash
+
 
 def main():
 
@@ -13,7 +13,7 @@ def main():
     query = os.environ['query']
     files = abs_paths.split('\t')
     paths = [get_path(path) for path in files]
-    merger = PdfFileMerger(strict = False)
+    merger = PdfFileMerger(strict=False)
 
     class AlfredPdfToolsError(Exception):
         pass
@@ -36,9 +36,6 @@ def main():
             reader = PdfFileReader(open(pdf, 'rb'))
             merger.append(reader)
 
-        for pdf in files:
-            send2trash(pdf)
-
         merger.write(paths[0] + "/" + query + ".pdf")
 
     except SelectionError as err:
@@ -50,7 +47,7 @@ def main():
 
 def check_equal(paths):
 
-   return paths[1:] == paths[:-1]
+    return paths[1:] == paths[:-1]
 
 
 def get_path(path):

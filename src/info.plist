@@ -38,7 +38,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -48,7 +48,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+				<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -84,7 +84,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -120,7 +120,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -205,7 +205,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -232,6 +232,19 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>264B67E5-5011-4DA7-8AF3-4175185C5C81</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -280,7 +293,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -293,7 +306,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -303,7 +316,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+				<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -351,8 +364,19 @@
 				<false/>
 			</dict>
 		</array>
-		<key>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</key>
-		<array/>
+		<key>B27A0291-C9DA-421D-84DF-898D943502E8</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>576B0800-54DF-4371-8890-B0F77231DE58</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
 		<array>
 			<dict>
@@ -404,6 +428,16 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>B27A0291-C9DA-421D-84DF-898D943502E8</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Merge the selected PDF files and move them to trash.</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
 		</array>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<array>
@@ -419,7 +453,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+				<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -708,6 +742,24 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>B4CE4528-F602-48C2-BFB3-71BA78933B1E</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>acceptsmulti</key>
 				<true/>
 				<key>filetypes</key>
@@ -764,6 +816,29 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string></string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>merge_trash.py</string>
+				<key>type</key>
+				<integer>8</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>576B0800-54DF-4371-8890-B0F77231DE58</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>variables</key>
@@ -775,32 +850,9 @@
 			<key>type</key>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
-			<string>B4CE4528-F602-48C2-BFB3-71BA78933B1E</string>
+			<string>B27A0291-C9DA-421D-84DF-898D943502E8</string>
 			<key>version</key>
 			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>0</integer>
-				<key>script</key>
-				<string></string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string>split_page_count.py</string>
-				<key>type</key>
-				<integer>8</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</string>
-			<key>version</key>
-			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -826,13 +878,19 @@ function url_exists {
 }
 
 function notification {
-  local readonly terminal_notifier="$(find . -name terminal-notifier.app)"
-
-  if [[ -n "${terminal_notifier}" ]]; then
-    "${terminal_notifier}"/Contents/MacOS/terminal-notifier -title "${alfred_workflow_name}" -subtitle 'A new version is available' -message "${1}"
-  else
-    osascript -e "display notification \"${1}\" with title \"${alfred_workflow_name}\" subtitle \"A new version is available\""
+  readonly local notificator="$(find . -type d -name 'Notificator.app')"
+  if [[ -n "${notificator}" ]]; then
+    "${notificator}/Contents/Resources/Scripts/notificator" --title "${alfred_workflow_name}" --subtitle 'A new version is availale' --message "${1}"
+    return
   fi
+
+  readonly local terminal_notifier="$(find . -type f -name 'terminal-notifier')"
+  if [[ -n "${terminal_notifier}" ]]; then
+    "${terminal_notifier}" -title "${alfred_workflow_name}" -subtitle 'A new version is available' -message "${1}"
+    return
+  fi
+
+  osascript -e "display notification \"${1}\" with title \"${alfred_workflow_name}\" subtitle \"A new version is available\""
 }
 
 # Local sanity checks
@@ -869,7 +927,7 @@ if [[ $(find "${local_info_plist}" -mtime +"${frequency_check}"d) ]]; then
   fi # diff
 fi #find</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -878,7 +936,7 @@ fi #find</string>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</string>
+			<string>A6247385-940A-4F98-9623-AAF9B17FCB77</string>
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
@@ -902,6 +960,29 @@ fi #find</string>
 			<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
 			<key>version</key>
 			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string></string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>split_page_count.py</string>
+				<key>type</key>
+				<integer>8</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</string>
+			<key>version</key>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1062,25 +1143,6 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<false/>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Slice</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>E2104ACC-6C1D-407E-A787-182694534FBA</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>subtext</key>
@@ -1094,6 +1156,25 @@ fi #find</string>
 			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
 			<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<false/>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Slice</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>E2104ACC-6C1D-407E-A787-182694534FBA</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1216,7 +1297,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>540</integer>
+			<integer>680</integer>
 		</dict>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
@@ -1225,7 +1306,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>720</integer>
+			<integer>860</integer>
 		</dict>
 		<key>1C706960-938F-4C14-899F-4A2675685FBB</key>
 		<dict>
@@ -1241,14 +1322,14 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>860</integer>
+			<integer>1000</integer>
 		</dict>
 		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
 		<dict>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>330</integer>
+			<integer>400</integer>
 		</dict>
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<dict>
@@ -1257,35 +1338,35 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>580</integer>
+			<integer>720</integer>
 		</dict>
 		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>470</integer>
+			<integer>610</integer>
 		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>790</integer>
+			<integer>930</integer>
 		</dict>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>820</integer>
+			<integer>960</integer>
 		</dict>
 		<key>386F09B0-747D-4863-9471-935F5C064F8C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>890</integer>
+			<integer>1030</integer>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
@@ -1294,28 +1375,37 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>440</integer>
+			<integer>580</integer>
 		</dict>
 		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>750</integer>
+			<integer>890</integer>
 		</dict>
 		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>610</integer>
+			<integer>750</integer>
+		</dict>
+		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
+		<dict>
+			<key>note</key>
+			<string>Merge and Move to Trash</string>
+			<key>xpos</key>
+			<integer>480</integer>
+			<key>ypos</key>
+			<integer>440</integer>
 		</dict>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<dict>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>510</integer>
+			<integer>650</integer>
 		</dict>
 		<key>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</key>
 		<dict>
@@ -1356,21 +1446,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>190</integer>
 		</dict>
-		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
-		<dict>
-			<key>xpos</key>
-			<integer>40</integer>
-			<key>ypos</key>
-			<integer>300</integer>
-		</dict>
-		<key>A961741E-E065-4C7A-9D5B-6F59E283C2E0</key>
-		<dict>
-			<key>xpos</key>
-			<integer>810</integer>
-			<key>ypos</key>
-			<integer>440</integer>
-		</dict>
-		<key>AEFA51EF-3FC8-4FE7-80AE-44FB778C99B3</key>
+		<key>A6247385-940A-4F98-9623-AAF9B17FCB77</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>12</integer>
@@ -1379,7 +1455,28 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>960</integer>
 			<key>ypos</key>
-			<integer>440</integer>
+			<integer>530</integer>
+		</dict>
+		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
+		<dict>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>370</integer>
+		</dict>
+		<key>A961741E-E065-4C7A-9D5B-6F59E283C2E0</key>
+		<dict>
+			<key>xpos</key>
+			<integer>810</integer>
+			<key>ypos</key>
+			<integer>530</integer>
+		</dict>
+		<key>B27A0291-C9DA-421D-84DF-898D943502E8</key>
+		<dict>
+			<key>xpos</key>
+			<integer>420</integer>
+			<key>ypos</key>
+			<integer>470</integer>
 		</dict>
 		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
 		<dict>
@@ -1407,7 +1504,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>300</integer>
+			<integer>370</integer>
 		</dict>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<dict>
@@ -1423,7 +1520,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>510</integer>
+			<integer>650</integer>
 		</dict>
 		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
 		<dict>
@@ -1437,11 +1534,11 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>790</integer>
+			<integer>930</integer>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.3</string>
+	<string>2.4</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>

@@ -5,6 +5,7 @@ import sys
 import os
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
+
 def main():
 
     abs_path = os.environ['abs_path']
@@ -26,7 +27,7 @@ def main():
     try:
 
         reader = PdfFileReader(open(abs_path, 'rb'))
-        page_count =  reader.getNumPages()
+        page_count = reader.getNumPages()
         arg = [x.split('-') for x in args]
 
         for n in xrange(len(args)):
@@ -63,7 +64,7 @@ def main():
             if '-' in args[n]:
                 merger = PdfFileMerger()
                 reader = PdfFileReader(open(abs_path, 'rb'))
-                start = int(arg[n][0])-1
+                start = int(arg[n][0]) - 1
                 stop = int(arg[n][1])
 
                 if start == -1:
@@ -72,18 +73,18 @@ def main():
                 if start >= stop:
                     raise StartValueError('You cannot set a page range in reverse order.')
 
-                merger.append(reader, pages = (start, stop))
+                merger.append(reader, pages=(start, stop))
                 no_ext_path = os.path.splitext(abs_path)[0]
-                merger.write(no_ext_path + (' (part {}).pdf').format(n+1))
+                merger.write(no_ext_path + (' (part {}).pdf').format(n + 1))
 
             else:
                 merger = PdfFileMerger()
                 reader = PdfFileReader(open(abs_path, 'rb'))
-                start = int(args[n])-1
+                start = int(args[n]) - 1
                 stop = int(args[n])
-                merger.append(reader, pages = (start, stop))
+                merger.append(reader, pages=(start, stop))
                 no_ext_path = os.path.splitext(abs_path)[0]
-                merger.write(no_ext_path + (' (part {}).pdf').format(n+1))
+                merger.write(no_ext_path + (' (part {}).pdf').format(n + 1))
 
     except SyntaxError as err:
         print err
@@ -93,6 +94,7 @@ def main():
 
     except StartValueError as err:
         print err
+
 
 if __name__ == '__main__':
 

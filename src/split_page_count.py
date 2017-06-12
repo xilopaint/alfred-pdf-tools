@@ -6,6 +6,7 @@ import sys
 import os
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
+
 def main():
 
     abs_path = os.environ['abs_path']
@@ -42,7 +43,7 @@ def main():
                 merger = PdfFileMerger()
                 merger.append(inp_file, pages=(start, stop))
                 no_ext_path = os.path.splitext(abs_path)[0]
-                merger.write(no_ext_path + (' (part {}).pdf').format(i+1))
+                merger.write(no_ext_path + (' (part {}).pdf').format(i + 1))
                 start = stop
                 stop = start + page_count
 
@@ -52,7 +53,7 @@ def main():
                 merger = PdfFileMerger()
                 merger.append(inp_file, pages=(start, stop))
                 no_ext_path = os.path.splitext(abs_path)[0]
-                merger.write(no_ext_path + (' (part {}).pdf').format(i+1))
+                merger.write(no_ext_path + (' (part {}).pdf').format(i + 1))
                 if i != int(quotient) - 1:
                     start = stop
                     stop = start + page_count
@@ -68,6 +69,7 @@ def main():
 
     except ZeroDivisionError:
         print 'Zero is not a valid argument. Enter a positive integer instead.'
+
 
 if __name__ == '__main__':
 
