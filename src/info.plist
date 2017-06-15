@@ -252,6 +252,16 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>A961741E-E065-4C7A-9D5B-6F59E283C2E0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
 		</array>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<array>
@@ -1143,25 +1153,6 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string>Enter page numbers and/or page ranges for multiple slices (e.g. 2, 5-8).</string>
-				<key>text</key>
-				<string>Slice the selected PDF file</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>acceptsmulti</key>
 				<false/>
 				<key>filetypes</key>
@@ -1175,6 +1166,25 @@ fi #find</string>
 			<string>alfred.workflow.trigger.action</string>
 			<key>uid</key>
 			<string>E2104ACC-6C1D-407E-A787-182694534FBA</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string>Enter page numbers and/or page ranges for multiple slices (e.g. 2, 5-8).</string>
+				<key>text</key>
+				<string>Slice the selected PDF file</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1297,7 +1307,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>680</integer>
+			<integer>690</integer>
 		</dict>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
@@ -1306,7 +1316,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>860</integer>
+			<integer>870</integer>
 		</dict>
 		<key>1C706960-938F-4C14-899F-4A2675685FBB</key>
 		<dict>
@@ -1322,7 +1332,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>1000</integer>
+			<integer>1010</integer>
 		</dict>
 		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
 		<dict>
@@ -1338,35 +1348,35 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>720</integer>
+			<integer>730</integer>
 		</dict>
 		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>610</integer>
+			<integer>620</integer>
 		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>930</integer>
+			<integer>940</integer>
 		</dict>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>960</integer>
+			<integer>970</integer>
 		</dict>
 		<key>386F09B0-747D-4863-9471-935F5C064F8C</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>1030</integer>
+			<integer>1040</integer>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
@@ -1375,21 +1385,21 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>580</integer>
+			<integer>590</integer>
 		</dict>
 		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>890</integer>
+			<integer>900</integer>
 		</dict>
 		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
 		<dict>
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>750</integer>
+			<integer>760</integer>
 		</dict>
 		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
 		<dict>
@@ -1405,7 +1415,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>650</integer>
+			<integer>660</integer>
 		</dict>
 		<key>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</key>
 		<dict>
@@ -1520,7 +1530,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>650</integer>
+			<integer>660</integer>
 		</dict>
 		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
 		<dict>
@@ -1534,11 +1544,11 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>930</integer>
+			<integer>940</integer>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.4</string>
+	<string>2.4.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>
