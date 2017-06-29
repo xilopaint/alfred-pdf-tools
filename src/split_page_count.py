@@ -40,7 +40,7 @@ def main():
         if quotient.is_integer():
 
             for i in xrange(int(quotient)):
-                merger = PdfFileMerger()
+                merger = PdfFileMerger(strict=False)
                 merger.append(inp_file, pages=(start, stop))
                 no_ext_path = os.path.splitext(abs_path)[0]
                 merger.write(no_ext_path + (' (part {}).pdf').format(i + 1))
@@ -50,7 +50,7 @@ def main():
         else:
 
             for i in xrange(int(quotient) + 1):
-                merger = PdfFileMerger()
+                merger = PdfFileMerger(strict=False)
                 merger.append(inp_file, pages=(start, stop))
                 no_ext_path = os.path.splitext(abs_path)[0]
                 merger.write(no_ext_path + (' (part {}).pdf').format(i + 1))

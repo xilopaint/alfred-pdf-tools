@@ -1153,25 +1153,6 @@ fi #find</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<false/>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Slice</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>E2104ACC-6C1D-407E-A787-182694534FBA</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>subtext</key>
@@ -1185,6 +1166,25 @@ fi #find</string>
 			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
 			<string>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<false/>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Slice</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>E2104ACC-6C1D-407E-A787-182694534FBA</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1548,7 +1548,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.4.1</string>
+	<string>2.4.2</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint</string>
 </dict>

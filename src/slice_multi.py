@@ -62,7 +62,7 @@ def main():
         for n in xrange(len(args)):
 
             if '-' in args[n]:
-                merger = PdfFileMerger()
+                merger = PdfFileMerger(strict=False)
                 reader = PdfFileReader(open(abs_path, 'rb'))
                 start = int(arg[n][0]) - 1
                 stop = int(arg[n][1])
@@ -78,7 +78,7 @@ def main():
                 merger.write(no_ext_path + (' (part {}).pdf').format(n + 1))
 
             else:
-                merger = PdfFileMerger()
+                merger = PdfFileMerger(strict=False)
                 reader = PdfFileReader(open(abs_path, 'rb'))
                 start = int(args[n]) - 1
                 stop = int(args[n])

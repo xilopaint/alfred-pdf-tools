@@ -27,7 +27,7 @@ def main():
     try:
 
         reader = PdfFileReader(open(abs_path, 'rb'))
-        merger = PdfFileMerger()
+        merger = PdfFileMerger(strict=False)
         page_count = reader.getNumPages()
         arg = [x.split('-') for x in args]
 

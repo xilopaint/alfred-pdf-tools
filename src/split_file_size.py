@@ -23,7 +23,7 @@ def main():
         page_number = 0
 
         while start < num_pages:
-            merger = PdfFileMerger()
+            merger = PdfFileMerger(strict=False)
             merger.append(inp_file, pages=(start, stop))
             merger.write(no_ext_path)
             obj_path = no_ext_path
@@ -34,7 +34,7 @@ def main():
 
             if file_size < arg_file_size:
                 if stop == num_pages:
-                    merger = PdfFileMerger()
+                    merger = PdfFileMerger(strict=False)
                     merger.append(inp_file, pages=(start, stop))
                     merger.write(no_ext_path + (' (part {}).pdf').format(page_number + 1))
                     break
@@ -43,7 +43,7 @@ def main():
 
             else:
                 if num_pages_obj == 1:
-                    merger = PdfFileMerger()
+                    merger = PdfFileMerger(strict=False)
                     merger.append(inp_file, pages=(start, stop))
                     merger.write(no_ext_path + (' (part {}).pdf').format(page_number + 1))
                     start = stop
@@ -52,7 +52,7 @@ def main():
 
                 else:
                     stop = stop - 1
-                    merger = PdfFileMerger()
+                    merger = PdfFileMerger(strict=False)
                     merger.append(inp_file, pages=(start, stop))
                     merger.write(no_ext_path + (' (part {}).pdf').format(page_number + 1))
                     start = stop
