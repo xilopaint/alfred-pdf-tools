@@ -3,15 +3,16 @@
 
 import sys
 import os
-from subprocess import call, STDOUT
+from workflow import Workflow3
+from subprocess import Popen, PIPE
 
 
-def main():
+def main(wf):
 
     abs_path = os.environ['abs_path']
     query = os.environ['query']
-    files = abs_path.split('\t')
-    n = len(files)
+    f = abs_path.split('\t')
+    n = len(f)
 
     class AlfredPdfToolsError(Exception):
         pass
@@ -33,7 +34,18 @@ def main():
                 raise NegativeValueError('Negative integer is not a valid argument.')
 
         for i in xrange(n):
-            bash_cmd("echo -y | ./k2pdfopt -as -mode copy -dpi {} -o '%s (optimized).pdf' -x '{}'".format(query, files[i]))
+            command = "echo -y | ./k2pdfopt '{}' -as -mode copy -dpi {} -o '%s (optimized).pdf' -x".format(f[i], query)
+            proc = Popen(command, shell=True, stdout=PIPE)
+
+        while proc.poll() is None:
+            line = proc.stdout.readline()
+            if "Reading" in line:
+                page_count = line.split()
+                wf.cache_data('page_count', page_count[1])
+
+            if "SOURCE PAGE" in line:
+                page_number = line.split()
+                wf.cache_data('page_number', page_number[2])
 
         print "Optimization successfully completed."
 
@@ -44,12 +56,7 @@ def main():
         print err
 
 
-def bash_cmd(command):
+if __name__ == '__main__':
 
-    fnull = open(os.devnull, 'w')
-    call(command, shell=True, executable="/bin/bash", stdout=fnull, stderr=STDOUT)
-
-
-if __name__ == "__main__":
-
-    sys.exit(main())
+    wf = Workflow3()
+    sys.exit(wf.run(main))

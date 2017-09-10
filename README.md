@@ -14,7 +14,7 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 
 **Alfred PDF Tools** can be used by the following file actions:
 
-* `Optimize`: Optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening;
+* `Optimize`: Optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening. Invoke Alfred and type the keyword `progress` if you want to track the optimization process;
 * `Encrypt`: Encrypt the selected PDF files by entering a password;
 * `Merge`: Merge the selected PDF files. Use the `⌘` modifier key if you also want to move the source files to Trash;
 * `Split`: Split the selected PDF file either by page count or file size (use the `⌘` modifier key in the latter case);
