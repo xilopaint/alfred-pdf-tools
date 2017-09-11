@@ -29,7 +29,6 @@ def main(wf):
             wf.add_item(valid=True, title=title)
 
         else:
-            wf.rerun = 0
             progress = int(round((float(page_number) / float(page_count)) * 100))
             title = "Page {} of {} processed ({}% completed)".format(page_number, page_count, str(progress))
             wf.add_item(valid=True, title=title, icon='checkmark.png')
