@@ -3,7 +3,7 @@
 
 import sys
 import os
-from workflow import Workflow3
+from workflow import Workflow3, notify
 from subprocess import Popen, PIPE
 
 
@@ -26,12 +26,12 @@ def main(wf):
     try:
 
         if query:
-            if not query.lstrip("+-").isdigit():
-                raise NotIntegerError('The argument is not an integer.')
+            if not query.lstrip('+-').isdigit():
+                raise NotIntegerError
 
         if query:
             if int(query) < 0:
-                raise NegativeValueError('Negative integer is not a valid argument.')
+                raise NegativeValueError
 
         for i in xrange(n):
             command = "echo -y | ./k2pdfopt '{}' -as -mode copy -dpi {} -o '%s (optimized).pdf' -x".format(f[i], query)
@@ -47,13 +47,16 @@ def main(wf):
                     page_number = line.split()
                     wf.cache_data('page_number', page_number[2])
 
-        print "Optimization successfully completed."
+            notify.notify('Alfred PDF Tools',
+                          'Optimization successfully completed.')
 
-    except NotIntegerError as err:
-        print err
+    except NotIntegerError:
+        notify.notify('Alfred PDF Tools',
+                      'The argument is not an integer.')
 
-    except NegativeValueError as err:
-        print err
+    except NegativeValueError:
+        notify.notify('Alfred PDF Tools',
+                      'Negative integer is not a valid argument.')
 
 
 if __name__ == '__main__':

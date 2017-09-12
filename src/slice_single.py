@@ -3,10 +3,11 @@
 
 import sys
 import os
+from workflow import Workflow3, notify
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
 
-def main():
+def main(wf):
 
     abs_path = os.environ['abs_path']
     query = os.environ['query']
@@ -21,7 +22,10 @@ def main():
     class IndexError(AlfredPdfToolsError):
         pass
 
-    class StartValueError(AlfredPdfToolsError):
+    class StartValueZeroError(AlfredPdfToolsError):
+        pass
+
+    class StartValueReverseError(AlfredPdfToolsError):
         pass
 
     try:
@@ -37,7 +41,7 @@ def main():
                 pass
 
             else:
-                raise SyntaxError('The command syntax is invalid.')
+                raise SyntaxError
 
         for n in xrange(len(args)):
 
@@ -46,7 +50,7 @@ def main():
                 stop = int(arg[n][1])
 
                 if stop > page_count:
-                    raise IndexError('Page number out of range.')
+                    raise IndexError
 
                 else:
                     pass
@@ -55,7 +59,7 @@ def main():
 
                 stop = int(args[n])
                 if stop > page_count:
-                    raise IndexError('Page number out of range.')
+                    raise IndexError
 
                 else:
                     pass
@@ -68,10 +72,10 @@ def main():
                 stop = int(arg[n][1])
 
                 if start == -1:
-                    raise StartValueError('Page number cannot be zero.')
+                    raise StartValueZeroError
 
                 if start >= stop:
-                    raise StartValueError('You cannot set a page range in reverse order.')
+                    raise StartValueReverseError
 
                 merger.append(reader, pages=(start, stop))
 
@@ -84,16 +88,21 @@ def main():
         no_ext_path = os.path.splitext(abs_path)[0]
         merger.write(no_ext_path + ' (slice).pdf')
 
-    except SyntaxError as err:
-        print err
+    except SyntaxError:
+        notify.notify('Alfred PDF Tools', 'The command syntax is invalid.')
 
-    except IndexError as err:
-        print err
+    except IndexError:
+        notify.notify('Alfred PDF Tools', 'Page number out of range.')
 
-    except StartValueError as err:
-        print err
+    except StartValueZeroError:
+        notify.notify('Alfred PDF Tools', 'Page number cannot be zero.')
+
+    except StartValueReverseError:
+        notify.notify('Alfred PDF Tools',
+                      'You cannot set a page range in reverse order.')
 
 
 if __name__ == '__main__':
 
-    sys.exit(main())
+    wf = Workflow3()
+    sys.exit(wf.run(main))

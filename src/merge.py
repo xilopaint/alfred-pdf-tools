@@ -3,11 +3,12 @@
 
 import sys
 import os
+from workflow import Workflow3, notify
 import ntpath
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
 
-def main():
+def main(wf):
 
     abs_paths = os.environ['abs_paths']
     query = os.environ['query']
@@ -27,10 +28,10 @@ def main():
     try:
 
         if len(files) < 2:
-            raise SelectionError('You must select at least two PDF files to merge.')
+            raise SelectionError
 
         if not check_equal(paths):
-            raise MultiplePathsError('Cannot merge PDF files from multiple paths.')
+            raise MultiplePathsError
 
         for pdf in files:
             reader = PdfFileReader(open(pdf, 'rb'))
@@ -38,11 +39,13 @@ def main():
 
         merger.write(paths[0] + "/" + query + ".pdf")
 
-    except SelectionError as err:
-        print err
+    except SelectionError:
+        notify.notify('Alfred PDF Tools',
+                      'You must select at least two PDF files to merge.')
 
-    except MultiplePathsError as err:
-        print err
+    except MultiplePathsError:
+        notify.notify('Alfred PDF Tools',
+                      'Cannot merge PDF files from multiple paths.')
 
 
 def check_equal(paths):
@@ -56,6 +59,7 @@ def get_path(path):
     return head
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
-    sys.exit(main())
+    wf = Workflow3()
+    sys.exit(wf.run(main))

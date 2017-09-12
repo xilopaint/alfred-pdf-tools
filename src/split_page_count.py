@@ -4,10 +4,11 @@
 from __future__ import division
 import sys
 import os
+from workflow import Workflow3, notify
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
 
-def main():
+def main(wf):
 
     abs_path = os.environ['abs_path']
     query = os.environ['query']
@@ -24,10 +25,10 @@ def main():
     try:
 
         if not query.lstrip("+-").isdigit():
-            raise NotIntegerError('The argument is not an integer.')
+            raise NotIntegerError
 
         if int(query) < 0:
-            raise NegativeValueError('Negative integer is not a valid argument.')
+            raise NegativeValueError
 
         page_count = int(query)
         start = 0
@@ -61,11 +62,12 @@ def main():
                     start = int(quotient) * page_count
                     stop = num_pages
 
-    except NotIntegerError as err:
-        print err
+    except NotIntegerError:
+        notify.notify('Alfred PDF Tools', 'The argument is not an integer.')
 
-    except NegativeValueError as err:
-        print err
+    except NegativeValueError:
+        notify.notify('Alfred PDF Tools',
+                      'Negative integer is not a valid argument.')
 
     except ZeroDivisionError:
         print 'Zero is not a valid argument. Enter a positive integer instead.'
@@ -73,4 +75,5 @@ def main():
 
 if __name__ == '__main__':
 
-    sys.exit(main())
+    wf = Workflow3()
+    sys.exit(wf.run(main))

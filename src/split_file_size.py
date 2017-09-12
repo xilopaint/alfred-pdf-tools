@@ -3,10 +3,11 @@
 
 import sys
 import os
+from workflow import Workflow3, notify
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
 
-def main():
+def main(wf):
 
     abs_path = os.environ['abs_path']
     query = os.environ['query'].replace(',', '.')
@@ -60,9 +61,11 @@ def main():
                     page_number = page_number + 1
 
     except ValueError:
-        print 'The argument must be a positive numeric value.'
+        notify.notify('Alfred PDF Tools',
+                      'The argument must be a positive numeric value.')
 
 
 if __name__ == '__main__':
 
-    sys.exit(main())
+    wf = Workflow3()
+    sys.exit(wf.run(main))
