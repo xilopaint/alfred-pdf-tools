@@ -1,3 +1,5 @@
+![alt text](src/icon.png)
+
 # Alfred PDF Tools
 
 A workflow for [Alfred 3][1].
