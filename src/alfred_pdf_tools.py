@@ -12,6 +12,7 @@ Usage:
     alfred_pdf_tools.py optimize <query>
     alfred_pdf_tools.py progress
     alfred_pdf_tools.py encrypt <query>
+    alfred_pdf_tools.py decrypt <query>
     alfred_pdf_tools.py mrg <query>
     alfred_pdf_tools.py mrgtrash <query>
     alfred_pdf_tools.py splitcount <query>
@@ -23,6 +24,7 @@ Commands:
     optimize <query>      Optimize PDF files.
     progress              Track optimization progress.
     encrypt <query>       Encrypt PDF files.
+    decrypt <query>       Decrypt PDF files.
     mrg <query>           Merge PDF files.
     mrgtrash <query>      Merge PDF files and move them to trash.
     splitcount <query>    Split PDF file by page count.
@@ -30,13 +32,14 @@ Commands:
     slicemulti <query>    Multi-slice PDF files.
     slicesingle <query>   Single-slice PDF files.
 """
+
 from __future__ import division
 import sys
 import os
 from docopt import docopt
 from workflow import Workflow3, notify, ICON_WARNING
 from subprocess import Popen, PIPE
-from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter, PdfReadError
 from send2trash import send2trash
 
 
@@ -88,7 +91,7 @@ class StartValueReverseError(AlfredPdfToolsError):
     pass
 
 
-def optimize(query, n):
+def optimize(query, c):
     """Optimize PDF files."""
     try:
 
@@ -100,7 +103,7 @@ def optimize(query, n):
             if int(query) < 0:
                 raise NegativeValueError
 
-        for i in xrange(n):
+        for i in xrange(c):
             command = "echo -y | ./k2pdfopt '{}' -as -mode copy -dpi {} -o '%s (optimized).pdf' -x".format(f[i], query)
             proc = Popen(command, shell=True, stdout=PIPE)
 
@@ -162,35 +165,72 @@ def get_progress():
     return wf.send_feedback()
 
 
-def encrypt(query, abs_path):
+def encrypt(query, c):
     """Encrypt PDF files."""
     noextpath = [os.path.splitext(x) for x in f]
-    file_count = len(f)
 
-    for n in xrange(file_count):
+    for n in xrange(c):
 
         inp_file = open(f[n], 'rb')
         reader = PdfFileReader(inp_file, strict=False)
-        writer = PdfFileWriter()
 
-        for pg_no in range(reader.numPages):
-            writer.addPage(reader.getPage(pg_no))
+        if not reader.isEncrypted:
+            writer = PdfFileWriter()
 
-        writer.encrypt(query)
-        out_file = open(noextpath[n][0] + ' (encrypted).pdf', 'wb')
-        writer.write(out_file)
+            for pg_no in range(reader.numPages):
+                writer.addPage(reader.getPage(pg_no))
 
-    notify.notify('Alfred PDF Tools', 'Encryption successfully completed.')
+            writer.encrypt(query)
+            out_file = open(noextpath[n][0] + ' (encrypted).pdf', 'wb')
+            writer.write(out_file)
+            notify.notify('Alfred PDF Tools',
+                          'Encryption successfully completed.')
+        else:
+            notify.notify('Alfred PDF Tools',
+                          'The PDF file is already encrypted.')
 
 
-def merge(query, f, trash):
+def decrypt(query, c):
+    """Decrypt PDF files."""
+    noextpath = [os.path.splitext(x) for x in f]
+
+    try:
+
+        for n in xrange(c):
+
+            inp_file = open(f[n], 'rb')
+            reader = PdfFileReader(inp_file, strict=False)
+
+            if reader.isEncrypted:
+                reader.decrypt(query)
+                writer = PdfFileWriter()
+
+                for pg_no in range(reader.numPages):
+                    writer.addPage(reader.getPage(pg_no))
+
+                out_file = open(noextpath[n][0] + ' (decrypted).pdf', 'wb')
+                writer.write(out_file)
+
+                notify.notify('Alfred PDF Tools',
+                              'Decryption successfully completed.')
+
+            else:
+                notify.notify('Alfred PDF Tools',
+                              'The PDF file is not encrypted.')
+
+    except PdfReadError:
+        notify.notify('Alfred PDF Tools',
+                      'The entered password is not valid.')
+
+
+def merge(query, c, trash):
     """Merge PDF files."""
     paths = [os.path.split(path)[0] for path in f]
     merger = PdfFileMerger(strict=False)
 
     try:
 
-        if len(f) < 2:
+        if c < 2:
             raise SelectionError
 
         if not paths[1:] == paths[:-1]:
@@ -213,6 +253,10 @@ def merge(query, f, trash):
     except MultiplePathsError:
         notify.notify('Alfred PDF Tools',
                       'Cannot merge PDF files from multiple paths.')
+
+    except PdfReadError:
+        notify.notify('Alfred PDF Tools',
+                      'Merge action cannot handle an encrypted PDF file.')
 
 
 def split_count(query, abs_path):
@@ -266,6 +310,10 @@ def split_count(query, abs_path):
 
     except ZeroDivisionError:
         notify.notify('Zero is not a valid argument.')
+
+    except PdfReadError:
+        notify.notify('Alfred PDF Tools',
+                      'Split action cannot handle an encrypted PDF file.')
 
 
 def split_size(query, abs_path):
@@ -324,6 +372,10 @@ def split_size(query, abs_path):
     except ValueError:
         notify.notify('Alfred PDF Tools',
                       'The argument must be a positive numeric value.')
+
+    except PdfReadError:
+        notify.notify('Alfred PDF Tools',
+                      'Split action cannot handle an encrypted PDF file.')
 
 
 def slice_(query, abs_path, single):
@@ -431,6 +483,10 @@ def slice_(query, abs_path, single):
         notify.notify('Alfred PDF Tools',
                       'You cannot set a page range in reverse order.')
 
+    except PdfReadError:
+        notify.notify('Alfred PDF Tools',
+                      'Slice action cannot handle an encrypted PDF file.')
+
 
 def main(wf):
     """Run workflow."""
@@ -441,22 +497,25 @@ def main(wf):
     query = os.environ['query']
     abs_path = os.environ['abs_path']
     f = abs_path.split('\t')
-    n = len(f)
+    c = len(f)
 
     if args.get('optimize'):
-        optimize(query, n)
+        optimize(query, c)
 
     elif args.get('progress'):
         get_progress()
 
     elif args.get('encrypt'):
-        encrypt(query, abs_path)
+        encrypt(query, c)
+
+    elif args.get('decrypt'):
+        decrypt(query, c)
 
     elif args.get('mrg'):
-        merge(query, f, False)
+        merge(query, c, False)
 
     elif args.get('mrgtrash'):
-        merge(query, f, True)
+        merge(query, c, True)
 
     elif args.get('splitcount'):
         split_count(query, abs_path)
@@ -478,5 +537,6 @@ def main(wf):
 
 
 if __name__ == '__main__':
+
     wf = Workflow3(update_settings=UPDATE_SETTINGS)
     sys.exit(wf.run(main))

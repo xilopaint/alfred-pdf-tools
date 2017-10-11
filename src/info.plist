@@ -21,6 +21,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>06552DE1-94A4-4A71-8CB8-BDE51B933214</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>E472A751-60C0-4A98-84F6-E800BC2C8B6F</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<array/>
 		<key>1C706960-938F-4C14-899F-4A2675685FBB</key>
@@ -97,6 +110,19 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>3A448260-0669-4ADF-938D-50B4076A152A</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>AA6B54AF-4B81-4DA1-85D2-C766121A6094</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -205,6 +231,19 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>49850373-29CA-4A8D-AFF0-0BD2336ECF48</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>6BEF424F-661B-4ABC-8F61-11B74B510A81</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>06552DE1-94A4-4A71-8CB8-BDE51B933214</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -413,6 +452,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>E472A751-60C0-4A98-84F6-E800BC2C8B6F</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>3A448260-0669-4ADF-938D-50B4076A152A</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Arthur Pinheiro</string>
@@ -455,7 +507,7 @@
 				<key>subtext</key>
 				<string></string>
 				<key>text</key>
-				<string>Enter a resolution in dpi (e.g., 150).</string>
+				<string>Enter a resolution in dpi (e.g. 100) or just ↩ for 150 dpi.</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -664,6 +716,103 @@ python alfred_pdf_tools.py progress</string>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>C015C8BB-BE92-422F-B681-AC857DEABAC1</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<true/>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Decrypt</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>6BEF424F-661B-4ABC-8F61-11B74B510A81</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>subtext</key>
+				<string></string>
+				<key>text</key>
+				<string>Enter the password or just ↩ if not password protected.</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>E472A751-60C0-4A98-84F6-E800BC2C8B6F</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python alfred_pdf_tools.py decrypt "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string>encrypt.py</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>AA6B54AF-4B81-4DA1-85D2-C766121A6094</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>query</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>3A448260-0669-4ADF-938D-50B4076A152A</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>abs_path</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>06552DE1-94A4-4A71-8CB8-BDE51B933214</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1253,6 +1402,15 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>20</integer>
 		</dict>
+		<key>06552DE1-94A4-4A71-8CB8-BDE51B933214</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>3</integer>
+			<key>xpos</key>
+			<integer>190</integer>
+			<key>ypos</key>
+			<integer>430</integer>
+		</dict>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
 			<key>colorindex</key>
@@ -1262,7 +1420,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>970</integer>
+			<integer>1110</integer>
 		</dict>
 		<key>1C706960-938F-4C14-899F-4A2675685FBB</key>
 		<dict>
@@ -1282,7 +1440,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>1110</integer>
+			<integer>1250</integer>
 		</dict>
 		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
 		<dict>
@@ -1291,7 +1449,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>500</integer>
+			<integer>640</integer>
 		</dict>
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<dict>
@@ -1302,7 +1460,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>830</integer>
+			<integer>970</integer>
 		</dict>
 		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
 		<dict>
@@ -1311,7 +1469,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>720</integer>
+			<integer>860</integer>
 		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
@@ -1320,7 +1478,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>970</integer>
+			<integer>1110</integer>
 		</dict>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
@@ -1329,7 +1487,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>1000</integer>
+			<integer>1140</integer>
 		</dict>
 		<key>386F09B0-747D-4863-9471-935F5C064F8C</key>
 		<dict>
@@ -1338,7 +1496,16 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>1140</integer>
+			<integer>1280</integer>
+		</dict>
+		<key>3A448260-0669-4ADF-938D-50B4076A152A</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>3</integer>
+			<key>xpos</key>
+			<integer>410</integer>
+			<key>ypos</key>
+			<integer>430</integer>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
@@ -1349,7 +1516,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>690</integer>
+			<integer>830</integer>
 		</dict>
 		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
 		<dict>
@@ -1358,7 +1525,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>1000</integer>
+			<integer>1140</integer>
 		</dict>
 		<key>42722AC6-72A3-4622-B814-ED41C982708F</key>
 		<dict>
@@ -1367,7 +1534,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>860</integer>
+			<integer>1000</integer>
 		</dict>
 		<key>49850373-29CA-4A8D-AFF0-0BD2336ECF48</key>
 		<dict>
@@ -1376,7 +1543,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>1110</integer>
+			<integer>1250</integer>
 		</dict>
 		<key>5357A0C2-9D29-4B99-AF5E-89D679CA7534</key>
 		<dict>
@@ -1385,7 +1552,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>1110</integer>
+			<integer>1250</integer>
 		</dict>
 		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
 		<dict>
@@ -1394,7 +1561,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>860</integer>
+			<integer>1000</integer>
 		</dict>
 		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
 		<dict>
@@ -1405,7 +1572,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>540</integer>
+			<integer>680</integer>
 		</dict>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<dict>
@@ -1414,7 +1581,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>830</integer>
+			<integer>970</integer>
 		</dict>
 		<key>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</key>
 		<dict>
@@ -1432,7 +1599,16 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>1140</integer>
+			<integer>1280</integer>
+		</dict>
+		<key>6BEF424F-661B-4ABC-8F61-11B74B510A81</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>3</integer>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>400</integer>
 		</dict>
 		<key>6FDFC63C-AF80-4ECA-9C00-9C778D158009</key>
 		<dict>
@@ -1481,7 +1657,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>690</integer>
+			<integer>830</integer>
 		</dict>
 		<key>92E0C5E5-35E4-4521-BAE0-B9BD9EA493CC</key>
 		<dict>
@@ -1490,7 +1666,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>830</integer>
+			<integer>970</integer>
 		</dict>
 		<key>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</key>
 		<dict>
@@ -1508,7 +1684,18 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>470</integer>
+			<integer>610</integer>
+		</dict>
+		<key>AA6B54AF-4B81-4DA1-85D2-C766121A6094</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>3</integer>
+			<key>note</key>
+			<string>Decrypt</string>
+			<key>xpos</key>
+			<integer>480</integer>
+			<key>ypos</key>
+			<integer>400</integer>
 		</dict>
 		<key>AF48E08D-4D41-4835-B7D2-FD131E6D7E23</key>
 		<dict>
@@ -1517,7 +1704,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
-			<integer>720</integer>
+			<integer>860</integer>
 		</dict>
 		<key>B27A0291-C9DA-421D-84DF-898D943502E8</key>
 		<dict>
@@ -1526,7 +1713,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>570</integer>
+			<integer>710</integer>
 		</dict>
 		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
 		<dict>
@@ -1535,7 +1722,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>420</integer>
 			<key>ypos</key>
-			<integer>430</integer>
+			<integer>570</integer>
 		</dict>
 		<key>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</key>
 		<dict>
@@ -1562,7 +1749,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>470</integer>
+			<integer>610</integer>
 		</dict>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<dict>
@@ -1573,7 +1760,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>480</integer>
 			<key>ypos</key>
-			<integer>400</integer>
+			<integer>540</integer>
 		</dict>
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<dict>
@@ -1582,7 +1769,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
-			<integer>690</integer>
+			<integer>830</integer>
 		</dict>
 		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
 		<dict>
@@ -1600,12 +1787,21 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
-			<integer>970</integer>
+			<integer>1110</integer>
+		</dict>
+		<key>E472A751-60C0-4A98-84F6-E800BC2C8B6F</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>3</integer>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>400</integer>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.7</string>
+	<string>2.8</string>
 	<key>webaddress</key>
-	<string>https://github.com/xilopaint</string>
+	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>
 </plist>
