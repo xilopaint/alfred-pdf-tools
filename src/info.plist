@@ -12,7 +12,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>D4484868-27E4-45A9-8D6C-637B522C67BA</string>
+				<string>6FDFC63C-AF80-4ECA-9C00-9C778D158009</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -66,24 +66,11 @@
 		</array>
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<array/>
-		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</string>
+				<string>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -105,47 +92,8 @@
 				<false/>
 			</dict>
 		</array>
-		<key>386F09B0-747D-4863-9471-935F5C064F8C</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>3A448260-0669-4ADF-938D-50B4076A152A</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>AA6B54AF-4B81-4DA1-85D2-C766121A6094</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<array/>
-		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>42722AC6-72A3-4622-B814-ED41C982708F</key>
 		<array>
 			<dict>
@@ -163,7 +111,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>386F09B0-747D-4863-9471-935F5C064F8C</string>
+				<string>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -177,19 +125,6 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>69C74723-599D-4F65-B216-94A022C75630</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>264B67E5-5011-4DA7-8AF3-4175185C5C81</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -288,7 +223,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</string>
+				<string>264B67E5-5011-4DA7-8AF3-4175185C5C81</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -336,46 +271,7 @@
 				<false/>
 			</dict>
 		</array>
-		<key>B27A0291-C9DA-421D-84DF-898D943502E8</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>576B0800-54DF-4371-8890-B0F77231DE58</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>C015C8BB-BE92-422F-B681-AC857DEABAC1</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>C015C8BB-BE92-422F-B681-AC857DEABAC1</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
@@ -392,7 +288,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>B4CE4528-F602-48C2-BFB3-71BA78933B1E</string>
+				<string>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -402,7 +298,7 @@
 			</dict>
 			<dict>
 				<key>destinationuid</key>
-				<string>B27A0291-C9DA-421D-84DF-898D943502E8</string>
+				<string>576B0800-54DF-4371-8890-B0F77231DE58</string>
 				<key>modifiers</key>
 				<integer>1048576</integer>
 				<key>modifiersubtext</key>
@@ -417,20 +313,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>2AAFDEB2-9F81-418F-B5D6-479D577D6454</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>6FDFC63C-AF80-4ECA-9C00-9C778D158009</string>
+				<string>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -456,7 +339,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>3A448260-0669-4ADF-938D-50B4076A152A</string>
+				<string>AA6B54AF-4B81-4DA1-85D2-C766121A6094</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -486,7 +369,7 @@
 				<key>script</key>
 				<string>python alfred_pdf_tools.py optimize "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string>optimize.py</string>
 				<key>type</key>
@@ -558,24 +441,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>D4484868-27E4-45A9-8D6C-637B522C67BA</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>alfredfiltersresults</key>
 				<false/>
 				<key>alfredfiltersresultsmatchmode</key>
@@ -600,8 +465,8 @@
 				<string></string>
 				<key>script</key>
 				<string>export abs_path=""
-export query=""
-python alfred_pdf_tools.py progress</string>
+N=$(n + 1)
+python alfred_pdf_tools.py progress "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -670,7 +535,7 @@ python alfred_pdf_tools.py progress</string>
 				<key>script</key>
 				<string>python alfred_pdf_tools.py encrypt "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string>encrypt.py</string>
 				<key>type</key>
@@ -698,24 +563,6 @@ python alfred_pdf_tools.py progress</string>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>C015C8BB-BE92-422F-B681-AC857DEABAC1</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -767,7 +614,7 @@ python alfred_pdf_tools.py progress</string>
 				<key>script</key>
 				<string>python alfred_pdf_tools.py decrypt "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string>encrypt.py</string>
 				<key>type</key>
@@ -779,24 +626,6 @@ python alfred_pdf_tools.py progress</string>
 			<string>AA6B54AF-4B81-4DA1-85D2-C766121A6094</string>
 			<key>version</key>
 			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>3A448260-0669-4ADF-938D-50B4076A152A</string>
-			<key>version</key>
-			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -826,7 +655,7 @@ python alfred_pdf_tools.py progress</string>
 				<key>script</key>
 				<string>python alfred_pdf_tools.py mrg "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string>merge.py</string>
 				<key>type</key>
@@ -838,24 +667,6 @@ python alfred_pdf_tools.py progress</string>
 			<string>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</string>
 			<key>version</key>
 			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>B4CE4528-F602-48C2-BFB3-71BA78933B1E</string>
-			<key>version</key>
-			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -923,7 +734,7 @@ python alfred_pdf_tools.py progress</string>
 				<key>script</key>
 				<string>python alfred_pdf_tools.py mrgtrash "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string>merge_trash.py</string>
 				<key>type</key>
@@ -939,24 +750,6 @@ python alfred_pdf_tools.py progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>B27A0291-C9DA-421D-84DF-898D943502E8</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -964,7 +757,7 @@ python alfred_pdf_tools.py progress</string>
 				<key>script</key>
 				<string>python alfred_pdf_tools.py splitcount "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string>split_page_count.py</string>
 				<key>type</key>
@@ -1036,24 +829,6 @@ python alfred_pdf_tools.py progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>2AAFDEB2-9F81-418F-B5D6-479D577D6454</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>subtext</key>
@@ -1099,7 +874,7 @@ python alfred_pdf_tools.py progress</string>
 				<key>script</key>
 				<string>python alfred_pdf_tools.py splitsize "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string>split_file_size.py</string>
 				<key>type</key>
@@ -1127,24 +902,6 @@ python alfred_pdf_tools.py progress</string>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>42722AC6-72A3-4622-B814-ED41C982708F</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1230,24 +987,6 @@ python alfred_pdf_tools.py progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -1255,7 +994,7 @@ python alfred_pdf_tools.py progress</string>
 				<key>script</key>
 				<string>python alfred_pdf_tools.py slicesingle "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string>slice_single.py</string>
 				<key>type</key>
@@ -1313,24 +1052,6 @@ python alfred_pdf_tools.py progress</string>
 				<string></string>
 				<key>variables</key>
 				<dict>
-					<key>query</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>386F09B0-747D-4863-9471-935F5C064F8C</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>variables</key>
-				<dict>
 					<key>abs_path</key>
 					<string>{query}</string>
 				</dict>
@@ -1362,6 +1083,7 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 
 * `Optimize`: Optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening. Invoke Alfred and type the keyword `progress` if you want to track the optimization process;
 * `Encrypt`: Encrypt the selected PDF files by entering a password;
+* `Decrypt`: Decrypt the selected PDF files by entering their password or just `↩` if they're not password protected;
 * `Merge`: Merge the selected PDF files. Use the `⌘` modifier key if you also want to move the source files to Trash;
 * `Split by Page Count`: Split the selected PDF file by page count.
 * `Split by File Size`: Split the selected PDF file by file size.
@@ -1462,15 +1184,6 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>970</integer>
 		</dict>
-		<key>2AAFDEB2-9F81-418F-B5D6-479D577D6454</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>4</integer>
-			<key>xpos</key>
-			<integer>420</integer>
-			<key>ypos</key>
-			<integer>860</integer>
-		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
 			<key>colorindex</key>
@@ -1489,24 +1202,6 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>1140</integer>
 		</dict>
-		<key>386F09B0-747D-4863-9471-935F5C064F8C</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>2</integer>
-			<key>xpos</key>
-			<integer>420</integer>
-			<key>ypos</key>
-			<integer>1280</integer>
-		</dict>
-		<key>3A448260-0669-4ADF-938D-50B4076A152A</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>3</integer>
-			<key>xpos</key>
-			<integer>410</integer>
-			<key>ypos</key>
-			<integer>430</integer>
-		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
 			<key>colorindex</key>
@@ -1517,15 +1212,6 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<integer>480</integer>
 			<key>ypos</key>
 			<integer>830</integer>
-		</dict>
-		<key>3DF69321-93E6-4FC8-98F3-2BA07D475BBF</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>2</integer>
-			<key>xpos</key>
-			<integer>420</integer>
-			<key>ypos</key>
-			<integer>1140</integer>
 		</dict>
 		<key>42722AC6-72A3-4622-B814-ED41C982708F</key>
 		<dict>
@@ -1553,15 +1239,6 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<integer>40</integer>
 			<key>ypos</key>
 			<integer>1250</integer>
-		</dict>
-		<key>54A1957A-7C58-490D-9E1F-CE716CDFEEC8</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>4</integer>
-			<key>xpos</key>
-			<integer>420</integer>
-			<key>ypos</key>
-			<integer>1000</integer>
 		</dict>
 		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
 		<dict>
@@ -1706,24 +1383,6 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>860</integer>
 		</dict>
-		<key>B27A0291-C9DA-421D-84DF-898D943502E8</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>10</integer>
-			<key>xpos</key>
-			<integer>420</integer>
-			<key>ypos</key>
-			<integer>710</integer>
-		</dict>
-		<key>B4CE4528-F602-48C2-BFB3-71BA78933B1E</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>10</integer>
-			<key>xpos</key>
-			<integer>420</integer>
-			<key>ypos</key>
-			<integer>570</integer>
-		</dict>
 		<key>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</key>
 		<dict>
 			<key>colorindex</key>
@@ -1732,15 +1391,6 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<integer>260</integer>
 			<key>ypos</key>
 			<integer>260</integer>
-		</dict>
-		<key>C015C8BB-BE92-422F-B681-AC857DEABAC1</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>3</integer>
-			<key>xpos</key>
-			<integer>420</integer>
-			<key>ypos</key>
-			<integer>290</integer>
 		</dict>
 		<key>CEBD82BA-6268-426D-9BFE-62BCD4C27471</key>
 		<dict>
@@ -1771,15 +1421,6 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>830</integer>
 		</dict>
-		<key>D4484868-27E4-45A9-8D6C-637B522C67BA</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>8</integer>
-			<key>xpos</key>
-			<integer>420</integer>
-			<key>ypos</key>
-			<integer>50</integer>
-		</dict>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<dict>
 			<key>colorindex</key>
@@ -1800,7 +1441,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.8</string>
+	<string>2.9</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>

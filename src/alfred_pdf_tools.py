@@ -10,7 +10,7 @@ Optimize, encrypt and manipulate PDF files.
 
 Usage:
     alfred_pdf_tools.py optimize <query>
-    alfred_pdf_tools.py progress
+    alfred_pdf_tools.py progress <query>
     alfred_pdf_tools.py encrypt <query>
     alfred_pdf_tools.py decrypt <query>
     alfred_pdf_tools.py mrg <query>
@@ -22,7 +22,7 @@ Usage:
 
 Commands:
     optimize <query>      Optimize PDF files.
-    progress              Track optimization progress.
+    progress <query>      Track optimization progress.
     encrypt <query>       Encrypt PDF files.
     decrypt <query>       Decrypt PDF files.
     mrg <query>           Merge PDF files.
@@ -91,10 +91,9 @@ class StartValueReverseError(AlfredPdfToolsError):
     pass
 
 
-def optimize(query, c):
+def optimize(query, f, c):
     """Optimize PDF files."""
     try:
-
         if query:
             if not query.lstrip('+-').isdigit():
                 raise NotIntegerError
@@ -109,6 +108,7 @@ def optimize(query, c):
 
             while proc.poll() is None:
                 line = proc.stdout.readline()
+
                 if "Reading" in line:
                     pg_cnt = line.split()
                     wf.cache_data('page_count', pg_cnt[1])
@@ -136,17 +136,23 @@ def get_progress():
 
     wf.rerun = 1
 
-    if not pg_no:
+    try:
+        n = int(os.environ['n'])
 
+    except KeyError:
+        n = 0
+
+    if not pg_no:
         if wf.cached_data_age('page_count') < 10:
             title = "Reading the PDF file..."
-            wf.add_item(valid=True, title=title)
+            subtitle = progress_bar(n)
+            wf.add_item(valid=True, title=title, subtitle=subtitle)
+
         else:
             title = "Optimize action is not running."
             wf.add_item(valid=True, title=title, icon=ICON_WARNING)
 
     else:
-
         prog_int = int(round((float(pg_no) / float(pg_cnt)) * 100))
         prog = str(prog_int)
 
@@ -154,7 +160,8 @@ def get_progress():
             title = "Page {} of {} processed ({}% completed)".format(pg_no,
                                                                      pg_cnt,
                                                                      prog)
-            wf.add_item(valid=True, title=title)
+            subtitle = progress_bar(n)
+            wf.add_item(valid=True, title=title, subtitle=subtitle)
 
         else:
             title = "Page {} of {} processed ({}% completed)".format(pg_no,
@@ -162,15 +169,26 @@ def get_progress():
                                                                      prog)
             wf.add_item(valid=True, title=title, icon='checkmark.png')
 
-    return wf.send_feedback()
+    n += 1
+
+    wf.setvar('n', n)
+
+    wf.send_feedback()
 
 
-def encrypt(query, c):
+def progress_bar(n):
+    """Generate progress bar."""
+    bar = [u'\u25CB'] * 5
+    i = n % 5
+    bar[i] = u'\u25CF'
+    return u''.join(bar)
+
+
+def encrypt(query, f, c):
     """Encrypt PDF files."""
     noextpath = [os.path.splitext(x) for x in f]
 
     for n in xrange(c):
-
         inp_file = open(f[n], 'rb')
         reader = PdfFileReader(inp_file, strict=False)
 
@@ -190,14 +208,12 @@ def encrypt(query, c):
                           'The PDF file is already encrypted.')
 
 
-def decrypt(query, c):
+def decrypt(query, f, c):
     """Decrypt PDF files."""
     noextpath = [os.path.splitext(x) for x in f]
 
     try:
-
         for n in xrange(c):
-
             inp_file = open(f[n], 'rb')
             reader = PdfFileReader(inp_file, strict=False)
 
@@ -210,7 +226,6 @@ def decrypt(query, c):
 
                 out_file = open(noextpath[n][0] + ' (decrypted).pdf', 'wb')
                 writer.write(out_file)
-
                 notify.notify('Alfred PDF Tools',
                               'Decryption successfully completed.')
 
@@ -223,13 +238,12 @@ def decrypt(query, c):
                       'The entered password is not valid.')
 
 
-def merge(query, c, trash):
+def merge(query, f, c, trash):
     """Merge PDF files."""
     paths = [os.path.split(path)[0] for path in f]
     merger = PdfFileMerger(strict=False)
 
     try:
-
         if c < 2:
             raise SelectionError
 
@@ -262,7 +276,6 @@ def merge(query, c, trash):
 def split_count(query, abs_path):
     """Split PDF file by page count"""
     try:
-
         if not query.lstrip("+-").isdigit():
             raise NotIntegerError
 
@@ -278,7 +291,6 @@ def split_count(query, abs_path):
         quotient = num_pages / page_count
 
         if quotient.is_integer():
-
             for i in xrange(int(quotient)):
                 merger = PdfFileMerger(strict=False)
                 merger.append(inp_file, pages=(start, stop))
@@ -288,7 +300,6 @@ def split_count(query, abs_path):
                 stop = start + page_count
 
         else:
-
             for i in xrange(int(quotient) + 1):
                 merger = PdfFileMerger(strict=False)
                 merger.append(inp_file, pages=(start, stop))
@@ -319,7 +330,6 @@ def split_count(query, abs_path):
 def split_size(query, abs_path):
     """Split PDF file by file size."""
     try:
-
         arg_file_size = float(query) * 1000000
         noextpath = os.path.splitext(abs_path)[0]
         inp_file = open(abs_path, 'rb')
@@ -381,7 +391,6 @@ def split_size(query, abs_path):
 def slice_(query, abs_path, single):
     """Slice PDF files."""
     try:
-
         pages = [x.strip() for x in query.split(',')]
         page = [x.split('-') for x in pages]
         inp_file = open(abs_path, 'rb')
@@ -389,7 +398,6 @@ def slice_(query, abs_path, single):
         pg_cnt = reader.getNumPages()
 
         for n in xrange(len(pages)):
-
             if pages[n].replace('-', '').isdigit():
                 pass
 
@@ -397,7 +405,6 @@ def slice_(query, abs_path, single):
                 raise SyntaxError
 
         for n in xrange(len(pages)):
-
             if "-" in pages[n]:
                 stop = int(page[n][1])
                 if stop > pg_cnt:
@@ -415,13 +422,11 @@ def slice_(query, abs_path, single):
         noextpath = os.path.splitext(abs_path)[0]
 
         if single:
-
             merger = PdfFileMerger(strict=False)
             inp_file = open(abs_path, 'rb')
             reader = PdfFileReader(inp_file)
 
             for n in xrange(len(pages)):
-
                 if "-" in pages[n]:
                     start = int(page[n][0]) - 1
                     stop = int(page[n][1])
@@ -435,7 +440,6 @@ def slice_(query, abs_path, single):
                     merger.append(reader, pages=(start, stop))
 
                 else:
-
                     start = int(pages[n]) - 1
                     stop = int(pages[n])
                     merger.append(reader, pages=(start, stop))
@@ -443,9 +447,7 @@ def slice_(query, abs_path, single):
             merger.write(noextpath + ' (slice).pdf')
 
         else:
-
             for n in xrange(len(pages)):
-
                 if "-" in pages[n]:
                     merger = PdfFileMerger(strict=False)
                     inp_file = open(abs_path, 'rb')
@@ -490,32 +492,30 @@ def slice_(query, abs_path, single):
 
 def main(wf):
     """Run workflow."""
-    global f
-
     args = docopt(__doc__, wf.args)
-
-    query = os.environ['query']
+    query = wf.args[1].encode('utf-8')
     abs_path = os.environ['abs_path']
     f = abs_path.split('\t')
     c = len(f)
+    print query
 
     if args.get('optimize'):
-        optimize(query, c)
+        optimize(query, f, c)
 
     elif args.get('progress'):
         get_progress()
 
     elif args.get('encrypt'):
-        encrypt(query, c)
+        encrypt(query, f, c)
 
     elif args.get('decrypt'):
-        decrypt(query, c)
+        decrypt(query, f, c)
 
     elif args.get('mrg'):
-        merge(query, c, False)
+        merge(query, f, c, False)
 
     elif args.get('mrgtrash'):
-        merge(query, c, True)
+        merge(query, f, c, True)
 
     elif args.get('splitcount'):
         split_count(query, abs_path)
@@ -526,7 +526,7 @@ def main(wf):
     elif args.get('slicemulti'):
         slice_(query, abs_path, False)
 
-    else:
+    elif args.get('slicesingle'):
         slice_(query, abs_path, True)
 
     if wf.update_available:
@@ -537,6 +537,5 @@ def main(wf):
 
 
 if __name__ == '__main__':
-
     wf = Workflow3(update_settings=UPDATE_SETTINGS)
     sys.exit(wf.run(main))
