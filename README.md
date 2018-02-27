@@ -24,6 +24,7 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 * `Split by File Size`: Split the selected PDF file by file size.
 * `Slice in Multiple Files`: Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
 * `Slice in a Single File`: Slice the selected PDF file in a single file by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
+* `Crop`: Convert two-column pages in single pages.
 
 ## Contribute
 
@@ -31,7 +32,7 @@ To report a bug or request a feature, please [create an issue][3] or [submit a p
 
 ## Credits
 
-This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, Inc.][6], [Alfred-Workflow][7] library by Dean Jackson, [K2pdfopt][8] by Johannes Buchnerand, [Send2Trash][9] by Virgil Dupras and [docopt][10].
+This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, Inc.][6], [Alfred-Workflow][7] library by Dean Jackson, [K2pdfopt][8] by Johannes Buchnerand, [Send2Trash][9] by Virgil Dupras and [docopt][10]. The code for the `Crop` file action  was mostly created by Matt Gumbley (Stack Overflow) and changed by Hanspeter Schmid to deal with already cropped pages.
 
 ## License
 

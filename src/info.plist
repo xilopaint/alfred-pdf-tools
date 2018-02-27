@@ -133,6 +133,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>552BB866-EA02-4906-87A1-9C6265305BD3</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>BC33847E-333E-4CCB-A37B-8346C6E24ED1</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
 		<array/>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
@@ -191,6 +204,19 @@
 		<array/>
 		<key>79C0A050-CA6C-4B0F-B567-3EA24D625B98</key>
 		<array/>
+		<key>820BE1DD-B58C-4745-8429-4572451D931D</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>552BB866-EA02-4906-87A1-9C6265305BD3</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>8AF0A682-F978-4C78-B309-50EB5813CDC2</key>
 		<array/>
 		<key>8C94D95D-1805-46BC-91D1-29027BFD475E</key>
@@ -1063,9 +1089,71 @@ python alfred_pdf_tools.py progress "{query}"</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<false/>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Crop</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>820BE1DD-B58C-4745-8429-4572451D931D</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python alfred_pdf_tools.py crop "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string>slice_single.py</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>BC33847E-333E-4CCB-A37B-8346C6E24ED1</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>abs_path</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>552BB866-EA02-4906-87A1-9C6265305BD3</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
-	<string># Alfred PDF Tools
+	<string>![alt text](src/icon.png)
+
+# Alfred PDF Tools
 
 A workflow for [Alfred 3][1].
 
@@ -1089,6 +1177,7 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 * `Split by File Size`: Split the selected PDF file by file size.
 * `Slice in Multiple Files`: Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
 * `Slice in a Single File`: Slice the selected PDF file in a single file by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
+* `Crop`: Convert two-column pages in single pages.
 
 ## Contribute
 
@@ -1096,7 +1185,7 @@ To report a bug or request a feature, please [create an issue][3] or [submit a p
 
 ## Credits
 
-This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, Inc.][6], [Alfred-Workflow][7] library by Dean Jackson, [K2pdfopt][8] by Johannes Buchnerand, [Send2Trash][9] by Virgil Dupras and [docopt][10].
+This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, Inc.][6], [Alfred-Workflow][7] library by Dean Jackson, [K2pdfopt][8] by Johannes Buchnerand, [Send2Trash][9] by Virgil Dupras and [docopt][10]. The code for the `Crop` file action  was mostly created by Matt Gumbley (Stack Overflow) and changed by Hanspeter Schmid to deal with already cropped pages.
 
 ## License
 
@@ -1136,7 +1225,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>2</integer>
+			<integer>4</integer>
 			<key>note</key>
 			<string>Multi-Slice</string>
 			<key>xpos</key>
@@ -1156,7 +1245,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>2</integer>
+			<integer>4</integer>
 			<key>note</key>
 			<string>Single-Slice</string>
 			<key>xpos</key>
@@ -1176,7 +1265,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>note</key>
 			<string>Split by File Size</string>
 			<key>xpos</key>
@@ -1187,7 +1276,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>2</integer>
+			<integer>4</integer>
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
@@ -1196,7 +1285,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>2</integer>
+			<integer>4</integer>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
@@ -1205,7 +1294,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>note</key>
 			<string>Split by Page Count</string>
 			<key>xpos</key>
@@ -1216,7 +1305,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>42722AC6-72A3-4622-B814-ED41C982708F</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
@@ -1225,7 +1314,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>49850373-29CA-4A8D-AFF0-0BD2336ECF48</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>2</integer>
+			<integer>4</integer>
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
@@ -1234,11 +1323,20 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>5357A0C2-9D29-4B99-AF5E-89D679CA7534</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>2</integer>
+			<integer>4</integer>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
 			<integer>1250</integer>
+		</dict>
+		<key>552BB866-EA02-4906-87A1-9C6265305BD3</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>12</integer>
+			<key>xpos</key>
+			<integer>190</integer>
+			<key>ypos</key>
+			<integer>1420</integer>
 		</dict>
 		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
 		<dict>
@@ -1254,7 +1352,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
@@ -1272,7 +1370,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>69C74723-599D-4F65-B216-94A022C75630</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>2</integer>
+			<integer>4</integer>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
@@ -1309,6 +1407,15 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>260</integer>
 		</dict>
+		<key>820BE1DD-B58C-4745-8429-4572451D931D</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>12</integer>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>1390</integer>
+		</dict>
 		<key>8AF0A682-F978-4C78-B309-50EB5813CDC2</key>
 		<dict>
 			<key>colorindex</key>
@@ -1330,7 +1437,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>91D78E37-51F7-43B9-B831-D41856B0B7A6</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
@@ -1339,7 +1446,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>92E0C5E5-35E4-4521-BAE0-B9BD9EA493CC</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
@@ -1377,7 +1484,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>AF48E08D-4D41-4835-B7D2-FD131E6D7E23</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>xpos</key>
 			<integer>190</integer>
 			<key>ypos</key>
@@ -1391,6 +1498,17 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<integer>260</integer>
 			<key>ypos</key>
 			<integer>260</integer>
+		</dict>
+		<key>BC33847E-333E-4CCB-A37B-8346C6E24ED1</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>12</integer>
+			<key>note</key>
+			<string>Crop</string>
+			<key>xpos</key>
+			<integer>480</integer>
+			<key>ypos</key>
+			<integer>1390</integer>
 		</dict>
 		<key>CEBD82BA-6268-426D-9BFE-62BCD4C27471</key>
 		<dict>
@@ -1415,7 +1533,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>xpos</key>
 			<integer>260</integer>
 			<key>ypos</key>
@@ -1424,7 +1542,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<dict>
 			<key>colorindex</key>
-			<integer>2</integer>
+			<integer>4</integer>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
@@ -1441,7 +1559,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.9</string>
+	<string>2.10</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>
