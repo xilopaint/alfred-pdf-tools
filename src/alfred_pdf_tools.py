@@ -199,7 +199,7 @@ def encrypt(query, f, c):
         if not reader.isEncrypted:
             writer = PdfFileWriter()
 
-            for pg_no in range(reader.numPages):
+            for pg_no in xrange(reader.numPages):
                 writer.addPage(reader.getPage(pg_no))
 
             writer.encrypt(query)
@@ -227,7 +227,7 @@ def decrypt(query, f, c):
                 reader.decrypt(query)
                 writer = PdfFileWriter()
 
-                for pg_no in range(reader.numPages):
+                for pg_no in xrange(reader.numPages):
                     writer.addPage(reader.getPage(pg_no))
 
                 out_file = open(noextpath[n][0] + ' (decrypted).pdf', 'wb')
@@ -284,7 +284,7 @@ def merge(query, f, c, should_trash):
                       'Merge action cannot handle an encrypted PDF file.')
 
 
-def split_count(query, abs_path):
+def split_count(query, abs_path, tag):
     """Split PDF file by page count"""
     try:
         if not query.lstrip('+-').isdigit():
@@ -301,7 +301,7 @@ def split_count(query, abs_path):
 
         writer = PdfFileWriter()
 
-        for pg_no in range(reader.numPages):
+        for pg_no in xrange(reader.numPages):
             writer.addPage(reader.getPage(pg_no))
 
         tmpdir = os.environ['TMPDIR']
@@ -322,7 +322,7 @@ def split_count(query, abs_path):
                 merger = PdfFileMerger(strict=False)
                 merger.append(inp_file, pages=(start, stop))
                 noextpath = os.path.splitext(abs_path)[0]
-                merger.write('{} (part {}).pdf'.format(noextpath, i + 1))
+                merger.write('{} ({} {}).pdf'.format(noextpath, tag, i + 1))
                 start = stop
                 stop = start + page_count
 
@@ -331,7 +331,7 @@ def split_count(query, abs_path):
                 merger = PdfFileMerger(strict=False)
                 merger.append(inp_file, pages=(start, stop))
                 noextpath = os.path.splitext(abs_path)[0]
-                merger.write('{} (part {}).pdf'.format(noextpath, i + 1))
+                merger.write('{} ({} {}).pdf'.format(noextpath, tag, i + 1))
 
                 if i != int(quotient) - 1:
                     start = stop
@@ -357,7 +357,7 @@ def split_count(query, abs_path):
                       'Split action cannot handle an encrypted PDF file.')
 
 
-def split_size(query, abs_path):
+def split_size(query, abs_path, tag):
     """Split PDF file by file size."""
     try:
         arg_file_size = float(query) * 1000000
@@ -367,7 +367,7 @@ def split_size(query, abs_path):
 
         writer = PdfFileWriter()
 
-        for pg_no in range(reader.numPages):
+        for pg_no in xrange(reader.numPages):
             writer.addPage(reader.getPage(pg_no))
 
         tmpdir = os.environ['TMPDIR']
@@ -396,8 +396,9 @@ def split_size(query, abs_path):
                 if stop == pg_cnt:
                     merger = PdfFileMerger(strict=False)
                     merger.append(inp_file, pages=(start, stop))
-                    merger.write('{} (part {}).pdf'.format(noextpath,
-                                                           pg_no + 1))
+                    merger.write('{} ({} {}).pdf'.format(noextpath,
+                                                         tag,
+                                                         pg_no + 1))
                     break
                 else:
                     stop += 1
@@ -406,8 +407,9 @@ def split_size(query, abs_path):
                 if num_pages == 1:
                     merger = PdfFileMerger(strict=False)
                     merger.append(inp_file, pages=(start, stop))
-                    merger.write('{} (part {}).pdf'.format(noextpath,
-                                                           pg_no + 1))
+                    merger.write('{} ({} {}).pdf'.format(noextpath,
+                                                         tag,
+                                                         pg_no + 1))
                     start = stop
                     stop += 1
                     pg_no += 1
@@ -416,8 +418,9 @@ def split_size(query, abs_path):
                     stop -= 1
                     merger = PdfFileMerger(strict=False)
                     merger.append(inp_file, pages=(start, stop))
-                    merger.write('{} (part {}).pdf'.format(noextpath,
-                                                           pg_no + 1))
+                    merger.write('{} ({} {}).pdf'.format(noextpath,
+                                                         tag,
+                                                         pg_no + 1))
                     start = stop
                     stop += 1
                     pg_no += 1
@@ -433,7 +436,7 @@ def split_size(query, abs_path):
                       'Split action cannot handle an encrypted PDF file.')
 
 
-def slice_(query, abs_path, single):
+def slice_(query, abs_path, single, tag):
     """Slice PDF files."""
     try:
         pages = [x.strip() for x in query.split(',')]
@@ -443,7 +446,7 @@ def slice_(query, abs_path, single):
 
         writer = PdfFileWriter()
 
-        for pg_no in range(reader.numPages):
+        for pg_no in xrange(reader.numPages):
             writer.addPage(reader.getPage(pg_no))
 
         tmpdir = os.environ['TMPDIR']
@@ -518,14 +521,16 @@ def slice_(query, abs_path, single):
                         raise StartValueReverseError
 
                     merger.append(reader, pages=(start, stop))
-                    merger.write(noextpath + (' (part {}).pdf').format(i + 1))
+                    merger.write(noextpath + (' ({} {}).pdf').format(tag,
+                                                                     i + 1))
 
                 else:
                     merger = PdfFileMerger(strict=False)
                     start = int(pages[i]) - 1
                     stop = int(pages[i])
                     merger.append(reader, pages=(start, stop))
-                    merger.write(noextpath + (' (part {}).pdf').format(i + 1))
+                    merger.write(noextpath + (' ({} {}).pdf').format(tag,
+                                                                     i + 1))
 
         inp_file.close()
 
@@ -557,7 +562,7 @@ def crop(abs_path):
     out_file = open(noextpath + ' (cropped).pdf', 'wb')
     writer = PdfFileWriter()
 
-    for i in range(reader.getNumPages()):
+    for i in xrange(reader.getNumPages()):
         # Make two copies of the input page.
         pp = reader.getPage(i)
         p = copy.copy(pp)
@@ -612,7 +617,7 @@ def main(wf):
     abs_path = os.environ['abs_path']
     f = abs_path.split('\t')
     c = len(f)
-    print query
+    tag = os.environ['tag']
 
     if args.get('optimize'):
         optimize(query, f, c)
@@ -633,16 +638,16 @@ def main(wf):
         merge(query, f, c, True)
 
     elif args.get('splitcount'):
-        split_count(query, abs_path)
+        split_count(query, abs_path, tag)
 
     elif args.get('splitsize'):
-        split_size(query, abs_path)
+        split_size(query, abs_path, tag)
 
     elif args.get('slicemulti'):
-        slice_(query, abs_path, False)
+        slice_(query, abs_path, False, tag)
 
     elif args.get('slicesingle'):
-        slice_(query, abs_path, True)
+        slice_(query, abs_path, True, tag)
 
     elif args.get('crop'):
         crop(abs_path)
