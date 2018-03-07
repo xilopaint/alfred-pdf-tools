@@ -7,32 +7,32 @@
 
 """
 Usage:
-    alfred_pdf_tools.py optimize <query>
-    alfred_pdf_tools.py progress <query>
-    alfred_pdf_tools.py encrypt <query>
-    alfred_pdf_tools.py decrypt <query>
-    alfred_pdf_tools.py mrg <query>
-    alfred_pdf_tools.py mrgtrash <query>
-    alfred_pdf_tools.py splitcount <query>
-    alfred_pdf_tools.py splitsize <query>
-    alfred_pdf_tools.py slicemulti <query>
-    alfred_pdf_tools.py slicesingle <query>
-    alfred_pdf_tools.py crop <query>
+    alfred_pdf_tools.py --optimize <query>
+    alfred_pdf_tools.py [--progress <query>]
+    alfred_pdf_tools.py --encrypt <query>
+    alfred_pdf_tools.py --decrypt <query>
+    alfred_pdf_tools.py --mrg <query>
+    alfred_pdf_tools.py --mrgtrash <query>
+    alfred_pdf_tools.py --splitcount <query>
+    alfred_pdf_tools.py --splitsize <query>
+    alfred_pdf_tools.py --slicemulti <query>
+    alfred_pdf_tools.py --slicesingle <query>
+    alfred_pdf_tools.py --crop <query>
 
 Optimize, encrypt and manipulate PDF files.
 
-Commands:
-    optimize <query>      Optimize PDF files.
-    progress <query>      Track optimization progress.
-    encrypt <query>       Encrypt PDF files.
-    decrypt <query>       Decrypt PDF files.
-    mrg <query>           Merge PDF files.
-    mrgtrash <query>      Merge PDF files and move them to trash.
-    splitcount <query>    Split PDF file by page count.
-    splitsize <query>     Split PDF file by file size.
-    slicemulti <query>    Multi-slice PDF files.
-    slicesingle <query>   Single-slice PDF files.
-    crop <query>          Crop two-column pages.
+Options:
+    [--optimize <query>]    Optimize PDF files.
+    --progress              Track optimization progress.
+    --encrypt <query>       Encrypt PDF files.
+    --decrypt <query>       Decrypt PDF files.
+    --mrg <query>           Merge PDF files.
+    --mrgtrash <query>      Merge PDF files and move them to trash.
+    --splitcount <query>    Split PDF file by page count.
+    --splitsize <query>     Split PDF file by file size.
+    --slicemulti <query>    Multi-slice PDF files.
+    --slicesingle <query>   Single-slice PDF files.
+    --crop                  Crop two-column pages.
 """
 
 from __future__ import division
@@ -43,6 +43,7 @@ from workflow import Workflow3, notify, ICON_WARNING
 from subprocess import Popen, PIPE
 from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter, PdfReadError
 from send2trash import send2trash
+import tempfile
 import copy
 import math
 
@@ -284,7 +285,7 @@ def merge(query, f, c, should_trash):
                       'Merge action cannot handle an encrypted PDF file.')
 
 
-def split_count(query, abs_path, tag):
+def split_count(query, abs_path, suffix):
     """Split PDF file by page count"""
     try:
         if not query.lstrip('+-').isdigit():
@@ -293,51 +294,47 @@ def split_count(query, abs_path, tag):
         if int(query) < 0:
             raise NegativeValueError
 
-        page_count = int(query)
+        pg_cnt = int(query)
         start = 0
-        stop = page_count
-        inp_file = open(abs_path, 'rb')
-        reader = PdfFileReader(inp_file)
+        stop = pg_cnt
+        orig_file = open(abs_path, 'rb')
+        reader = PdfFileReader(orig_file)
 
         writer = PdfFileWriter()
 
-        for pg_no in xrange(reader.numPages):
-            writer.addPage(reader.getPage(pg_no))
+        for i in xrange(reader.numPages):
+            writer.addPage(reader.getPage(i))
 
-        tmpdir = os.environ['TMPDIR']
-
-        with open(tmpdir + '/apt.tmp', 'wb') as temp_file:
-            writer.removeLinks()
-            writer.write(temp_file)
-
-        inp_file = open(tmpdir + '/apt.tmp', 'rb')
-
+        tmp_file = tempfile.NamedTemporaryFile()
+        inp_file = open(tmp_file.name, 'r+b')
+        writer.removeLinks()
+        writer.write(inp_file)
+        orig_file.close()
         reader = PdfFileReader(inp_file)
-
         num_pages = int(reader.getNumPages())
-        quotient = num_pages / page_count
+        quotient = num_pages / pg_cnt
 
         if quotient.is_integer():
             for i in xrange(int(quotient)):
                 merger = PdfFileMerger(strict=False)
                 merger.append(inp_file, pages=(start, stop))
                 noextpath = os.path.splitext(abs_path)[0]
-                merger.write('{} ({} {}).pdf'.format(noextpath, tag, i + 1))
+                merger.write('{} ({} {}).pdf'.format(noextpath, suffix, i + 1))
                 start = stop
-                stop = start + page_count
+                stop = start + pg_cnt
 
         else:
             for i in xrange(int(quotient) + 1):
                 merger = PdfFileMerger(strict=False)
                 merger.append(inp_file, pages=(start, stop))
                 noextpath = os.path.splitext(abs_path)[0]
-                merger.write('{} ({} {}).pdf'.format(noextpath, tag, i + 1))
+                merger.write('{} ({} {}).pdf'.format(noextpath, suffix, i + 1))
 
                 if i != int(quotient) - 1:
                     start = stop
-                    stop = start + page_count
+                    stop = start + pg_cnt
                 else:
-                    start = int(quotient) * page_count
+                    start = int(quotient) * pg_cnt
                     stop = num_pages
 
         inp_file.close()
@@ -350,66 +347,82 @@ def split_count(query, abs_path, tag):
                       'Negative integer is not a valid argument.')
 
     except ZeroDivisionError:
-        notify.notify('Zero is not a valid argument.')
+        notify.notify('Alfred PDF Tools', 'Zero is not a valid argument.')
 
     except PdfReadError:
         notify.notify('Alfred PDF Tools',
                       'Split action cannot handle an encrypted PDF file.')
 
 
-def split_size(query, abs_path, tag):
+def split_size(query, abs_path, suffix):
     """Split PDF file by file size."""
     try:
-        arg_file_size = float(query) * 1000000
+        if int(query) < 0:
+            raise ValueError
+
+        max_part_size = float(query) * 1000000
         noextpath = os.path.splitext(abs_path)[0]
         inp_file = open(abs_path, 'rb')
         reader = PdfFileReader(inp_file)
+        pg_cnt = reader.numPages
 
         writer = PdfFileWriter()
 
-        for pg_no in xrange(reader.numPages):
-            writer.addPage(reader.getPage(pg_no))
+        pg_sizes = []
 
-        tmpdir = os.environ['TMPDIR']
+        for i in xrange(pg_cnt):
+            writer = PdfFileWriter()
+            writer.addPage(reader.getPage(i))
+            tmp_file = tempfile.NamedTemporaryFile()
 
-        with open(tmpdir + '/apt.tmp', 'wb') as temp_file:
-            writer.removeLinks()
-            writer.write(temp_file)
+            with open(tmp_file.name, 'wb') as f:
+                writer.removeLinks()
+                writer.write(f)
+                file_size = os.path.getsize(tmp_file.name)
+                pg_sizes.append(file_size)
 
-        inp_file = open(tmpdir + '/apt.tmp', 'rb')
-        reader = PdfFileReader(inp_file)
+        inp_file_size = os.path.getsize(abs_path)
+        sum_pg_sizes = sum(pg_sizes)
+        dividend = min(inp_file_size, sum_pg_sizes)
+        divisor = max(inp_file_size, sum_pg_sizes)
+        quotient = dividend / divisor
 
-        pg_cnt = int(reader.getNumPages())
         start = 0
         stop = 1
         pg_no = 0
 
         while start < pg_cnt:
-            merger = PdfFileMerger(strict=False)
-            merger.append(inp_file, pages=(start, stop))
-            merger.write(noextpath)
-            num_pages = int(reader.getNumPages())
-            file_size = os.path.getsize(noextpath)
-            os.remove(noextpath)
+            out_file = '{} ({} {}).pdf'.format(noextpath, suffix, pg_no + 1)
 
-            if file_size < arg_file_size:
-                if stop == pg_cnt:
-                    merger = PdfFileMerger(strict=False)
-                    merger.append(inp_file, pages=(start, stop))
-                    merger.write('{} ({} {}).pdf'.format(noextpath,
-                                                         tag,
-                                                         pg_no + 1))
-                    break
-                else:
-                    stop += 1
+            if quotient > 0.95:
+                part = pg_sizes[start:stop]
+                part_size = sum(part)
+                part_pg_cnt = len(part)
 
             else:
-                if num_pages == 1:
+                merger = PdfFileMerger(strict=False)
+                merger.append(inp_file, pages=(start, stop))
+                merger.write(noextpath)
+                reader = PdfFileReader(open(noextpath, 'rb'))
+                part_pg_cnt = int(reader.getNumPages())
+                part_size = os.path.getsize(noextpath)
+                os.remove(noextpath)
+
+            if part_size < max_part_size:
+                if stop != pg_cnt:
+                    stop += 1
+
+                else:  # Break the loop once the last part is written.
                     merger = PdfFileMerger(strict=False)
                     merger.append(inp_file, pages=(start, stop))
-                    merger.write('{} ({} {}).pdf'.format(noextpath,
-                                                         tag,
-                                                         pg_no + 1))
+                    merger.write(out_file)
+                    break
+
+            else:
+                if part_pg_cnt == 1:
+                    merger = PdfFileMerger(strict=False)
+                    merger.append(inp_file, pages=(start, stop))
+                    merger.write(out_file)
                     start = stop
                     stop += 1
                     pg_no += 1
@@ -418,9 +431,7 @@ def split_size(query, abs_path, tag):
                     stop -= 1
                     merger = PdfFileMerger(strict=False)
                     merger.append(inp_file, pages=(start, stop))
-                    merger.write('{} ({} {}).pdf'.format(noextpath,
-                                                         tag,
-                                                         pg_no + 1))
+                    merger.write(out_file)
                     start = stop
                     stop += 1
                     pg_no += 1
@@ -436,26 +447,24 @@ def split_size(query, abs_path, tag):
                       'Split action cannot handle an encrypted PDF file.')
 
 
-def slice_(query, abs_path, single, tag):
+def slice_(query, abs_path, single, suffix):
     """Slice PDF files."""
     try:
         pages = [x.strip() for x in query.split(',')]
         page = [x.split('-') for x in pages]
-        inp_file = open(abs_path, 'rb')
-        reader = PdfFileReader(inp_file)
+        orig_file = open(abs_path, 'rb')
+        reader = PdfFileReader(orig_file)
 
         writer = PdfFileWriter()
 
-        for pg_no in xrange(reader.numPages):
-            writer.addPage(reader.getPage(pg_no))
+        for i in xrange(reader.numPages):
+            writer.addPage(reader.getPage(i))
 
-        tmpdir = os.environ['TMPDIR']
-
-        with open(tmpdir + '/apt.tmp', 'wb') as tempf:
-            writer.removeLinks()
-            writer.write(tempf)
-
-        inp_file = open(tmpdir + '/apt.tmp', 'rb')
+        tmp_file = tempfile.NamedTemporaryFile()
+        inp_file = open(tmp_file.name, 'r+b')
+        writer.removeLinks()
+        writer.write(inp_file)
+        orig_file.close()
         reader = PdfFileReader(inp_file)
 
         pg_cnt = reader.getNumPages()
@@ -521,7 +530,7 @@ def slice_(query, abs_path, single, tag):
                         raise StartValueReverseError
 
                     merger.append(reader, pages=(start, stop))
-                    merger.write(noextpath + (' ({} {}).pdf').format(tag,
+                    merger.write(noextpath + (' ({} {}).pdf').format(suffix,
                                                                      i + 1))
 
                 else:
@@ -529,7 +538,7 @@ def slice_(query, abs_path, single, tag):
                     start = int(pages[i]) - 1
                     stop = int(pages[i])
                     merger.append(reader, pages=(start, stop))
-                    merger.write(noextpath + (' ({} {}).pdf').format(tag,
+                    merger.write(noextpath + (' ({} {}).pdf').format(suffix,
                                                                      i + 1))
 
         inp_file.close()
@@ -612,44 +621,44 @@ def crop(abs_path):
 
 def main(wf):
     """Run workflow."""
-    args = docopt(__doc__, wf.args)
+    args = docopt(__doc__)
     query = wf.args[1].encode('utf-8')
     abs_path = os.environ['abs_path']
     f = abs_path.split('\t')
     c = len(f)
-    tag = os.environ['tag']
+    suffix = os.environ['suffix']
 
-    if args.get('optimize'):
+    if args.get('--optimize'):
         optimize(query, f, c)
 
-    elif args.get('progress'):
+    elif args.get('--progress'):
         get_progress()
 
-    elif args.get('encrypt'):
+    elif args.get('--encrypt'):
         encrypt(query, f, c)
 
-    elif args.get('decrypt'):
+    elif args.get('--decrypt'):
         decrypt(query, f, c)
 
-    elif args.get('mrg'):
+    elif args.get('--mrg'):
         merge(query, f, c, False)
 
-    elif args.get('mrgtrash'):
+    elif args.get('--mrgtrash'):
         merge(query, f, c, True)
 
-    elif args.get('splitcount'):
-        split_count(query, abs_path, tag)
+    elif args.get('--splitcount'):
+        split_count(query, abs_path, suffix)
 
-    elif args.get('splitsize'):
-        split_size(query, abs_path, tag)
+    elif args.get('--splitsize'):
+        split_size(query, abs_path, suffix)
 
-    elif args.get('slicemulti'):
-        slice_(query, abs_path, False, tag)
+    elif args.get('--slicemulti'):
+        slice_(query, abs_path, False, suffix)
 
-    elif args.get('slicesingle'):
-        slice_(query, abs_path, True, tag)
+    elif args.get('--slicesingle'):
+        slice_(query, abs_path, True, suffix)
 
-    elif args.get('crop'):
+    elif args.get('--crop'):
         crop(abs_path)
 
     if wf.update_available:

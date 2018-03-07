@@ -393,7 +393,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py optimize "{query}"</string>
+				<string>python alfred_pdf_tools.py --optimize "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -492,7 +492,7 @@
 				<key>script</key>
 				<string>export abs_path=""
 N=$(n + 1)
-python alfred_pdf_tools.py progress "{query}"</string>
+python alfred_pdf_tools.py --progress "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -559,7 +559,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py encrypt "{query}"</string>
+				<string>python alfred_pdf_tools.py --encrypt "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -638,7 +638,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py decrypt "{query}"</string>
+				<string>python alfred_pdf_tools.py --decrypt "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -679,7 +679,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py mrg "{query}"</string>
+				<string>python alfred_pdf_tools.py --mrg "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -758,7 +758,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py mrgtrash "{query}"</string>
+				<string>python alfred_pdf_tools.py --mrgtrash "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -781,7 +781,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py splitcount "{query}"</string>
+				<string>python alfred_pdf_tools.py --splitcount "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -898,7 +898,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py splitsize "{query}"</string>
+				<string>python alfred_pdf_tools.py --splitsize "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -939,7 +939,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py slicemulti "{query}"</string>
+				<string>python alfred_pdf_tools.py --slicemulti "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1018,7 +1018,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py slicesingle "{query}"</string>
+				<string>python alfred_pdf_tools.py --slicesingle "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1116,7 +1116,7 @@ python alfred_pdf_tools.py progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py crop "{query}"</string>
+				<string>python alfred_pdf_tools.py --crop "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1558,11 +1558,11 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 	</dict>
 	<key>variables</key>
 	<dict>
-		<key>tag</key>
+		<key>suffix</key>
 		<string>part</string>
 	</dict>
 	<key>version</key>
-	<string>2.11</string>
+	<string>2.12</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>
