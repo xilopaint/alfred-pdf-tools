@@ -92,6 +92,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>39C10607-DDD5-4570-A341-62E929B139A3</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>D22080C6-09B9-404B-95A0-574ECE1E10F5</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<array/>
 		<key>42722AC6-72A3-4622-B814-ED41C982708F</key>
@@ -258,6 +271,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>943A590E-F14A-43F8-839C-0D6F07453AE7</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</key>
 		<array>
 			<dict>
@@ -297,6 +323,8 @@
 				<false/>
 			</dict>
 		</array>
+		<key>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</key>
+		<array/>
 		<key>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</key>
 		<array>
 			<dict>
@@ -335,6 +363,19 @@
 		</array>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<array/>
+		<key>D22080C6-09B9-404B-95A0-574ECE1E10F5</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>943A590E-F14A-43F8-839C-0D6F07453AE7</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<array>
 			<dict>
@@ -1093,7 +1134,7 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 			<key>config</key>
 			<dict>
 				<key>acceptsmulti</key>
-				<false/>
+				<true/>
 				<key>filetypes</key>
 				<array>
 					<string>com.adobe.pdf</string>
@@ -1149,6 +1190,91 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<true/>
+				<key>filetypes</key>
+				<array/>
+				<key>name</key>
+				<string>Scale</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>39C10607-DDD5-4570-A341-62E929B139A3</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>fixedorder</key>
+				<false/>
+				<key>items</key>
+				<string>[{"title":"A4","arg":"8.3x11.7"},{"title":"A5","arg":"5.8x8.3"},{"title":"Letter","arg":"8.5x11"},{"title":"Government-Letter","arg":"8x10.5"},{"title":"Legal","arg":"8.5x14"}]</string>
+				<key>runningsubtext</key>
+				<string></string>
+				<key>subtext</key>
+				<string></string>
+				<key>title</key>
+				<string></string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.listfilter</string>
+			<key>uid</key>
+			<string>943A590E-F14A-43F8-839C-0D6F07453AE7</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python alfred_pdf_tools.py --scale "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>variables</key>
+				<dict>
+					<key>abs_path</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>D22080C6-09B9-404B-95A0-574ECE1E10F5</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string># Alfred PDF Tools
@@ -1176,6 +1302,7 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 * `Slice in Multiple Files`: Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
 * `Slice in a Single File`: Slice the selected PDF file in a single file by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
 * `Crop`: Convert two-column pages in single pages.
+* `Scale`: Scale the selected PDF files to a given paper size.
 
 ## Contribute
 
@@ -1288,6 +1415,15 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<integer>190</integer>
 			<key>ypos</key>
 			<integer>1140</integer>
+		</dict>
+		<key>39C10607-DDD5-4570-A341-62E929B139A3</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>10</integer>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>1530</integer>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
@@ -1450,6 +1586,15 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>970</integer>
 		</dict>
+		<key>943A590E-F14A-43F8-839C-0D6F07453AE7</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>10</integer>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>1530</integer>
+		</dict>
 		<key>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</key>
 		<dict>
 			<key>colorindex</key>
@@ -1487,6 +1632,17 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<integer>190</integer>
 			<key>ypos</key>
 			<integer>860</integer>
+		</dict>
+		<key>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>10</integer>
+			<key>note</key>
+			<string>Scale</string>
+			<key>xpos</key>
+			<integer>480</integer>
+			<key>ypos</key>
+			<integer>1530</integer>
 		</dict>
 		<key>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</key>
 		<dict>
@@ -1528,6 +1684,15 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>540</integer>
 		</dict>
+		<key>D22080C6-09B9-404B-95A0-574ECE1E10F5</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>10</integer>
+			<key>xpos</key>
+			<integer>190</integer>
+			<key>ypos</key>
+			<integer>1560</integer>
+		</dict>
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<dict>
 			<key>colorindex</key>
@@ -1562,7 +1727,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 		<string>part</string>
 	</dict>
 	<key>version</key>
-	<string>2.12.1</string>
+	<string>2.13</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>

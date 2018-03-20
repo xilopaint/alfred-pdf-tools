@@ -8,7 +8,7 @@
 """
 Usage:
     alfred_pdf_tools.py --optimize <query>
-    alfred_pdf_tools.py [--progress <query>]
+    alfred_pdf_tools.py --progress <query>
     alfred_pdf_tools.py --encrypt <query>
     alfred_pdf_tools.py --decrypt <query>
     alfred_pdf_tools.py --mrg <query>
@@ -18,6 +18,7 @@ Usage:
     alfred_pdf_tools.py --slicemulti <query>
     alfred_pdf_tools.py --slicesingle <query>
     alfred_pdf_tools.py --crop <query>
+    alfred_pdf_tools.py --scale <query>
 
 Optimize, encrypt and manipulate PDF files.
 
@@ -33,6 +34,7 @@ Options:
     --slicemulti <query>    Multi-slice PDF files.
     --slicesingle <query>   Single-slice PDF files.
     --crop                  Crop two-column pages.
+    --scale <query>         Scale PDF files to a given page size.
 """
 
 from __future__ import division
@@ -42,10 +44,11 @@ from docopt import docopt
 from workflow import Workflow3, notify, ICON_WARNING
 from subprocess import Popen, PIPE
 from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter, PdfReadError
+from PyPDF2.pdf import PageObject
 from send2trash import send2trash
 import tempfile
-import copy
-import math
+from copy import copy
+from math import floor
 
 
 UPDATE_SETTINGS = {'github_slug': 'xilopaint/alfred-pdf-tools'}
@@ -196,7 +199,6 @@ def progress_bar(n):
 
 def encrypt(query, pdfs):
     """Encrypt PDF files."""
-
     for pdf in pdfs:
         reader = PdfFileReader(pdf, strict=False)
 
@@ -207,9 +209,12 @@ def encrypt(query, pdfs):
                 writer.addPage(reader.getPage(i))
 
             writer.encrypt(query)
-            noextpath = os.path.splitext(pdf)
-            out_file = open(noextpath[0] + ' (encrypted).pdf', 'wb')
-            writer.write(out_file)
+            noextpath = os.path.splitext(pdf)[0]
+            out_file = "{} (encrypted).pdf".format(noextpath)
+
+            with open(out_file, 'wb') as f:
+                writer.write(f)
+
             notify.notify('Alfred PDF Tools',
                           'Encryption successfully completed.')
         else:
@@ -230,10 +235,11 @@ def decrypt(query, pdfs):
                 for i in xrange(reader.numPages):
                     writer.addPage(reader.getPage(i))
 
-                noextpath = os.path.splitext(pdf)
+                noextpath = os.path.splitext(pdf)[0]
+                out_file = "{} (decrypted).pdf".format(noextpath)
 
-                with open(noextpath[0] + ' (decrypted).pdf', 'wb') as out_file:
-                    writer.write(out_file)
+                with open(out_file, 'wb') as f:
+                    writer.write(f)
 
                 notify.notify('Alfred PDF Tools',
                               'Decryption successfully completed.')
@@ -318,7 +324,7 @@ def split_count(query, abs_path, suffix):
         writer.removeLinks()
         writer.write(tmp_file)
         reader = PdfFileReader(tmp_file)
-        num_pages = int(reader.getNumPages())
+        num_pages = int(reader.numPages)
         quotient = num_pages / pg_cnt
 
         if quotient.is_integer():
@@ -326,7 +332,8 @@ def split_count(query, abs_path, suffix):
                 merger = PdfFileMerger(strict=False)
                 merger.append(tmp_file, pages=(start, stop))
                 noextpath = os.path.splitext(abs_path)[0]
-                merger.write('{} ({} {}).pdf'.format(noextpath, suffix, i + 1))
+                out_file = "{} ({} {}).pdf".format(noextpath, suffix, i + 1)
+                merger.write(out_file)
                 start = stop
                 stop = start + pg_cnt
 
@@ -335,7 +342,8 @@ def split_count(query, abs_path, suffix):
                 merger = PdfFileMerger(strict=False)
                 merger.append(tmp_file, pages=(start, stop))
                 noextpath = os.path.splitext(abs_path)[0]
-                merger.write('{} ({} {}).pdf'.format(noextpath, suffix, i + 1))
+                out_file = "{} ({} {}).pdf".format(noextpath, suffix, i + 1)
+                merger.write(out_file)
 
                 if i != int(quotient) - 1:
                     start = stop
@@ -368,31 +376,37 @@ def split_count(query, abs_path, suffix):
 def split_size(query, abs_path, suffix):
     """Split PDF file by file size."""
     try:
-        if int(query) < 0:
+        if float(query) < 0:
             raise ValueError
 
         max_part_size = float(query) * 1000000
         noextpath = os.path.splitext(abs_path)[0]
-        reader = PdfFileReader(abs_path)
+        reader = PdfFileReader(abs_path, strict=False)
         pg_cnt = reader.numPages
 
         if reader.isEncrypted:
             raise FileEncryptedError
-
-        writer = PdfFileWriter()
 
         pg_sizes = []
 
         for i in xrange(pg_cnt):
             writer = PdfFileWriter()
             writer.addPage(reader.getPage(i))
+            writer.removeLinks()
             tmp_file = tempfile.NamedTemporaryFile()
+            writer.write(tmp_file)
+            file_size = os.path.getsize(tmp_file.name)
+            pg_sizes.append(file_size)
+            tmp_file.close()
 
-            with open(tmp_file.name, 'wb') as f:
-                writer.removeLinks()
-                writer.write(f)
-                file_size = os.path.getsize(tmp_file.name)
-                pg_sizes.append(file_size)
+        writer = PdfFileWriter()
+
+        for i in xrange(pg_cnt):
+            writer.addPage(reader.getPage(i))
+
+        writer.removeLinks()
+        inp_file = tempfile.NamedTemporaryFile()
+        writer.write(inp_file)
 
         inp_file_size = os.path.getsize(abs_path)
         sum_pg_sizes = sum(pg_sizes)
@@ -404,7 +418,7 @@ def split_size(query, abs_path, suffix):
         stop = 1
         pg_no = 0
 
-        while start < pg_cnt:
+        while not stop > pg_cnt:
             out_file = '{} ({} {}).pdf'.format(noextpath, suffix, pg_no + 1)
 
             if quotient > 0.95:
@@ -412,42 +426,88 @@ def split_size(query, abs_path, suffix):
                 part_size = sum(part)
                 part_pg_cnt = len(part)
 
-            else:
-                merger = PdfFileMerger(strict=False)
-                merger.append(abs_path, pages=(start, stop))
-                merger.write(noextpath)
-                reader = PdfFileReader(noextpath)
-                part_pg_cnt = int(reader.numPages)
-                part_size = os.path.getsize(noextpath)
-                os.remove(noextpath)
+                if part_size < max_part_size:
+                    if stop != pg_cnt:
+                        stop += 1
 
-            if part_size < max_part_size:
-                if stop != pg_cnt:
-                    stop += 1
-
-                else:  # Break the loop once the last part is written.
-                    merger = PdfFileMerger(strict=False)
-                    merger.append(abs_path, pages=(start, stop))
-                    merger.write(out_file)
-                    break
-
-            else:
-                if part_pg_cnt == 1:
-                    merger = PdfFileMerger(strict=False)
-                    merger.append(abs_path, pages=(start, stop))
-                    merger.write(out_file)
-                    start = stop
-                    stop += 1
-                    pg_no += 1
+                    else:
+                        merger = PdfFileMerger(strict=False)
+                        merger.append(inp_file, pages=(start, stop))
+                        merger.write(out_file)
+                        break
 
                 else:
-                    stop -= 1
-                    merger = PdfFileMerger(strict=False)
-                    merger.append(abs_path, pages=(start, stop))
-                    merger.write(out_file)
-                    start = stop
-                    stop += 1
-                    pg_no += 1
+                    if part_pg_cnt == 1:
+                        merger = PdfFileMerger(strict=False)
+                        merger.append(inp_file, pages=(start, stop))
+                        merger.write(out_file)
+                        start = stop
+                        stop += 1
+                        pg_no += 1
+
+                    else:
+                        stop -= 1
+                        merger = PdfFileMerger(strict=False)
+                        merger.append(inp_file, pages=(start, stop))
+                        merger.write(out_file)
+                        start = stop
+                        stop += 1
+                        pg_no += 1
+
+            else:
+                part = pg_sizes[start:stop]
+                part_size = sum(part)
+                part_pg_cnt = len(part)
+
+                if part_size < max_part_size:
+                    if stop != pg_cnt:
+                        stop += 1
+
+                    else:
+                        merger = PdfFileMerger(strict=False)
+                        merger.append(inp_file, pages=(start, stop))
+                        merger.write(out_file)
+                        break
+
+                else:
+                    if part_pg_cnt == 1:
+                        merger = PdfFileMerger(strict=False)
+                        merger.append(inp_file, pages=(start, stop))
+                        merger.write(out_file)
+                        start = stop
+                        stop += 1
+                        pg_no += 1
+
+                    else:
+                        stop -= 1
+                        merger = PdfFileMerger(strict=False)
+                        merger.append(inp_file, pages=(start, stop))
+                        merger.write(out_file)
+                        part_size = os.path.getsize(out_file)
+                        next_page = pg_sizes[stop:stop + 1][0]
+
+                        if part_size + next_page < max_part_size:
+                            os.remove(out_file)
+                            part_size_real = part_size / (stop - start)
+
+                            pg_sizes_real = []
+
+                            for i in xrange(pg_cnt):
+                                if i >= start and i < stop:
+                                    pg_sizes_real.append(part_size_real)
+
+                                else:
+                                    pg_sizes_real.append(pg_sizes[i])
+
+                            pg_sizes = pg_sizes_real
+                            stop += 1
+
+                        else:
+                            start = stop
+                            stop += 1
+                            pg_no += 1
+
+        inp_file.close()
 
     except ValueError:
         notify.notify('Alfred PDF Tools',
@@ -582,64 +642,64 @@ def slice_(query, abs_path, single, suffix):
                       'Cannot slice a malformed PDF file.')
 
 
-def crop(abs_path):
+def crop(pdfs):
     """Crop two-column pages."""
     try:
-        reader = PdfFileReader(abs_path)
+        for pdf in pdfs:
+            reader = PdfFileReader(pdf, strict=False)
 
-        if reader.isEncrypted:
-            raise FileEncryptedError
+            if reader.isEncrypted:
+                raise FileEncryptedError
 
-        noextpath = os.path.splitext(abs_path)[0]
+            for i in xrange(reader.numPages):
+                # Make two copies of the input page.
+                pp = reader.getPage(i)
+                p = copy(pp)
+                q = copy(pp)
 
-        out_file = open(noextpath + ' (cropped).pdf', 'wb')
-        writer = PdfFileWriter()
+                # The new media boxes are the previous crop boxes.
+                p.mediaBox = copy(p.cropBox)
+                q.mediaBox = copy(p.cropBox)
 
-        for i in xrange(reader.numPages):
-            # Make two copies of the input page.
-            pp = reader.getPage(i)
-            p = copy.copy(pp)
-            q = copy.copy(pp)
+                x1, x2 = p.mediaBox.lowerLeft
+                x3, x4 = p.mediaBox.upperRight
 
-            # The new media boxes are the previous crop boxes.
-            p.mediaBox = copy.copy(p.cropBox)
-            q.mediaBox = copy.copy(p.cropBox)
+                x1, x2 = floor(x1), floor(x2)
+                x3, x4 = floor(x3), floor(x4)
+                x5, x6 = x1 + floor((x3 - x1) / 2), x2 + floor((x4 - x2) / 2)
 
-            x1, x2 = p.mediaBox.lowerLeft
-            x3, x4 = p.mediaBox.upperRight
+                if (x3 - x1) > (x4 - x2):
+                    # Horizontal
+                    q.mediaBox.upperRight = (x5, x4)
+                    q.mediaBox.lowerLeft = (x1, x2)
 
-            x1, x2 = math.floor(x1), math.floor(x2)
-            x3, x4 = math.floor(x3), math.floor(x4)
-            x5, x6 = x1 + math.floor((x3 - x1) / 2), x2 + math.floor((x4 - x2) / 2)
+                    p.mediaBox.upperRight = (x3, x4)
+                    p.mediaBox.lowerLeft = (x5, x2)
+                else:
+                    # Vertical
+                    p.mediaBox.upperRight = (x3, x4)
+                    p.mediaBox.lowerLeft = (x1, x6)
 
-            if (x3 - x1) > (x4 - x2):
-                # Horizontal
-                q.mediaBox.upperRight = (x5, x4)
-                q.mediaBox.lowerLeft = (x1, x2)
+                    q.mediaBox.upperRight = (x3, x6)
+                    q.mediaBox.lowerLeft = (x1, x2)
 
-                p.mediaBox.upperRight = (x3, x4)
-                p.mediaBox.lowerLeft = (x5, x2)
-            else:
-                # Vertical
-                p.mediaBox.upperRight = (x3, x4)
-                p.mediaBox.lowerLeft = (x1, x6)
+                p.artBox = p.mediaBox
+                p.bleedBox = p.mediaBox
+                p.cropBox = p.mediaBox
 
-                q.mediaBox.upperRight = (x3, x6)
-                q.mediaBox.lowerLeft = (x1, x2)
+                q.artBox = q.mediaBox
+                q.bleedBox = q.mediaBox
+                q.cropBox = q.mediaBox
 
-            p.artBox = p.mediaBox
-            p.bleedBox = p.mediaBox
-            p.cropBox = p.mediaBox
+                writer = PdfFileWriter()
+                writer.addPage(q)
+                writer.addPage(p)
 
-            q.artBox = q.mediaBox
-            q.bleedBox = q.mediaBox
-            q.cropBox = q.mediaBox
+                noextpath = os.path.splitext(pdf)[0]
+                out_file = '{} (cropped).pdf'.format(noextpath)
 
-            writer.addPage(q)
-            writer.addPage(p)
-
-            writer.write(out_file)
-            out_file.close()
+                with open(out_file, 'wb') as f:
+                    writer.write(f)
 
     except FileEncryptedError:
         notify.notify('Alfred PDF Tools',
@@ -648,6 +708,49 @@ def crop(abs_path):
     except PdfReadError:
         notify.notify('Alfred PDF Tools',
                       'Cannot crop a malformed PDF file.')
+
+
+def scale(query, pdfs):
+    """Scale PDF files to the given page size."""
+    try:
+        for pdf in pdfs:
+            reader = PdfFileReader(pdf, strict=False)
+
+            if reader.isEncrypted:
+                raise FileEncryptedError
+
+            writer = PdfFileWriter()
+
+            w, h = [float(i) * 72 for i in query.split('x')]
+
+            for i in xrange(reader.numPages):
+                inp_page = reader.getPage(i)
+
+                inp_page_w = float(inp_page.mediaBox[2])
+                inp_page_h = float(inp_page.mediaBox[3])
+
+                scale_w = w / inp_page_w
+                scale_h = h / inp_page_h
+                scale = min(scale_w, scale_h)
+
+                out_page = PageObject.createBlankPage(None, w, h)
+                out_page.mergeScaledTranslatedPage(inp_page, scale, 0, 0)
+
+                writer.addPage(out_page)
+
+            noextpath = os.path.splitext(pdf)[0]
+            out_file = '{} (scaled).pdf'.format(noextpath)
+
+            with open(out_file, 'wb') as f:
+                writer.write(f)
+
+    except FileEncryptedError:
+        notify.notify('Alfred PDF Tools',
+                      'Scale action cannot handle an encrypted PDF file.')
+
+    except PdfReadError:
+        notify.notify('Alfred PDF Tools',
+                      'Cannot scale a malformed PDF file.')
 
 
 def main(wf):
@@ -689,7 +792,10 @@ def main(wf):
         slice_(query, abs_path, True, suffix)
 
     elif args.get('--crop'):
-        crop(abs_path)
+        crop(pdfs)
+
+    elif args.get('--scale'):
+        scale(query, pdfs)
 
     if wf.update_available:
         notify.notify('Alfred PDF Tools',

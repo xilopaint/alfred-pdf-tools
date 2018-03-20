@@ -25,6 +25,7 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 * `Slice in Multiple Files`: Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
 * `Slice in a Single File`: Slice the selected PDF file in a single file by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
 * `Crop`: Convert two-column pages in single pages.
+* `Scale`: Scale the selected PDF files to a given paper size.
 
 ## Contribute
 
