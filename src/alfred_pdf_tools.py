@@ -404,7 +404,6 @@ def split_size(query, abs_path, suffix):
         for i in xrange(pg_cnt):
             writer.addPage(reader.getPage(i))
 
-        writer.removeLinks()
         inp_file = tempfile.NamedTemporaryFile()
         writer.write(inp_file)
 
@@ -543,26 +542,21 @@ def slice_(query, abs_path, single, suffix):
         pages = [x.strip() for x in query.split(',')]
 
         for page in pages:
-            if page.replace('-', '').isdigit():
-                pass
-
-            else:
+            if not page.replace('-', '').isdigit():
                 raise SyntaxError
 
         for page in pages:
             if "-" in page:
-                stop = int(page.split('-')[1])
-                if stop > reader.numPages:
-                    raise IndexError
+                if page.split('-')[1]:
+                    stop = int(page.split('-')[1])
                 else:
-                    pass
+                    stop = reader.numPages
 
             else:
                 stop = int(page)
-                if stop > reader.numPages:
-                    raise IndexError
-                else:
-                    pass
+
+            if stop > reader.numPages:
+                raise IndexError
 
         noextpath = os.path.splitext(abs_path)[0]
 
@@ -572,7 +566,12 @@ def slice_(query, abs_path, single, suffix):
             for page in pages:
                 if "-" in page:
                     start = int(page.split('-')[0]) - 1
-                    stop = int(page.split('-')[1])
+                    stop_str = page.split('-')[1]
+
+                    if stop_str:
+                        stop = int(stop_str)
+                    else:
+                        stop = reader.numPages
 
                     if start == -1:
                         raise StartValueZeroError
@@ -580,28 +579,28 @@ def slice_(query, abs_path, single, suffix):
                     if start >= stop:
                         raise StartValueReverseError
 
-                    merger.append(reader, pages=(start, stop))
-
                 else:
                     start = int(page) - 1
                     stop = int(page)
-                    merger.append(reader, pages=(start, stop))
 
-            merger.write(noextpath + ' (slice).pdf')
+                merger.append(reader, pages=(start, stop))
+
+            merger.write(noextpath + ' (sliced).pdf')
 
         else:
             part_no = 0
 
             for page in pages:
-
-                out_file = '{} ({} {}).pdf'.format(noextpath,
-                                                   suffix,
-                                                   part_no + 1)
+                merger = PdfFileMerger(strict=False)
 
                 if "-" in page:
-                    merger = PdfFileMerger(strict=False)
                     start = int(page.split('-')[0]) - 1
-                    stop = int(page.split('-')[1])
+                    stop_str = page.split('-')[1]
+
+                    if stop_str:
+                        stop = int(stop_str)
+                    else:
+                        stop = reader.numPages
 
                     if start == -1:
                         raise StartValueZeroError
@@ -610,10 +609,12 @@ def slice_(query, abs_path, single, suffix):
                         raise StartValueReverseError
 
                 else:
-                    merger = PdfFileMerger(strict=False)
                     start = int(page) - 1
                     stop = int(page)
 
+                out_file = '{} ({} {}).pdf'.format(noextpath,
+                                                   suffix,
+                                                   part_no + 1)
                 merger.append(reader, pages=(start, stop))
                 merger.write(out_file)
                 part_no += 1

@@ -22,8 +22,8 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 * `Merge`: Merge the selected PDF files. Use the `⌘` modifier key if you also want to move the source files to Trash;
 * `Split by Page Count`: Split the selected PDF file by page count.
 * `Split by File Size`: Split the selected PDF file by file size.
-* `Slice in Multiple Files`: Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
-* `Slice in a Single File`: Slice the selected PDF file in a single file by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8).
+* `Slice in Multiple Files`: Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-).
+* `Slice in a Single File`: Slice the selected PDF file in a single file by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-).
 * `Crop`: Convert two-column pages in single pages.
 * `Scale`: Scale the selected PDF files to a given paper size.
 
