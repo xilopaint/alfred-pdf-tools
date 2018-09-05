@@ -363,6 +363,19 @@
 		</array>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<array/>
+		<key>D162397F-EFFF-465B-B5BE-6689A3534350</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>CF91AA6D-E5DC-425C-88A9-183B8E01444B</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>D22080C6-09B9-404B-95A0-574ECE1E10F5</key>
 		<array>
 			<dict>
@@ -799,7 +812,7 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py --mrgtrash "{query}"</string>
+				<string>python alfred_pdf_tools.py --mrg-trash "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -822,7 +835,7 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py --splitcount "{query}"</string>
+				<string>python alfred_pdf_tools.py --split-count "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -939,7 +952,7 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py --splitsize "{query}"</string>
+				<string>python alfred_pdf_tools.py --split-size "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -980,7 +993,7 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py --slicemulti "{query}"</string>
+				<string>python alfred_pdf_tools.py --slice-multi "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1059,7 +1072,7 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python alfred_pdf_tools.py --slicesingle "{query}"</string>
+				<string>python alfred_pdf_tools.py --slice-single "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1275,6 +1288,51 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>export abs_path=""
+python alfred_pdf_tools.py --suffix "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>CF91AA6D-E5DC-425C-88A9-183B8E01444B</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>suffix</string>
+				<key>subtext</key>
+				<string>eg. "part"</string>
+				<key>text</key>
+				<string>Set a new value to the "suffix" environment variable.</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>D162397F-EFFF-465B-B5BE-6689A3534350</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string># Alfred PDF Tools
@@ -1287,7 +1345,7 @@ Optimize, encrypt and manipulate PDF files.
 
 ## Download and Installation
 
-Download the workflow file from [GitHub releases][2] and install it by double-clicking on `Alfred PDF Tools.alfredworklow`.
+Download the workflow file from [GitHub releases][2] and install it by double-clicking on `Alfred.PDF.Tools.alfredworklow`.
 
 ## Usage
 
@@ -1684,6 +1742,26 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 			<key>ypos</key>
 			<integer>540</integer>
 		</dict>
+		<key>CF91AA6D-E5DC-425C-88A9-183B8E01444B</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>note</key>
+			<string>Set Suffix</string>
+			<key>xpos</key>
+			<integer>480</integer>
+			<key>ypos</key>
+			<integer>1670</integer>
+		</dict>
+		<key>D162397F-EFFF-465B-B5BE-6689A3534350</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>1670</integer>
+		</dict>
 		<key>D22080C6-09B9-404B-95A0-574ECE1E10F5</key>
 		<dict>
 			<key>colorindex</key>
@@ -1724,10 +1802,10 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 	<key>variables</key>
 	<dict>
 		<key>suffix</key>
-		<string>part</string>
+		<string>parte</string>
 	</dict>
 	<key>version</key>
-	<string>2.14</string>
+	<string>2.15</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>

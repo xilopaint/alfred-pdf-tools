@@ -10,7 +10,7 @@ Optimize, encrypt and manipulate PDF files.
 
 ## Download and Installation
 
-Download the workflow file from [GitHub releases][2] and install it by double-clicking on `Alfred PDF Tools.alfredworklow`.
+Download the workflow file from [GitHub releases][2] and install it by double-clicking on `Alfred.PDF.Tools.alfredworklow`.
 
 ## Usage
 
@@ -37,7 +37,7 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 
 ## License
 
-**Alfred PDF Tools** code is released under the [MIT License][11].
+**Alfred PDF Tools** is released under the [MIT License][11].
 
 [1]:http://www.alfredapp.com/
 [2]:https://github.com/xilopaint/alfred-pdf-tools/releases/latest

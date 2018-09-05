@@ -12,13 +12,14 @@ Usage:
     alfred_pdf_tools.py --encrypt <query>
     alfred_pdf_tools.py --decrypt <query>
     alfred_pdf_tools.py --mrg <query>
-    alfred_pdf_tools.py --mrgtrash <query>
-    alfred_pdf_tools.py --splitcount <query>
-    alfred_pdf_tools.py --splitsize <query>
-    alfred_pdf_tools.py --slicemulti <query>
-    alfred_pdf_tools.py --slicesingle <query>
+    alfred_pdf_tools.py --mrg-trash <query>
+    alfred_pdf_tools.py --split-count <query>
+    alfred_pdf_tools.py --split-size <query>
+    alfred_pdf_tools.py --slice-multi <query>
+    alfred_pdf_tools.py --slice-single <query>
     alfred_pdf_tools.py --crop <query>
     alfred_pdf_tools.py --scale <query>
+    alfred_pdf_tools.py --suffix <query>
 
 Optimize, encrypt and manipulate PDF files.
 
@@ -28,20 +29,21 @@ Options:
     --encrypt <query>       Encrypt PDF files.
     --decrypt <query>       Decrypt PDF files.
     --mrg <query>           Merge PDF files.
-    --mrgtrash <query>      Merge PDF files and move them to trash.
-    --splitcount <query>    Split PDF file by page count.
-    --splitsize <query>     Split PDF file by file size.
-    --slicemulti <query>    Multi-slice PDF files.
-    --slicesingle <query>   Single-slice PDF files.
+    --mrg-trash <query>     Merge PDF files and move them to trash.
+    --split-count <query>   Split PDF file by page count.
+    --split-size <query>    Split PDF file by file size.
+    --slice-multi <query>   Multi-slice PDF files.
+    --slice-single <query>  Single-slice PDF files.
     --crop                  Crop two-column pages.
     --scale <query>         Scale PDF files to a given page size.
+    --suffix <query>        Set new value to the "suffix" environment variable.
 """
 
 from __future__ import division
 import sys
 import os
 from docopt import docopt
-from workflow import Workflow3, notify, ICON_WARNING
+from workflow import Workflow3, notify, util, ICON_WARNING
 from subprocess import Popen, PIPE
 from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter, PdfReadError
 from PyPDF2.pdf import PageObject
@@ -102,6 +104,10 @@ class StartValueZeroError(AlfredPdfToolsError):
 class StartValueReverseError(AlfredPdfToolsError):
     """Raised when a page range is set in reverse order."""
     pass
+
+
+class SuffixNotSetError(AlfredPdfToolsError):
+    """Raised when the PDF files suffix cannot be set."""
 
 
 def optimize(query, pdfs):
@@ -712,7 +718,7 @@ def crop(pdfs):
 
 
 def scale(query, pdfs):
-    """Scale PDF files to the given page size."""
+    """Scale PDF files to a given page size."""
     try:
         for pdf in pdfs:
             reader = PdfFileReader(pdf, strict=False)
@@ -754,6 +760,18 @@ def scale(query, pdfs):
                       'Cannot scale a malformed PDF file.')
 
 
+def set_suffix(query):
+    """Set new value to the suffix environment variable."""
+    try:
+        util.set_config('suffix', query, exportable=True)
+        notify.notify('Alfred PDF Tools',
+                      'Suffix set to "{}".'.format(query))
+
+    except SuffixNotSetError:
+        notify.notify('Alfred PDF Tools',
+                      'An error occurred while setting the suffix.')
+
+
 def main(wf):
     """Run workflow."""
     args = docopt(__doc__)
@@ -777,19 +795,19 @@ def main(wf):
     elif args.get('--mrg'):
         merge(query, pdfs, False)
 
-    elif args.get('--mrgtrash'):
+    elif args.get('--mrg-trash'):
         merge(query, pdfs, True)
 
-    elif args.get('--splitcount'):
+    elif args.get('--split-count'):
         split_count(query, abs_path, suffix)
 
-    elif args.get('--splitsize'):
+    elif args.get('--split-size'):
         split_size(query, abs_path, suffix)
 
-    elif args.get('--slicemulti'):
+    elif args.get('--slice-multi'):
         slice_(query, abs_path, False, suffix)
 
-    elif args.get('--slicesingle'):
+    elif args.get('--slice-single'):
         slice_(query, abs_path, True, suffix)
 
     elif args.get('--crop'):
@@ -797,6 +815,9 @@ def main(wf):
 
     elif args.get('--scale'):
         scale(query, pdfs)
+
+    elif args.get('--suffix'):
+        set_suffix(query)
 
     if wf.update_available:
         notify.notify('Alfred PDF Tools',
