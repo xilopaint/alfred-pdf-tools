@@ -1209,7 +1209,9 @@ python alfred_pdf_tools.py --progress "{query}"</string>
 				<key>acceptsmulti</key>
 				<true/>
 				<key>filetypes</key>
-				<array/>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
 				<key>name</key>
 				<string>Scale</string>
 			</dict>
@@ -1802,10 +1804,10 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 	<key>variables</key>
 	<dict>
 		<key>suffix</key>
-		<string>parte</string>
+		<string>part</string>
 	</dict>
 	<key>version</key>
-	<string>2.15</string>
+	<string>2.16</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>

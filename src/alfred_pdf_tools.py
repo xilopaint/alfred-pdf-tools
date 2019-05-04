@@ -45,8 +45,8 @@ import os
 from docopt import docopt
 from workflow import Workflow3, notify, util, ICON_WARNING
 from subprocess import Popen, PIPE
-from PyPDF2 import PdfFileMerger, PdfFileReader, PdfFileWriter, PdfReadError
-from PyPDF2.pdf import PageObject
+from pypdf import PdfFileMerger, PdfFileReader, PdfFileWriter, PdfReadError
+from pypdf.pdf import PageObject
 from send2trash import send2trash
 import tempfile
 from copy import copy
@@ -125,7 +125,7 @@ def optimize(query, pdfs):
             command = "echo -y | ./k2pdfopt '{}' -as -mode copy -dpi {} -o '%s (optimized).pdf' -x".format(pdf, query)
             proc = Popen(command, shell=True, stdout=PIPE)
 
-            while proc.poll() is None:
+            while proc.poll() is None:  # Loop while the subprocess is running.
                 line = proc.stdout.readline()
 
                 if "Reading" in line:
@@ -150,10 +150,10 @@ def optimize(query, pdfs):
 
 def get_progress():
     """Show optimization progress."""
-    pg_no = wf.cached_data('page_number', max_age=10)
-    pg_cnt = wf.cached_data('page_count', max_age=0)
-
     wf.rerun = 1
+
+    pg_no = wf.cached_data('page_number', max_age=0)
+    pg_cnt = wf.cached_data('page_count', max_age=0)
 
     try:
         n = int(os.environ['n'])
@@ -161,32 +161,32 @@ def get_progress():
     except KeyError:
         n = 0
 
-    if not pg_no:
-        if wf.cached_data_age('page_count') < 10:
+    if not pg_cnt and not pg_no:
+        title = "Optimize action is not running."
+        wf.add_item(valid=True, title=title, icon=ICON_WARNING)
+
+    if pg_cnt and not pg_no:
             title = "Reading the PDF file..."
             subtitle = progress_bar(n)
+
             wf.add_item(valid=True, title=title, subtitle=subtitle)
 
-        else:
-            title = "Optimize action is not running."
-            wf.add_item(valid=True, title=title, icon=ICON_WARNING)
-
-    else:
-        prog_int = int(round((float(pg_no) / float(pg_cnt)) * 100))
-        prog = str(prog_int)
+    if pg_cnt and pg_no:
+        pct = str(int(round((float(pg_no) / float(pg_cnt)) * 100)))
 
         if pg_no != pg_cnt:
             title = "Page {} of {} processed ({}% completed)".format(pg_no,
                                                                      pg_cnt,
-                                                                     prog)
+                                                                     pct)
             subtitle = progress_bar(n)
+
             wf.add_item(valid=True, title=title, subtitle=subtitle)
 
         else:
-            title = "Page {} of {} processed ({}% completed)".format(pg_no,
-                                                                     pg_cnt,
-                                                                     prog)
+            wf.rerun = 0  # Stop re-running.
+            title = "Page {0} of {0} processed (100% completed)".format(pg_cnt)
             wf.add_item(valid=True, title=title, icon='checkmark.png')
+            wf.clear_cache()
 
     n += 1
 
@@ -658,6 +658,8 @@ def crop(pdfs):
             if reader.isEncrypted:
                 raise FileEncryptedError
 
+            writer = PdfFileWriter()
+
             for i in xrange(reader.numPages):
                 # Make two copies of the input page.
                 pp = reader.getPage(i)
@@ -698,15 +700,14 @@ def crop(pdfs):
                 q.bleedBox = q.mediaBox
                 q.cropBox = q.mediaBox
 
-                writer = PdfFileWriter()
                 writer.addPage(q)
                 writer.addPage(p)
 
-                noextpath = os.path.splitext(pdf)[0]
-                out_file = '{} (cropped).pdf'.format(noextpath)
+            noextpath = os.path.splitext(pdf)[0]
+            out_file = '{} (cropped).pdf'.format(noextpath)
 
-                with open(out_file, 'wb') as f:
-                    writer.write(f)
+            with open(out_file, 'wb') as f:
+                writer.write(f)
 
     except FileEncryptedError:
         notify.notify('Alfred PDF Tools',

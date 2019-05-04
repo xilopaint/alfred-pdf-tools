@@ -29,7 +29,7 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 
 ## Contribute
 
-To report a bug or request a feature, please [create an issue][3] or [submit a pull request][4] on GitHub.
+To report a bug or request a feature, please [create an issue][3] or [submit a pull request][4].
 
 ## Credits
 
