@@ -14,6 +14,12 @@ Download the workflow file from [GitHub releases][2] and install it by double-cl
 
 ## Usage
 
+This workflow relies on [file actions][12] in Alfred:
+
+> Found your file in Alfred? Press the `right arrow key` to reveal the File Actions panel
+>
+> Selected a file in Finder? Use `Cmd + Alt + \` to pop up File Actions
+
 **Alfred PDF Tools** can be used by the following file actions:
 
 * `Optimize`: Optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is set once no value is input). The document will be improved on the process with increased contrast and text straightening. Invoke Alfred and type the keyword `progress` if you want to track the optimization process;
@@ -50,3 +56,4 @@ This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, In
 [9]:https://github.com/hsoft/send2trash
 [10]:https://github.com/docopt/docopt
 [11]:https://opensource.org/licenses/MIT
+[12]:https://www.alfredapp.com/blog/tips-and-tricks/file-actions-from-alfred-or-finder/
