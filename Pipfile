@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pikepdf = "*"
+docopt = "*"
+send2trash = "*"
+workflow = {editable = true, path = "."}
+
+[dev-packages]
+pyinstaller = "*"
+
+[requires]
+python_version = "3.10"

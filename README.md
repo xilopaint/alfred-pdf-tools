@@ -2,7 +2,7 @@
 
 # Alfred PDF Tools
 
-A workflow for [Alfred 3][1].
+A workflow for [Alfred][1].
 
 ## Description
 
@@ -33,20 +33,18 @@ To report a bug or request a feature, please [create an issue][3] or [submit a p
 
 ## Credits
 
-This workflow relies on [PyPDF2][5] library currently maintained by [Phaseit, Inc.][6], [Alfred-Workflow][7] library by Dean Jackson, [K2pdfopt][8] by Johannes Buchnerand, [Send2Trash][9] by Virgil Dupras and [docopt][10]. The code for the `Crop` file action  was mostly created by Matt Gumbley (Stack Overflow) and changed by Hanspeter Schmid to deal with already cropped pages.
+This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by  Vladimir Keleshev, [K2pdfopt][7] by Johannes Buchnerand and [Send2Trash][8] by Virgil Dupras.
 
 ## License
 
-**Alfred PDF Tools** is released under the [MIT License][11].
+**Alfred PDF Tools** is released under the [MIT License][9].
 
 [1]:http://www.alfredapp.com/
 [2]:https://github.com/xilopaint/alfred-pdf-tools/releases/latest
 [3]:https://github.com/xilopaint/alfred-pdf-tools/issues
 [4]:https://github.com/xilopaint/alfred-pdf-tools/pulls
-[5]:https://github.com/mstamy2/PyPDF2
-[6]:http://phaseit.net
-[7]:https://github.com/deanishe/alfred-workflow
-[8]:http://www.willus.com/k2pdfopt/
-[9]:https://github.com/hsoft/send2trash
-[10]:https://github.com/docopt/docopt
-[11]:https://opensource.org/licenses/MIT
+[5]:https://github.com/pikepdf/pikepdf
+[6]:https://github.com/docopt/docopt
+[7]:http://www.willus.com/k2pdfopt/
+[8]:https://github.com/hsoft/send2trash
+[9]:https://opensource.org/licenses/MIT

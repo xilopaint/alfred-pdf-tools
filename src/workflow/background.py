@@ -1,15 +1,7 @@
-#!/usr/bin/env python
-# encoding: utf-8
-#
-# Copyright (c) 2014 deanishe@deanishe.net
-#
-# MIT Licence. See http://opensource.org/licenses/MIT
-#
-# Created on 2014-04-06
-#
+#!/usr/bin/env python3
 
-"""
-This module provides an API to run commands in background processes.
+"""This module provides an API to run commands in background processes.
+
 Combine with the :ref:`caching API <caching-data>` to work from cached data
 while you fetch fresh data in the background.
 
@@ -17,13 +9,11 @@ See :ref:`the User Manual <background-processes>` for more information
 and examples.
 """
 
-from __future__ import print_function, unicode_literals
-
-import signal
-import sys
 import os
-import subprocess
 import pickle
+import signal
+import subprocess
+import sys
 
 from workflow import Workflow
 
@@ -64,7 +54,7 @@ def _pid_file(name):
     :rtype: ``unicode`` filepath
 
     """
-    return wf().cachefile(name + '.pid')
+    return wf().cachefile(name + ".pid")
 
 
 def _process_exists(pid):
@@ -97,15 +87,13 @@ def _job_pid(name):
         return
 
     with open(pidfile, 'rb') as fp:
-        pid = int(fp.read())
+        read = fp.read()
+        pid = int.from_bytes(read, sys.byteorder)
 
         if _process_exists(pid):
             return pid
 
-    try:
-        os.unlink(pidfile)
-    except Exception:  # pragma: no cover
-        pass
+    os.unlink(pidfile)
 
 
 def is_running(name):
@@ -123,8 +111,9 @@ def is_running(name):
     return False
 
 
-def _background(pidfile, stdin='/dev/null', stdout='/dev/null',
-                stderr='/dev/null'):  # pragma: no cover
+def _background(
+    pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'
+):  # pragma: no cover
     """Fork the current process into a background daemon.
 
     :param pidfile: file to write PID of daemon process to.
@@ -137,6 +126,7 @@ def _background(pidfile, stdin='/dev/null', stdout='/dev/null',
     :type stderr: filepath
 
     """
+
     def _fork_and_exit_parent(errmsg, wait=False, write=False):
         try:
             pid = os.fork()
@@ -144,7 +134,7 @@ def _background(pidfile, stdin='/dev/null', stdout='/dev/null',
                 if write:  # write PID of child process to `pidfile`
                     tmp = pidfile + '.tmp'
                     with open(tmp, 'wb') as fp:
-                        fp.write(str(pid))
+                        fp.write(pid.to_bytes(4, sys.byteorder))
                     os.rename(tmp, pidfile)
                 if wait:  # wait for child process to exit
                     os.waitpid(pid, 0)
@@ -165,21 +155,19 @@ def _background(pidfile, stdin='/dev/null', stdout='/dev/null',
 
     # Now I am a daemon!
     # Redirect standard file descriptors.
-    si = open(stdin, 'r', 0)
-    so = open(stdout, 'a+', 0)
-    se = open(stderr, 'a+', 0)
+    si = open(stdin, 'r', 1)
+    so = open(stdout, 'a+', 1)
+    se = open(stderr, 'a+', 1)
     if hasattr(sys.stdin, 'fileno'):
         os.dup2(si.fileno(), sys.stdin.fileno())
     if hasattr(sys.stdout, 'fileno'):
         os.dup2(so.fileno(), sys.stdout.fileno())
-    if hasattr(sys.stderr, 'fileno'):
+    if hasattr(sys.stderr, "fileno"):
         os.dup2(se.fileno(), sys.stderr.fileno())
 
 
 def kill(name, sig=signal.SIGTERM):
     """Send a signal to job ``name`` via :func:`os.kill`.
-
-    .. versionadded:: 1.29
 
     Args:
         name (str): Name of the job
@@ -197,12 +185,12 @@ def kill(name, sig=signal.SIGTERM):
 
 
 def run_in_background(name, args, **kwargs):
-    r"""Cache arguments then call this script again via :func:`subprocess.call`.
+    r"""Cache arguments then call this script again via :func:`subprocess.run`.
 
     :param name: name of job
     :type name: unicode
-    :param args: arguments passed as first argument to :func:`subprocess.call`
-    :param \**kwargs: keyword arguments to :func:`subprocess.call`
+    :param args: arguments passed as first argument to :func:`subprocess.run`
+    :param \**kwargs: keyword arguments to :func:`subprocess.run`
     :returns: exit code of sub-process
     :rtype: int
 
@@ -233,9 +221,9 @@ def run_in_background(name, args, **kwargs):
         _log().debug('[%s] command cached: %s', name, argcache)
 
     # Call this script
-    cmd = ['/usr/bin/python', __file__, name]
+    cmd = ['/usr/bin/python3', '-m', 'workflow.background', name]
     _log().debug('[%s] passing job to background runner: %r', name, cmd)
-    retcode = subprocess.call(cmd)
+    retcode = subprocess.run(cmd).returncode
 
     if retcode:  # pragma: no cover
         _log().error('[%s] background runner failed with %d', name, retcode)
@@ -249,14 +237,14 @@ def main(wf):  # pragma: no cover
     """Run command in a background process.
 
     Load cached arguments, fork into background, then call
-    :meth:`subprocess.call` with cached arguments.
+    :meth:`subprocess.run` with cached arguments.
 
     """
     log = wf.logger
     name = wf.args[0]
     argcache = _arg_cache(name)
     if not os.path.exists(argcache):
-        msg = '[{0}] command cache not found: {1}'.format(name, argcache)
+        msg = f'[{name}] command cache not found: {argcache}'
         log.critical(msg)
         raise IOError(msg)
 
@@ -279,7 +267,7 @@ def main(wf):  # pragma: no cover
         # Run the command
         log.debug('[%s] running command: %r', name, args)
 
-        retcode = subprocess.call(args, **kwargs)
+        retcode = subprocess.run(args, **kwargs).returncode
 
         if retcode:
             log.error('[%s] command failed with status %d', name, retcode)

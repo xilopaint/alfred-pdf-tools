@@ -1,29 +1,15 @@
-# encoding: utf-8
-#
-# Copyright (c) 2014 Dean Jackson <deanishe@deanishe.net>
-#
-# MIT Licence. See http://opensource.org/licenses/MIT
-#
-# Created on 2014-02-15
+# This is a port to Python 3 of the Alfred-Workflow library created by
+# Dean Jackson <deanishe@deanishe.net>.
 #
 
 """The :class:`Workflow` object is the main interface to this library.
-
-:class:`Workflow` is targeted at Alfred 2. Use
-:class:`~workflow.Workflow3` if you want to use Alfred 3's new
-features, such as :ref:`workflow variables <workflow-variables>` or
-more powerful modifiers.
 
 See :ref:`setup` in the :ref:`user-manual` for an example of how to set
 up your Python script to best utilise the :class:`Workflow` object.
 
 """
 
-from __future__ import print_function, unicode_literals
-
 import binascii
-import cPickle
-from copy import deepcopy
 import json
 import logging
 import logging.handlers
@@ -37,18 +23,15 @@ import subprocess
 import sys
 import time
 import unicodedata
-
-try:
-    import xml.etree.cElementTree as ET
-except ImportError:  # pragma: no cover
-    import xml.etree.ElementTree as ET
-
-from util import (
-    AcquisitionError,  # imported to maintain API
+from contextlib import contextmanager
+from copy import deepcopy
+from typing import Optional
+from .util import (
     atomic_writer,
     LockFile,
     uninterruptible,
 )
+
 
 #: Sentinel for properties that haven't been set yet (that might
 #: correctly have the value ``None``)
@@ -91,7 +74,7 @@ ICON_SWITCH = os.path.join(ICON_ROOT, 'General.icns')
 ICON_SYNC = os.path.join(ICON_ROOT, 'Sync.icns')
 ICON_TRASH = os.path.join(ICON_ROOT, 'TrashIcon.icns')
 ICON_USER = os.path.join(ICON_ROOT, 'UserIcon.icns')
-ICON_WARNING = os.path.join(ICON_ROOT, 'AlertCautionIcon.icns')
+ICON_WARNING = os.path.join(ICON_ROOT, 'AlertCautionBadgeIcon.icns')
 ICON_WEB = os.path.join(ICON_ROOT, 'BookmarkIcon.icns')
 
 ####################################################################
@@ -335,44 +318,6 @@ ASCII_REPLACEMENTS = {
     'э': 'e',
     'ю': 'iu',
     'я': 'ia',
-    # 'ᴀ': '',
-    # 'ᴁ': '',
-    # 'ᴂ': '',
-    # 'ᴃ': '',
-    # 'ᴄ': '',
-    # 'ᴅ': '',
-    # 'ᴆ': '',
-    # 'ᴇ': '',
-    # 'ᴈ': '',
-    # 'ᴉ': '',
-    # 'ᴊ': '',
-    # 'ᴋ': '',
-    # 'ᴌ': '',
-    # 'ᴍ': '',
-    # 'ᴎ': '',
-    # 'ᴏ': '',
-    # 'ᴐ': '',
-    # 'ᴑ': '',
-    # 'ᴒ': '',
-    # 'ᴓ': '',
-    # 'ᴔ': '',
-    # 'ᴕ': '',
-    # 'ᴖ': '',
-    # 'ᴗ': '',
-    # 'ᴘ': '',
-    # 'ᴙ': '',
-    # 'ᴚ': '',
-    # 'ᴛ': '',
-    # 'ᴜ': '',
-    # 'ᴝ': '',
-    # 'ᴞ': '',
-    # 'ᴟ': '',
-    # 'ᴠ': '',
-    # 'ᴡ': '',
-    # 'ᴢ': '',
-    # 'ᴣ': '',
-    # 'ᴤ': '',
-    # 'ᴥ': '',
     'ᴦ': 'G',
     'ᴧ': 'L',
     'ᴨ': 'P',
@@ -401,7 +346,6 @@ DUMB_PUNCTUATION = {
     '–': '-',
     '—': '-'
 }
-
 
 ####################################################################
 # Used by `Workflow.filter`
@@ -435,14 +379,12 @@ MATCH_ALLCHARS = 64
 #: Combination of all other ``MATCH_*`` constants
 MATCH_ALL = 127
 
-
 ####################################################################
 # Used by `Workflow.check_update`
 ####################################################################
 
 # Number of days to wait between checking for updates to the workflow
 DEFAULT_UPDATE_FREQUENCY = 1
-
 
 ####################################################################
 # Keychain access errors
@@ -484,12 +426,10 @@ class PasswordExists(KeychainError):
 
 def isascii(text):
     """Test if ``text`` contains only ASCII characters.
-
     :param text: text to test for ASCII-ness
     :type text: ``unicode``
     :returns: ``True`` if ``text`` contains only ASCII characters
     :rtype: ``Boolean``
-
     """
     try:
         text.encode('ascii')
@@ -502,10 +442,8 @@ def isascii(text):
 # Implementation classes
 ####################################################################
 
-class SerializerManager(object):
+class SerializerManager:
     """Contains registered serializers.
-
-    .. versionadded:: 1.8
 
     A configured instance of this class is available at
     :attr:`workflow.manager`.
@@ -539,8 +477,8 @@ class SerializerManager(object):
 
         """
         # Basic validation
-        getattr(serializer, 'load')
-        getattr(serializer, 'dump')
+        serializer.load
+        serializer.dump
 
         self._serializers[name] = serializer
 
@@ -567,8 +505,7 @@ class SerializerManager(object):
 
         """
         if name not in self._serializers:
-            raise ValueError('No such serializer registered : {0}'.format(
-                             name))
+            raise ValueError(f'No such serializer registered : {name}')
 
         serializer = self._serializers[name]
         del self._serializers[name]
@@ -581,22 +518,43 @@ class SerializerManager(object):
         return sorted(self._serializers.keys())
 
 
-class JSONSerializer(object):
+class BaseSerializer:
+    is_binary: Optional[bool] = None
+
+    @classmethod
+    def binary_mode(cls):
+        return "b" if cls.is_binary else ""
+
+    @classmethod
+    def _opener(cls, opener, path, mode='r'):
+        with opener(path, mode + cls.binary_mode()) as fp:
+            yield fp
+
+    @classmethod
+    @contextmanager
+    def atomic_writer(cls, path, mode):
+        yield from cls._opener(atomic_writer, path, mode)
+
+    @classmethod
+    @contextmanager
+    def open(cls, path, mode):
+        yield from cls._opener(open, path, mode)
+
+
+class JSONSerializer(BaseSerializer):
     """Wrapper around :mod:`json`. Sets ``indent`` and ``encoding``.
 
-    .. versionadded:: 1.8
-
     Use this serializer if you need readable data files. JSON doesn't
-    support Python objects as well as ``cPickle``/``pickle``, so be
+    support Python objects as well as ``pickle``, so be
     careful which data you try to serialize as JSON.
 
     """
 
+    is_binary = False
+
     @classmethod
     def load(cls, file_obj):
         """Load serialized object from open JSON file.
-
-        .. versionadded:: 1.8
 
         :param file_obj: file handle
         :type file_obj: ``file`` object
@@ -610,8 +568,6 @@ class JSONSerializer(object):
     def dump(cls, obj, file_obj):
         """Serialize object ``obj`` to open JSON file.
 
-        .. versionadded:: 1.8
-
         :param obj: Python object to serialize
         :type obj: JSON-serializable data structure
         :param file_obj: file handle
@@ -621,59 +577,18 @@ class JSONSerializer(object):
         return json.dump(obj, file_obj, indent=2, encoding='utf-8')
 
 
-class CPickleSerializer(object):
-    """Wrapper around :mod:`cPickle`. Sets ``protocol``.
-
-    .. versionadded:: 1.8
-
-    This is the default serializer and the best combination of speed and
-    flexibility.
-
-    """
-
-    @classmethod
-    def load(cls, file_obj):
-        """Load serialized object from open pickle file.
-
-        .. versionadded:: 1.8
-
-        :param file_obj: file handle
-        :type file_obj: ``file`` object
-        :returns: object loaded from pickle file
-        :rtype: object
-
-        """
-        return cPickle.load(file_obj)
-
-    @classmethod
-    def dump(cls, obj, file_obj):
-        """Serialize object ``obj`` to open pickle file.
-
-        .. versionadded:: 1.8
-
-        :param obj: Python object to serialize
-        :type obj: Python object
-        :param file_obj: file handle
-        :type file_obj: ``file`` object
-
-        """
-        return cPickle.dump(obj, file_obj, protocol=-1)
-
-
-class PickleSerializer(object):
+class PickleSerializer(BaseSerializer):
     """Wrapper around :mod:`pickle`. Sets ``protocol``.
-
-    .. versionadded:: 1.8
 
     Use this serializer if you need to add custom pickling.
 
     """
 
+    is_binary = True
+
     @classmethod
     def load(cls, file_obj):
         """Load serialized object from open pickle file.
-
-        .. versionadded:: 1.8
 
         :param file_obj: file handle
         :type file_obj: ``file`` object
@@ -687,8 +602,6 @@ class PickleSerializer(object):
     def dump(cls, obj, file_obj):
         """Serialize object ``obj`` to open pickle file.
 
-        .. versionadded:: 1.8
-
         :param obj: Python object to serialize
         :type obj: Python object
         :param file_obj: file handle
@@ -700,102 +613,433 @@ class PickleSerializer(object):
 
 # Set up default manager and register built-in serializers
 manager = SerializerManager()
-manager.register('cpickle', CPickleSerializer)
 manager.register('pickle', PickleSerializer)
 manager.register('json', JSONSerializer)
 
 
-class Item(object):
-    """Represents a feedback item for Alfred.
+class Item:
+    """Represents a feedback item for Alfred 3+.
 
-    Generates Alfred-compliant XML for a single item.
+    Generates Alfred-compliant JSON for a single item.
 
-    You probably shouldn't use this class directly, but via
-    :meth:`Workflow.add_item`. See :meth:`~Workflow.add_item`
-    for details of arguments.
+    Don't use this class directly (as it then won't be associated with
+    any :class:`Workflow3 <workflow.Workflow3>` object), but rather use
+    :meth:`Workflow3.add_item() <workflow.Workflow3.add_item>`.
+    See :meth:`~workflow.Workflow3.add_item` for details of arguments.
 
     """
 
-    def __init__(self, title, subtitle='', modifier_subtitles=None,
-                 arg=None, autocomplete=None, valid=False, uid=None,
-                 icon=None, icontype=None, type=None, largetext=None,
-                 copytext=None, quicklookurl=None):
-        """Same arguments as :meth:`Workflow.add_item`."""
+    def __init__(
+        self, title, subtitle='', arg=None, autocomplete=None,
+        match=None, valid=False, uid=None, icon=None, icontype=None,
+        type=None, largetext=None, copytext=None, quicklookurl=None
+    ):
+        """Create a new :class:`Item` object.
+
+        Use same arguments as for
+        :class:`Workflow.Item <workflow.Workflow.Item>`.
+
+        Argument ``subtitle_modifiers`` is not supported.
+
+        """
         self.title = title
         self.subtitle = subtitle
-        self.modifier_subtitles = modifier_subtitles or {}
         self.arg = arg
         self.autocomplete = autocomplete
+        self.match = match
         self.valid = valid
         self.uid = uid
         self.icon = icon
         self.icontype = icontype
         self.type = type
+        self.quicklookurl = quicklookurl
         self.largetext = largetext
         self.copytext = copytext
-        self.quicklookurl = quicklookurl
 
-    @property
-    def elem(self):
-        """Create and return feedback item for Alfred.
+        self.modifiers = {}
 
-        :returns: :class:`ElementTree.Element <xml.etree.ElementTree.Element>`
-            instance for this :class:`Item` instance.
+        self.config = {}
+        self.variables = {}
+
+    def setvar(self, name, value):
+        """Set a workflow variable for this Item.
+
+        Args:
+            name (unicode): Name of variable.
+            value (unicode): Value of variable.
 
         """
-        # Attributes on <item> element
-        attr = {}
-        if self.valid:
-            attr['valid'] = 'yes'
-        else:
-            attr['valid'] = 'no'
-        # Allow empty string for autocomplete. This is a useful value,
-        # as TABing the result will revert the query back to just the
-        # keyword
+        self.variables[name] = value
+
+    def getvar(self, name, default=None):
+        """Return value of workflow variable for ``name`` or ``default``.
+
+        Args:
+            name (unicode): Variable name.
+            default (None, optional): Value to return if variable is unset.
+
+        Returns:
+            unicode or ``default``: Value of variable if set or ``default``.
+
+        """
+        return self.variables.get(name, default)
+
+    def add_modifier(
+        self, key, subtitle=None, arg=None, valid=None, icon=None,
+        icontype=None
+    ):
+        """Add alternative values for a modifier key.
+
+        Args:
+            key (unicode): Modifier key, e.g. ``"cmd"`` or ``"alt"``
+            subtitle (unicode, optional): Override item subtitle.
+            arg (unicode, optional): Input for following action.
+            valid (bool, optional): Override item validity.
+            icon (unicode, optional): Filepath/UTI of icon.
+            icontype (unicode, optional): Type of icon.  See
+                :meth:`Workflow.add_item() <workflow.Workflow.add_item>`
+                for valid values.
+
+        In Alfred 4.1+ and Alfred-Workflow 1.40+, ``arg`` may also be a
+        :class:`list` or :class:`tuple`.
+
+        Returns:
+            Modifier: Configured :class:`Modifier`.
+
+        """
+        mod = Modifier(key, subtitle, arg, valid, icon, icontype)
+
+        # Add Item variables to Modifier
+        mod.variables.update(self.variables)
+
+        self.modifiers[key] = mod
+
+        return mod
+
+    @property
+    def obj(self):
+        """Item formatted for JSON serialization.
+
+        Returns:
+            dict: Data suitable for Alfred 3 feedback.
+
+        """
+        # Required values
+        o = {
+            'title': self.title,
+            'subtitle': self.subtitle,
+            'valid': self.valid,
+        }
+
+        # Optional values
+        if self.arg is not None:
+            o['arg'] = self.arg
+
         if self.autocomplete is not None:
-            attr['autocomplete'] = self.autocomplete
+            o['autocomplete'] = self.autocomplete
 
-        # Optional attributes
-        for name in ('uid', 'type'):
-            value = getattr(self, name, None)
-            if value:
-                attr[name] = value
+        if self.match is not None:
+            o['match'] = self.match
 
-        root = ET.Element('item', attr)
-        ET.SubElement(root, 'title').text = self.title
-        ET.SubElement(root, 'subtitle').text = self.subtitle
+        if self.uid is not None:
+            o['uid'] = self.uid
 
-        # Add modifier subtitles
-        for mod in ('cmd', 'ctrl', 'alt', 'shift', 'fn'):
-            if mod in self.modifier_subtitles:
-                ET.SubElement(root, 'subtitle',
-                              {'mod': mod}).text = self.modifier_subtitles[mod]
+        if self.type is not None:
+            o['type'] = self.type
 
-        # Add arg as element instead of attribute on <item>, as it's more
-        # flexible (newlines aren't allowed in attributes)
-        if self.arg:
-            ET.SubElement(root, 'arg').text = self.arg
+        if self.quicklookurl is not None:
+            o['quicklookurl'] = self.quicklookurl
 
-        # Add icon if there is one
-        if self.icon:
-            if self.icontype:
-                attr = dict(type=self.icontype)
-            else:
-                attr = {}
-            ET.SubElement(root, 'icon', attr).text = self.icon
+        if self.variables:
+            o['variables'] = self.variables
 
-        if self.largetext:
-            ET.SubElement(root, 'text',
-                          {'type': 'largetype'}).text = self.largetext
+        if self.config:
+            o['config'] = self.config
 
-        if self.copytext:
-            ET.SubElement(root, 'text',
-                          {'type': 'copy'}).text = self.copytext
+        # Largetype and copytext
+        text = self._text()
+        if text:
+            o['text'] = text
 
-        if self.quicklookurl:
-            ET.SubElement(root, 'quicklookurl').text = self.quicklookurl
+        icon = self._icon()
+        if icon:
+            o['icon'] = icon
 
-        return root
+        # Modifiers
+        mods = self._modifiers()
+        if mods:
+            o['mods'] = mods
+
+        return o
+
+    def _icon(self):
+        """Return `icon` object for item.
+
+        Returns:
+            dict: Mapping for item `icon` (may be empty).
+
+        """
+        icon = {}
+        if self.icon is not None:
+            icon['path'] = self.icon
+
+        if self.icontype is not None:
+            icon['type'] = self.icontype
+
+        return icon
+
+    def _text(self):
+        """Return `largetext` and `copytext` object for item.
+
+        Returns:
+            dict: `text` mapping (may be empty)
+
+        """
+        text = {}
+        if self.largetext is not None:
+            text['largetype'] = self.largetext
+
+        if self.copytext is not None:
+            text['copy'] = self.copytext
+
+        return text
+
+    def _modifiers(self):
+        """Build `mods` dictionary for JSON feedback.
+
+        Returns:
+            dict: Modifier mapping or `None`.
+
+        """
+        if self.modifiers:
+            mods = {}
+            for k, mod in self.modifiers.items():
+                mods[k] = mod.obj
+
+            return mods
+
+        return None
+
+
+class Variables(dict):
+    """Workflow variables for Run Script actions.
+
+    This class allows you to set workflow variables from
+    Run Script actions.
+
+    It is a subclass of :class:`dict`.
+
+    >>> v = Variables(username='deanishe', password='hunter2')
+    >>> v.arg = u'output value'
+    >>> print(v)
+
+    See :ref:`variables-run-script` in the User Guide for more
+    information.
+
+    Args:
+        arg (unicode or list, optional): Main output/``{query}``.
+        **variables: Workflow variables to set.
+
+    In Alfred 4.1+ and Alfred-Workflow 1.40+, ``arg`` may also be a
+    :class:`list` or :class:`tuple`.
+
+    Attributes:
+        arg (unicode or list): Output value (``{query}``).
+            In Alfred 4.1+ and Alfred-Workflow 1.40+, ``arg`` may also be a
+            :class:`list` or :class:`tuple`.
+        config (dict): Configuration for downstream workflow element.
+
+    """
+
+    def __init__(self, arg=None, **variables):
+        """Create a new `Variables` object."""
+        self.arg = arg
+        self.config = {}
+        super(Variables, self).__init__(**variables)
+
+    @property
+    def obj(self):
+        """``alfredworkflow`` :class:`dict`."""
+        o = {}
+        if self:
+            d2 = {}
+            for k, v in self.items():
+                d2[k] = v
+            o['variables'] = d2
+
+        if self.config:
+            o['config'] = self.config
+
+        if self.arg is not None:
+            o['arg'] = self.arg
+
+        return {'alfredworkflow': o}
+
+    def __unicode__(self):
+        """Convert to ``alfredworkflow`` JSON object.
+
+        Returns:
+            unicode: ``alfredworkflow`` JSON object
+
+        """
+        if not self and not self.config:
+            if not self.arg:
+                return ''
+            if isinstance(self.arg, str):
+                return self.arg
+
+        return json.dumps(self.obj)
+
+    def __str__(self):
+        """Convert to ``alfredworkflow`` JSON object.
+
+        Returns:
+            str: UTF-8 encoded ``alfredworkflow`` JSON object
+
+        """
+        return str(self).encode('utf-8')
+
+
+class Modifier:
+    """Modify :class:`Item` arg/icon/variables when modifier key is pressed.
+
+    Don't use this class directly (as it won't be associated with any
+    :class:`Item`), but rather use :meth:`Item.add_modifier()`
+    to add modifiers to results.
+
+    >>> it = wf.add_item('Title', 'Subtitle', valid=True)
+    >>> it.setvar('name', 'default')
+    >>> m = it.add_modifier('cmd')
+    >>> m.setvar('name', 'alternate')
+
+    See :ref:`workflow-variables` in the User Guide for more information
+    and :ref:`example usage <example-variables>`.
+
+    Args:
+        key (unicode): Modifier key, e.g. ``"cmd"``, ``"alt"`` etc.
+        subtitle (unicode, optional): Override default subtitle.
+        arg (unicode, optional): Argument to pass for this modifier.
+        valid (bool, optional): Override item's validity.
+        icon (unicode, optional): Filepath/UTI of icon to use
+        icontype (unicode, optional): Type of icon. See
+            :meth:`Workflow.add_item() <workflow.Workflow.add_item>`
+            for valid values.
+
+    Attributes:
+        arg (unicode): Arg to pass to following action.
+        config (dict): Configuration for a downstream element, such as
+            a File Filter.
+        icon (unicode): Filepath/UTI of icon.
+        icontype (unicode): Type of icon. See
+            :meth:`Workflow.add_item() <workflow.Workflow.add_item>`
+            for valid values.
+        key (unicode): Modifier key (see above).
+        subtitle (unicode): Override item subtitle.
+        valid (bool): Override item validity.
+        variables (dict): Workflow variables set by this modifier.
+
+    """
+
+    def __init__(
+        self, key, subtitle=None, arg=None, valid=None, icon=None,
+        icontype=None
+    ):
+        """Create a new :class:`Modifier`.
+
+        Don't use this class directly (as it won't be associated with any
+        :class:`Item`), but rather use :meth:`Item.add_modifier()`
+        to add modifiers to results.
+
+        Args:
+            key (unicode): Modifier key, e.g. ``"cmd"``, ``"alt"`` etc.
+            subtitle (unicode, optional): Override default subtitle.
+            arg (unicode, optional): Argument to pass for this modifier.
+            valid (bool, optional): Override item's validity.
+            icon (unicode, optional): Filepath/UTI of icon to use
+            icontype (unicode, optional): Type of icon. See
+                :meth:`Workflow.add_item() <workflow.Workflow.add_item>`
+                for valid values.
+
+        """
+        self.key = key
+        self.subtitle = subtitle
+        self.arg = arg
+        self.valid = valid
+        self.icon = icon
+        self.icontype = icontype
+
+        self.config = {}
+        self.variables = {}
+
+    def setvar(self, name, value):
+        """Set a workflow variable for this Item.
+
+        Args:
+            name (unicode): Name of variable.
+            value (unicode): Value of variable.
+
+        """
+        self.variables[name] = value
+
+    def getvar(self, name, default=None):
+        """Return value of workflow variable for ``name`` or ``default``.
+
+        Args:
+            name (unicode): Variable name.
+            default (None, optional): Value to return if variable is unset.
+
+        Returns:
+            unicode or ``default``: Value of variable if set or ``default``.
+
+        """
+        return self.variables.get(name, default)
+
+    @property
+    def obj(self):
+        """Modifier formatted for JSON serialization for Alfred 3.
+
+        Returns:
+            dict: Modifier for serializing to JSON.
+
+        """
+        o = {}
+
+        if self.subtitle is not None:
+            o['subtitle'] = self.subtitle
+
+        if self.arg is not None:
+            o['arg'] = self.arg
+
+        if self.valid is not None:
+            o['valid'] = self.valid
+
+        if self.variables:
+            o['variables'] = self.variables
+
+        if self.config:
+            o['config'] = self.config
+
+        icon = self._icon()
+        if icon:
+            o['icon'] = icon
+
+        return o
+
+    def _icon(self):
+        """Return `icon` object for item.
+
+        Returns:
+            dict: Mapping for item `icon` (may be empty).
+
+        """
+        icon = {}
+        if self.icon is not None:
+            icon['path'] = self.icon
+
+        if self.icontype is not None:
+            icon['type'] = self.icontype
+
+        return icon
 
 
 class Settings(dict):
@@ -857,9 +1101,8 @@ class Settings(dict):
         data.update(self)
 
         with LockFile(self._filepath, 0.5):
-            with atomic_writer(self._filepath, 'wb') as fp:
-                json.dump(data, fp, sort_keys=True, indent=2,
-                          encoding='utf-8')
+            with atomic_writer(self._filepath, 'w') as fp:
+                json.dump(data, fp, sort_keys=True, indent=2)
 
     # dict methods
     def __setitem__(self, key, value):
@@ -885,17 +1128,12 @@ class Settings(dict):
         return ret
 
 
-class Workflow(object):
+class Workflow:
     """The ``Workflow`` object is the main interface to Alfred-Workflow.
-
     It provides APIs for accessing the Alfred/workflow environment,
     storing & caching data, using Keychain, and generating Script
     Filter feedback.
-
-    ``Workflow`` is compatible with both Alfred 2 and 3. The
-    :class:`~workflow.Workflow3` subclass provides additional,
-    Alfred 3-only features, such as workflow variables.
-
+    ``Workflow`` is compatible with Alfred 3+.
     :param default_settings: default workflow settings. If no settings file
         exists, :class:`Workflow.settings` will be pre-populated with
         ``default_settings``.
@@ -912,7 +1150,7 @@ class Workflow(object):
         should probably leave this as the default (``utf-8``), which
         is the encoding Alfred uses.
     :type input_encoding: :class:`unicode`
-    :param normalization: normalisation to apply to CLI args.
+    :param normalization: normalization to apply to CLI args.
         See :meth:`Workflow.decode` for more details.
     :type normalization: :class:`unicode`
     :param capture_args: Capture and act on ``workflow:*`` arguments. See
@@ -928,22 +1166,20 @@ class Workflow(object):
         also be opened directly in a web browser with the ``workflow:help``
         :ref:`magic argument <magic-arguments>`.
     :type help_url: :class:`unicode` or :class:`str`
-
     """
 
-    # Which class to use to generate feedback items. You probably
-    # won't want to change this
     item_class = Item
 
-    def __init__(self, default_settings=None, update_settings=None,
-                 input_encoding='utf-8', normalization='NFC',
-                 capture_args=True, libraries=None,
-                 help_url=None):
+    def __init__(
+        self, default_settings=None, update_settings=None,
+        input_encoding='utf-8', normalization='NFC',
+        capture_args=True, libraries=None, help_url=None, **kwargs
+    ):
         """Create new :class:`Workflow` object."""
         self._default_settings = default_settings or {}
         self._update_settings = update_settings or {}
         self._input_encoding = input_encoding
-        self._normalizsation = normalization
+        self._normalization = normalization
         self._capture_args = capture_args
         self.help_url = help_url
         self._workflowdir = None
@@ -952,8 +1188,8 @@ class Workflow(object):
         self._bundleid = None
         self._debugging = None
         self._name = None
-        self._cache_serializer = 'cpickle'
-        self._data_serializer = 'cpickle'
+        self._cache_serializer = 'pickle'
+        self._data_serializer = 'pickle'
         self._info = None
         self._info_loaded = False
         self._logger = None
@@ -965,8 +1201,9 @@ class Workflow(object):
         self._last_version_run = UNSET
         # Cache for regex patterns created for filter keys
         self._search_pattern_cache = {}
-        # Magic arguments
-        #: The prefix for all magic arguments. Default is ``workflow:``
+        #: Prefix for all magic arguments.
+        #: The default value is ``workflow:`` so keyword
+        #: ``config`` would match user query ``workflow:config``.
         self.magic_prefix = 'workflow:'
         #: Mapping of available magic arguments. The built-in magic
         #: arguments are registered by default. To add your own magic arguments
@@ -979,9 +1216,13 @@ class Workflow(object):
         #: By default, the magic arguments documented
         #: :ref:`here <magic-arguments>` are registered.
         self.magic_arguments = {}
-
         self._register_default_magic()
-
+        self.variables = {}
+        self._rerun = 0
+        # Get session ID from environment if present
+        self._session_id = os.getenv('_WF_SESSION_ID') or None
+        if self._session_id:
+            self.setvar('_WF_SESSION_ID', self._session_id)
         if libraries:
             sys.path = libraries + sys.path
 
@@ -994,16 +1235,14 @@ class Workflow(object):
     @property
     def alfred_version(self):
         """Alfred version as :class:`~workflow.update.Version` object."""
-        from update import Version
+        from .update import Version
         return Version(self.alfred_env.get('version'))
 
     @property
     def alfred_env(self):
         """Dict of Alfred's environmental variables minus ``alfred_`` prefix.
 
-        .. versionadded:: 1.7
-
-        The variables Alfred 2.4+ exports are:
+        The variables Alfred exports are:
 
         ============================  =========================================
         Variable                      Description
@@ -1050,31 +1289,31 @@ class Workflow(object):
         data = {}
 
         for key in (
-                'alfred_debug',
-                'alfred_preferences',
-                'alfred_preferences_localhash',
-                'alfred_theme',
-                'alfred_theme_background',
-                'alfred_theme_subtext',
-                'alfred_version',
-                'alfred_version_build',
-                'alfred_workflow_bundleid',
-                'alfred_workflow_cache',
-                'alfred_workflow_data',
-                'alfred_workflow_name',
-                'alfred_workflow_uid',
-                'alfred_workflow_version'):
+                'debug',
+                'preferences',
+                'preferences_localhash',
+                'theme',
+                'theme_background',
+                'theme_subtext',
+                'version',
+                'version_build',
+                'workflow_bundleid',
+                'workflow_cache',
+                'workflow_data',
+                'workflow_name',
+                'workflow_uid',
+                'workflow_version'
+                ):
 
-            value = os.getenv(key)
+            value = os.getenv('alfred_' + key, '')
 
-            if isinstance(value, str):
-                if key in ('alfred_debug', 'alfred_version_build',
-                           'alfred_theme_subtext'):
+            if value:
+                if key in ('debug', 'version_build', 'theme_subtext'):
                     value = int(value)
-                else:
-                    value = self.decode(value)
+                # else:
+                #     value = self.decode(value)
 
-            data[key[7:]] = value
+            data[key] = value
 
         self._alfred_env = data
 
@@ -1099,7 +1338,7 @@ class Workflow(object):
             if self.alfred_env.get('workflow_bundleid'):
                 self._bundleid = self.alfred_env.get('workflow_bundleid')
             else:
-                self._bundleid = unicode(self.info['bundleid'], 'utf-8')
+                self._bundleid = self.info['bundleid']
 
         return self._bundleid
 
@@ -1111,12 +1350,7 @@ class Workflow(object):
         :rtype: ``bool``
 
         """
-        if self._debugging is None:
-            if self.alfred_env.get('debug') == 1:
-                self._debugging = True
-            else:
-                self._debugging = False
-        return self._debugging
+        return self.alfred_env.get('debug') == 1
 
     @property
     def name(self):
@@ -1137,8 +1371,6 @@ class Workflow(object):
     @property
     def version(self):
         """Return the version of the workflow.
-
-        .. versionadded:: 1.9.10
 
         Get the workflow version from environment variable,
         the ``update_settings`` dict passed on
@@ -1175,7 +1407,7 @@ class Workflow(object):
                 version = self.info.get('version')
 
             if version:
-                from update import Version
+                from .update import Version
                 version = Version(version)
 
             self._version = version
@@ -1190,7 +1422,7 @@ class Workflow(object):
 
         Args are decoded and normalised via :meth:`~Workflow.decode`.
 
-        The encoding and normalisation are the ``input_encoding`` and
+        The encoding and normalization are the ``input_encoding`` and
         ``normalization`` arguments passed to :class:`Workflow` (``UTF-8``
         and ``NFC`` are the defaults).
 
@@ -1208,7 +1440,7 @@ class Workflow(object):
         # Handle magic args
         if len(args) and self._capture_args:
             for name in self.magic_arguments:
-                key = '{0}{1}'.format(self.magic_prefix, name)
+                key = f'{self.magic_prefix}{name}'
                 if key in args:
                     msg = self.magic_arguments[name]()
 
@@ -1227,12 +1459,10 @@ class Workflow(object):
         The cache directory is a subdirectory of Alfred's own cache directory
         in ``~/Library/Caches``. The full path is:
 
-        ``~/Library/Caches/com.runningwithcrayons.Alfred-X/Workflow Data/<bundle id>``
+        ``~/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/<bundle id>``
 
-        ``Alfred-X`` may be ``Alfred-2`` or ``Alfred-3``.
-
-        :returns: full path to workflow's cache directory
-        :rtype: ``unicode``
+        Returns:
+            unicode: full path to workflow's cache directory
 
         """
         if self.alfred_env.get('workflow_cache'):
@@ -1245,12 +1475,13 @@ class Workflow(object):
 
     @property
     def _default_cachedir(self):
-        """Alfred 2's default cache directory."""
+        """Alfred's default cache directory."""
         return os.path.join(
             os.path.expanduser(
-                '~/Library/Caches/com.runningwithcrayons.Alfred-2/'
-                'Workflow Data/'),
-            self.bundleid)
+                '~/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/'
+            ),
+            self.bundleid
+        )
 
     @property
     def datadir(self):
@@ -1259,10 +1490,10 @@ class Workflow(object):
         The data directory is a subdirectory of Alfred's own data directory in
         ``~/Library/Application Support``. The full path is:
 
-        ``~/Library/Application Support/Alfred 2/Workflow Data/<bundle id>``
+        ``~/Library/Application Support/Alfred/Workflow Data/<bundle id>``
 
-        :returns: full path to workflow data directory
-        :rtype: ``unicode``
+        Returns:
+            unicode: full path to workflow data directory
 
         """
         if self.alfred_env.get('workflow_data'):
@@ -1275,17 +1506,17 @@ class Workflow(object):
 
     @property
     def _default_datadir(self):
-        """Alfred 2's default data directory."""
+        """Alfred's default data directory."""
         return os.path.join(os.path.expanduser(
-            '~/Library/Application Support/Alfred 2/Workflow Data/'),
+            '~/Library/Application Support/Alfred/Workflow Data/'),
             self.bundleid)
 
     @property
     def workflowdir(self):
         """Path to workflow's root directory (where ``info.plist`` is).
 
-        :returns: full path to workflow root directory
-        :rtype: ``unicode``
+        Returns:
+            unicode: full path to workflow root directory
 
         """
         if not self._workflowdir:
@@ -1293,8 +1524,9 @@ class Workflow(object):
             # the library is in. CWD will be the workflow root if
             # a workflow is being run in Alfred
             candidates = [
-                os.path.abspath(os.getcwdu()),
-                os.path.dirname(os.path.abspath(os.path.dirname(__file__)))]
+                os.path.abspath(os.getcwd()),
+                os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+            ]
 
             # climb the directory tree until we find `info.plist`
             for dirpath in candidates:
@@ -1398,12 +1630,14 @@ class Workflow(object):
             fmt = logging.Formatter(
                 '%(asctime)s %(filename)s:%(lineno)s'
                 ' %(levelname)-8s %(message)s',
-                datefmt='%H:%M:%S')
+                datefmt='%H:%M:%S'
+            )
 
             logfile = logging.handlers.RotatingFileHandler(
                 self.logfile,
                 maxBytes=1024 * 1024,
-                backupCount=1)
+                backupCount=1
+            )
             logfile.setFormatter(fmt)
             logger.addHandler(logfile)
 
@@ -1460,15 +1694,15 @@ class Workflow(object):
         """
         if not self._settings:
             self.logger.debug('reading settings from %s', self.settings_path)
-            self._settings = Settings(self.settings_path,
-                                      self._default_settings)
+            self._settings = Settings(
+                self.settings_path,
+                self._default_settings
+            )
         return self._settings
 
     @property
     def cache_serializer(self):
         """Name of default cache serializer.
-
-        .. versionadded:: 1.8
 
         This serializer is used by :meth:`cache_data()` and
         :meth:`cached_data()`
@@ -1485,8 +1719,6 @@ class Workflow(object):
     def cache_serializer(self, serializer_name):
         """Set the default cache serialization format.
 
-        .. versionadded:: 1.8
-
         This serializer is used by :meth:`cache_data()` and
         :meth:`cached_data()`
 
@@ -1500,8 +1732,9 @@ class Workflow(object):
         """
         if manager.serializer(serializer_name) is None:
             raise ValueError(
-                'Unknown serializer : `{0}`. Register your serializer '
-                'with `manager` first.'.format(serializer_name))
+                f'Unknown serializer : `{serializer_name}`. '
+                'Register your serializer with `manager` first.'
+            )
 
         self.logger.debug('default cache serializer: %s', serializer_name)
 
@@ -1510,8 +1743,6 @@ class Workflow(object):
     @property
     def data_serializer(self):
         """Name of default data serializer.
-
-        .. versionadded:: 1.8
 
         This serializer is used by :meth:`store_data()` and
         :meth:`stored_data()`
@@ -1528,8 +1759,6 @@ class Workflow(object):
     def data_serializer(self, serializer_name):
         """Set the default cache serialization format.
 
-        .. versionadded:: 1.8
-
         This serializer is used by :meth:`store_data()` and
         :meth:`stored_data()`
 
@@ -1542,8 +1771,9 @@ class Workflow(object):
         """
         if manager.serializer(serializer_name) is None:
             raise ValueError(
-                'Unknown serializer : `{0}`. Register your serializer '
-                'with `manager` first.'.format(serializer_name))
+                f'Unknown serializer : `{serializer_name}`. '
+                'Register your serializer with `manager` first.'
+            )
 
         self.logger.debug('default data serializer: %s', serializer_name)
 
@@ -1554,31 +1784,30 @@ class Workflow(object):
 
         Returns ``None`` if there are no data stored under ``name``.
 
-        .. versionadded:: 1.8
-
         :param name: name of datastore
 
         """
-        metadata_path = self.datafile('.{0}.alfred-workflow'.format(name))
+        metadata_path = self.datafile(f'.{name}.alfred-workflow')
 
         if not os.path.exists(metadata_path):
             self.logger.debug('no data stored for `%s`', name)
             return None
 
-        with open(metadata_path, 'rb') as file_obj:
+        with open(metadata_path, 'r') as file_obj:
             serializer_name = file_obj.read().strip()
 
         serializer = manager.serializer(serializer_name)
 
         if serializer is None:
             raise ValueError(
-                'Unknown serializer `{0}`. Register a corresponding '
-                'serializer with `manager.register()` '
-                'to load this data.'.format(serializer_name))
+                f'Unknown serializer `{serializer_name}`. '
+                'Register a corresponding serializer with `manager.register()`'
+                ' to load this data.'
+            )
 
         self.logger.debug('data `%s` stored as `%s`', name, serializer_name)
 
-        filename = '{0}.{1}'.format(name, serializer_name)
+        filename = f'{name}.{serializer_name}'
         data_path = self.datafile(filename)
 
         if not os.path.exists(data_path):
@@ -1597,8 +1826,6 @@ class Workflow(object):
 
     def store_data(self, name, data, serializer=None):
         """Save data to data directory.
-
-        .. versionadded:: 1.8
 
         If ``data`` is ``None``, the datastore will be deleted.
 
@@ -1627,35 +1854,39 @@ class Workflow(object):
         # In order for `stored_data()` to be able to load data stored with
         # an arbitrary serializer, yet still have meaningful file extensions,
         # the format (i.e. extension) is saved to an accompanying file
-        metadata_path = self.datafile('.{0}.alfred-workflow'.format(name))
-        filename = '{0}.{1}'.format(name, serializer_name)
+        metadata_path = self.datafile(f'.{name}.alfred-workflow')
+        filename = f'{name}.{serializer_name}'
         data_path = self.datafile(filename)
 
         if data_path == self.settings_path:
             raise ValueError(
                 'Cannot save data to' +
-                '`{0}` with format `{1}`. '.format(name, serializer_name) +
+                f'`{name}` with format `{serializer_name}`. ' +
                 "This would overwrite Alfred-Workflow's settings file.")
 
         serializer = manager.serializer(serializer_name)
 
         if serializer is None:
             raise ValueError(
-                'Invalid serializer `{0}`. Register your serializer with '
-                '`manager.register()` first.'.format(serializer_name))
+                f'Invalid serializer `{serializer_name}`. '
+                'Register your serializer with `manager.register()` first.'
+            )
 
         if data is None:  # Delete cached data
             delete_paths((metadata_path, data_path))
             return
 
+        if isinstance(data, str):
+            data = bytearray(data)
+
         # Ensure write is not interrupted by SIGTERM
         @uninterruptible
         def _store():
             # Save file extension
-            with atomic_writer(metadata_path, 'wb') as file_obj:
+            with atomic_writer(metadata_path, 'w') as file_obj:
                 file_obj.write(serializer_name)
 
-            with atomic_writer(data_path, 'wb') as file_obj:
+            with serializer.atomic_writer(data_path, 'w') as file_obj:
                 serializer.dump(data, file_obj)
 
         _store()
@@ -1718,7 +1949,7 @@ class Workflow(object):
                 self.logger.debug('deleted cache file: %s', cache_path)
             return
 
-        with atomic_writer(cache_path, 'wb') as file_obj:
+        with serializer.atomic_writer(cache_path, 'w') as file_obj:
             serializer.dump(data, file_obj)
 
         self.logger.debug('cached data: %s', cache_path)
@@ -1756,9 +1987,11 @@ class Workflow(object):
 
         return time.time() - os.stat(cache_path).st_mtime
 
-    def filter(self, query, items, key=lambda x: x, ascending=False,
-               include_score=False, min_score=0, max_results=0,
-               match_on=MATCH_ALL, fold_diacritics=True):
+    def filter(
+        self, query, items, key=lambda x: x, ascending=False,
+        include_score=False, min_score=0, max_results=0, match_on=MATCH_ALL,
+        fold_diacritics=True
+    ):
         """Fuzzy search filter. Returns list of ``items`` that match ``query``.
 
         ``query`` is case-insensitive. Any item that does not contain the
@@ -1844,8 +2077,6 @@ class Workflow(object):
 
         **Diacritic folding**
 
-        .. versionadded:: 1.3
-
         If ``fold_diacritics`` is ``True`` (the default), and ``query``
         contains only ASCII characters, non-ASCII characters in search keys
         will be converted to ASCII equivalents (e.g. **ü** -> **u**,
@@ -1867,8 +2098,10 @@ class Workflow(object):
             return items
 
         # Use user override if there is one
-        fold_diacritics = self.settings.get('__workflow_diacritic_folding',
-                                            fold_diacritics)
+        fold_diacritics = self.settings.get(
+            '__workflow_diacritic_folding',
+            fold_diacritics
+        )
 
         results = []
 
@@ -1923,8 +2156,8 @@ class Workflow(object):
         """
         query = query.lower()
 
-        if not isascii(query):
-            fold_diacritics = False
+        # if not isascii(query):
+        #     fold_diacritics = False
 
         if fold_diacritics:
             value = self.fold_to_ascii(value)
@@ -1956,7 +2189,6 @@ class Workflow(object):
                 match_on & MATCH_INITIALS_CONTAIN or
                 match_on & MATCH_INITIALS_STARTSWITH):
             atoms = [s.lower() for s in split_on_delimiters(value)]
-            # print('atoms : %s  -->  %s' % (value, atoms))
             # initials of the atoms
             initials = ''.join([s[0] for s in atoms if s])
 
@@ -2014,8 +2246,7 @@ class Workflow(object):
         # Build pattern: include all characters
         pattern = []
         for c in query:
-            # pattern.append('[^{0}]*{0}'.format(re.escape(c)))
-            pattern.append('.*?{0}'.format(re.escape(c)))
+            pattern.append(f'.*?{re.escape(c)}')
         pattern = ''.join(pattern)
         search = re.compile(pattern, re.IGNORECASE).search
 
@@ -2051,8 +2282,10 @@ class Workflow(object):
         # to catch any errors and display an error message in Alfred
         try:
             if self.version:
-                self.logger.debug('---------- %s (%s) ----------',
-                                  self.name, self.version)
+                self.logger.debug(
+                    '---------- %s (%s) ----------',
+                    self.name, self.version
+                )
             else:
                 self.logger.debug('---------- %s ----------', self.name)
 
@@ -2077,7 +2310,7 @@ class Workflow(object):
 
             if not sys.stdout.isatty():  # Show error in Alfred
                 if text_errors:
-                    print(unicode(err).encode('utf-8'), end='')
+                    print(str(err).encode('utf-8'), end='')
                 else:
                     self._items = []
                     if self._name:
@@ -2086,94 +2319,179 @@ class Workflow(object):
                         name = self._bundleid
                     else:  # pragma: no cover
                         name = os.path.dirname(__file__)
-                    self.add_item("Error in workflow '%s'" % name,
-                                  unicode(err),
-                                  icon=ICON_ERROR)
+                    self.add_item(
+                        "Error in workflow '%s'" % name,
+                        str(err),
+                        icon=ICON_ERROR
+                    )
                     self.send_feedback()
             return 1
 
         finally:
-            self.logger.debug('---------- finished in %0.3fs ----------',
-                              time.time() - start)
+            self.logger.debug(
+                '---------- finished in %0.3fs ----------',
+                time.time() - start
+            )
 
         return 0
 
     # Alfred feedback methods ------------------------------------------
 
-    def add_item(self, title, subtitle='', modifier_subtitles=None, arg=None,
-                 autocomplete=None, valid=False, uid=None, icon=None,
-                 icontype=None, type=None, largetext=None, copytext=None,
-                 quicklookurl=None):
-        """Add an item to be output to Alfred.
+    @property
+    def rerun(self):
+        """How often (in seconds) Alfred should re-run the Script Filter."""
+        return self._rerun
 
-        :param title: Title shown in Alfred
-        :type title: ``unicode``
-        :param subtitle: Subtitle shown in Alfred
-        :type subtitle: ``unicode``
-        :param modifier_subtitles: Subtitles shown when modifier
-            (CMD, OPT etc.) is pressed. Use a ``dict`` with the lowercase
-            keys ``cmd``, ``ctrl``, ``shift``, ``alt`` and ``fn``
-        :type modifier_subtitles: ``dict``
-        :param arg: Argument passed by Alfred as ``{query}`` when item is
-            actioned
-        :type arg: ``unicode``
-        :param autocomplete: Text expanded in Alfred when item is TABbed
-        :type autocomplete: ``unicode``
-        :param valid: Whether or not item can be actioned
-        :type valid: ``Boolean``
-        :param uid: Used by Alfred to remember/sort items
-        :type uid: ``unicode``
-        :param icon: Filename of icon to use
-        :type icon: ``unicode``
-        :param icontype: Type of icon. Must be one of ``None`` , ``'filetype'``
-           or ``'fileicon'``. Use ``'filetype'`` when ``icon`` is a filetype
-           such as ``'public.folder'``. Use ``'fileicon'`` when you wish to
-           use the icon of the file specified as ``icon``, e.g.
-           ``icon='/Applications/Safari.app', icontype='fileicon'``.
-           Leave as `None` if ``icon`` points to an actual
-           icon file.
-        :type icontype: ``unicode``
-        :param type: Result type. Currently only ``'file'`` is supported
-            (by Alfred). This will tell Alfred to enable file actions for
-            this item.
-        :type type: ``unicode``
-        :param largetext: Text to be displayed in Alfred's large text box
-            if user presses CMD+L on item.
-        :type largetext: ``unicode``
-        :param copytext: Text to be copied to pasteboard if user presses
-            CMD+C on item.
-        :type copytext: ``unicode``
-        :param quicklookurl: URL to be displayed using Alfred's Quick Look
-            feature (tapping ``SHIFT`` or ``⌘+Y`` on a result).
-        :type quicklookurl: ``unicode``
-        :returns: :class:`Item` instance
+    @rerun.setter
+    def rerun(self, seconds):
+        """Interval at which Alfred should re-run the Script Filter.
 
-        See :ref:`icons` for a list of the supported system icons.
+        Args:
+            seconds (int): Interval between runs.
+        """
+        self._rerun = seconds
 
-        .. note::
+    @property
+    def session_id(self):
+        """A unique session ID every time the user uses the workflow.
 
-            Although this method returns an :class:`Item` instance, you don't
-            need to hold onto it or worry about it. All generated :class:`Item`
-            instances are also collected internally and sent to Alfred when
-            :meth:`send_feedback` is called.
-
-            The generated :class:`Item` is only returned in case you want to
-            edit it or do something with it other than send it to Alfred.
+        The session ID persists while the user is using this workflow.
+        It expires when the user runs a different workflow or closes
+        Alfred.
 
         """
-        item = self.item_class(title, subtitle, modifier_subtitles, arg,
-                               autocomplete, valid, uid, icon, icontype, type,
-                               largetext, copytext, quicklookurl)
+        if not self._session_id:
+            from uuid import uuid4
+            self._session_id = uuid4().hex
+            self.setvar('_WF_SESSION_ID', self._session_id)
+
+        return self._session_id
+
+    def setvar(self, name, value, persist=False):
+        """Set a "global" workflow variable.
+
+        .. versionchanged:: 1.33
+
+        These variables are always passed to downstream workflow objects.
+
+        If you have set :attr:`rerun`, these variables are also passed
+        back to the script when Alfred runs it again.
+
+        Args:
+            name (unicode): Name of variable.
+            value (unicode): Value of variable.
+            persist (bool, optional): Also save variable to ``info.plist``?
+
+        """
+        self.variables[name] = value
+        if persist:
+            from .util import set_config
+            set_config(name, value, self.bundleid)
+            self.logger.debug(
+                'saved variable %r with value %r to info.plist',
+                name, value
+            )
+
+    def getvar(self, name, default=None):
+        """Return value of workflow variable for ``name`` or ``default``.
+
+        Args:
+            name (unicode): Variable name.
+            default (None, optional): Value to return if variable is unset.
+
+        Returns:
+            unicode or ``default``: Value of variable if set or ``default``.
+
+        """
+        return self.variables.get(name, default)
+
+    def add_item(
+        self, title, subtitle='', arg=None, autocomplete=None, valid=False,
+        uid=None, icon=None, icontype=None, type=None, largetext=None,
+        copytext=None, quicklookurl=None, match=None
+    ):
+        """Add an item to be output to Alfred.
+
+        Args:
+            match (unicode, optional): If you have "Alfred filters results"
+                turned on for your Script Filter, Alfred (version 3.5 and
+                above) will filter against this field, not ``title``.
+
+        In Alfred 4.1+ and Alfred-Workflow 1.40+, ``arg`` may also be a
+        :class:`list` or :class:`tuple`.
+
+        See :meth:`Workflow.add_item() <workflow.Workflow.add_item>` for
+        the main documentation and other parameters.
+
+        The key difference is that this method does not support the
+        ``modifier_subtitles`` argument. Use the :meth:`~Item.add_modifier()`
+        method instead on the returned item instead.
+
+        Returns:
+            Item: Alfred feedback item.
+
+        """
+        item = self.item_class(
+            title, subtitle, arg, autocomplete,
+            match, valid, uid, icon, icontype, type,
+            largetext, copytext, quicklookurl
+        )
+
+        # Add variables to child item
+        item.variables.update(self.variables)
+
         self._items.append(item)
         return item
 
-    def send_feedback(self):
-        """Print stored items to console/Alfred as XML."""
-        root = ET.Element('items')
+    @property
+    def obj(self):
+        """Feedback formatted for JSON serialization.
+
+        Returns:
+            dict: Data suitable for Alfred 3 feedback.
+
+        """
+        items = []
         for item in self._items:
-            root.append(item.elem)
-        sys.stdout.write('<?xml version="1.0" encoding="utf-8"?>\n')
-        sys.stdout.write(ET.tostring(root).encode('utf-8'))
+            items.append(item.obj)
+
+        o = {'items': items}
+        if self.variables:
+            o['variables'] = self.variables
+        if self.rerun:
+            o['rerun'] = self.rerun
+        return o
+
+    def warn_empty(self, title, subtitle='', icon=None):
+        """Add a warning to feedback if there are no items.
+
+        Add a "warning" item to Alfred feedback if no other items
+        have been added. This is a handy shortcut to prevent Alfred
+        from showing its fallback searches, which is does if no
+        items are returned.
+
+        Args:
+            title (unicode): Title of feedback item.
+            subtitle (unicode, optional): Subtitle of feedback item.
+            icon (str, optional): Icon for feedback item. If not
+                specified, ``ICON_WARNING`` is used.
+
+        Returns:
+            Item: Newly-created item.
+
+        """
+        if len(self._items):
+            return
+
+        icon = icon or ICON_WARNING
+        return self.add_item(title, subtitle, icon=icon)
+
+    def send_feedback(self):
+        """Print stored items to console/Alfred as JSON."""
+        if self.debugging:
+            json.dump(self.obj, sys.stdout, indent=2, separators=(',', ': '))
+        else:
+            json.dump(self.obj, sys.stdout)
         sys.stdout.flush()
 
     ####################################################################
@@ -2183,8 +2501,6 @@ class Workflow(object):
     @property
     def first_run(self):
         """Return ``True`` if it's the first time this version has run.
-
-        .. versionadded:: 1.9.10
 
         Raises a :class:`ValueError` if :attr:`version` isn't set.
 
@@ -2201,8 +2517,6 @@ class Workflow(object):
     def last_version_run(self):
         """Return version of last version to run (or ``None``).
 
-        .. versionadded:: 1.9.10
-
         :returns: :class:`~workflow.update.Version` instance
             or ``None``
 
@@ -2211,7 +2525,7 @@ class Workflow(object):
 
             version = self.settings.get('__workflow_last_version')
             if version:
-                from update import Version
+                from .update import Version
                 version = Version(version)
 
             self._last_version_run = version
@@ -2222,8 +2536,6 @@ class Workflow(object):
 
     def set_last_version(self, version=None):
         """Set :attr:`last_version_run` to current version.
-
-        .. versionadded:: 1.9.10
 
         :param version: version to store (default is current version)
         :type version: :class:`~workflow.update.Version` instance
@@ -2239,8 +2551,8 @@ class Workflow(object):
 
             version = self.version
 
-        if isinstance(version, basestring):
-            from update import Version
+        if isinstance(version, str):
+            from .update import Version
             version = Version(version)
 
         self.settings['__workflow_last_version'] = str(version)
@@ -2253,31 +2565,25 @@ class Workflow(object):
     def update_available(self):
         """Whether an update is available.
 
-        .. versionadded:: 1.9
-
         See :ref:`guide-updates` in the :ref:`user-manual` for detailed
         information on how to enable your workflow to update itself.
 
         :returns: ``True`` if an update is available, else ``False``
 
         """
+        key = '__workflow_latest_version'
         # Create a new workflow object to ensure standard serialiser
         # is used (update.py is called without the user's settings)
-        update_data = Workflow().cached_data('__workflow_update_status',
-                                             max_age=0)
+        status = Workflow().cached_data(key, max_age=0)
 
-        self.logger.debug('update_data: %r', update_data)
-
-        if not update_data or not update_data.get('available'):
+        if not status or not status.get('available'):
             return False
 
-        return update_data['available']
+        return status['available']
 
     @property
     def prereleases(self):
         """Whether workflow should update to pre-release versions.
-
-        .. versionadded:: 1.16
 
         :returns: ``True`` if pre-releases are enabled with the :ref:`magic
             argument <magic-arguments>` or the ``update_settings`` dict, else
@@ -2292,8 +2598,6 @@ class Workflow(object):
     def check_update(self, force=False):
         """Call update script if it's time to check for a new release.
 
-        .. versionadded:: 1.9
-
         The update script will be run in the background, so it won't
         interfere in the execution of your workflow.
 
@@ -2304,29 +2608,26 @@ class Workflow(object):
         :type force: ``Boolean``
 
         """
-        frequency = self._update_settings.get('frequency',
-                                              DEFAULT_UPDATE_FREQUENCY)
+        key = '__workflow_latest_version'
+        frequency = self._update_settings.get(
+            'frequency', DEFAULT_UPDATE_FREQUENCY
+        )
 
         if not force and not self.settings.get('__workflow_autoupdate', True):
             self.logger.debug('Auto update turned off by user')
             return
 
         # Check for new version if it's time
-        if (force or not self.cached_data_fresh(
-                '__workflow_update_status', frequency * 86400)):
+        if (force or not self.cached_data_fresh(key, frequency * 86400)):
 
-            github_slug = self._update_settings['github_slug']
-            # version = self._update_settings['version']
+            repo = self._update_settings['github_slug']
             version = str(self.version)
 
-            from background import run_in_background
+            from .background import run_in_background
 
-            # update.py is adjacent to this file
-            update_script = os.path.join(os.path.dirname(__file__),
-                                         b'update.py')
-
-            cmd = ['/usr/bin/python', update_script, 'check', github_slug,
-                   version]
+            cmd = [
+                '/usr/bin/python3', '-m', 'workflow.update', 'check', repo, version  # noqa
+            ]
 
             if self.prereleases:
                 cmd.append('--prereleases')
@@ -2341,8 +2642,6 @@ class Workflow(object):
     def start_update(self):
         """Check for update and download and install new workflow file.
 
-        .. versionadded:: 1.9
-
         See :ref:`guide-updates` in the :ref:`user-manual` for detailed
         information on how to enable your workflow to update itself.
 
@@ -2350,23 +2649,19 @@ class Workflow(object):
             installed, else ``False``
 
         """
-        import update
+        from . import update
 
-        github_slug = self._update_settings['github_slug']
-        # version = self._update_settings['version']
+        repo = self._update_settings['github_slug']
         version = str(self.version)
 
-        if not update.check_update(github_slug, version, self.prereleases):
+        if not update.check_update(repo, version, self.prereleases):
             return False
 
-        from background import run_in_background
+        from .background import run_in_background
 
-        # update.py is adjacent to this file
-        update_script = os.path.join(os.path.dirname(__file__),
-                                     b'update.py')
-
-        cmd = ['/usr/bin/python', update_script, 'install', github_slug,
-               version]
+        cmd = [
+            '/usr/bin/python3', '-m', 'workflow.update', 'install', repo, version  # noqa
+        ]
 
         if self.prereleases:
             cmd.append('--prereleases')
@@ -2382,13 +2677,10 @@ class Workflow(object):
 
     def save_password(self, account, password, service=None):
         """Save account credentials.
-
         If the account exists, the old password will first be deleted
         (Keychain throws an error otherwise).
-
         If something goes wrong, a :class:`KeychainError` exception will
         be raised.
-
         :param account: name of the account the password is for, e.g.
             "Pinboard"
         :type account: ``unicode``
@@ -2397,14 +2689,14 @@ class Workflow(object):
         :param service: Name of the service. By default, this is the
             workflow's bundle ID
         :type service: ``unicode``
-
         """
         if not service:
             service = self.bundleid
 
         try:
-            self._call_security('add-generic-password', service, account,
-                                '-w', password)
+            self._call_security(
+                'add-generic-password', service, account, '-w', password
+            )
             self.logger.debug('saved password : %s:%s', service, account)
 
         except PasswordExists:
@@ -2416,15 +2708,14 @@ class Workflow(object):
 
             else:
                 self.delete_password(account, service)
-                self._call_security('add-generic-password', service,
-                                    account, '-w', password)
+                self._call_security(
+                    'add-generic-password', service, account, '-w', password
+                )
                 self.logger.debug('save_password : %s:%s', service, account)
 
     def get_password(self, account, service=None):
         """Retrieve the password saved at ``service/account``.
-
         Raise :class:`PasswordNotFound` exception if password doesn't exist.
-
         :param account: name of the account the password is for, e.g.
             "Pinboard"
         :type account: ``unicode``
@@ -2433,27 +2724,28 @@ class Workflow(object):
         :type service: ``unicode``
         :returns: account password
         :rtype: ``unicode``
-
         """
         if not service:
             service = self.bundleid
 
-        output = self._call_security('find-generic-password', service,
-                                     account, '-g')
+        output = self._call_security(
+            'find-generic-password', service, account, '-g'
+        )
 
         # Parsing of `security` output is adapted from python-keyring
         # by Jason R. Coombs
         # https://pypi.python.org/pypi/keyring
         m = re.search(
             r'password:\s*(?:0x(?P<hex>[0-9A-F]+)\s*)?(?:"(?P<pw>.*)")?',
-            output)
+            output
+        )
 
         if m:
             groups = m.groupdict()
             h = groups.get('hex')
             password = groups.get('pw')
             if h:
-                password = unicode(binascii.unhexlify(h), 'utf-8')
+                password = str(binascii.unhexlify(h), 'utf-8')
 
         self.logger.debug('got password : %s:%s', service, account)
 
@@ -2461,16 +2753,13 @@ class Workflow(object):
 
     def delete_password(self, account, service=None):
         """Delete the password stored at ``service/account``.
-
         Raise :class:`PasswordNotFound` if account is unknown.
-
         :param account: name of the account the password is for, e.g.
             "Pinboard"
         :type account: ``unicode``
         :param service: Name of the service. By default, this is the workflow's
                         bundle ID
         :type service: ``unicode``
-
         """
         if not service:
             service = self.bundleid
@@ -2570,7 +2859,7 @@ class Workflow(object):
 
         def show_version():
             if self.version:
-                return 'Version: {0}'.format(self.version)
+                return f'Version: {self.version}'
             else:
                 return 'This workflow has no version number'
 
@@ -2636,28 +2925,27 @@ class Workflow(object):
 
     def open_log(self):
         """Open :attr:`logfile` in default app (usually Console.app)."""
-        subprocess.call(['open', self.logfile])
+        subprocess.run(['open', self.logfile])  # nosec
 
     def open_cachedir(self):
         """Open the workflow's :attr:`cachedir` in Finder."""
-        subprocess.call(['open', self.cachedir])
+        subprocess.run(['open', self.cachedir])  # nosec
 
     def open_datadir(self):
         """Open the workflow's :attr:`datadir` in Finder."""
-        subprocess.call(['open', self.datadir])
+        subprocess.run(['open', self.datadir])  # nosec
 
     def open_workflowdir(self):
         """Open the workflow's :attr:`workflowdir` in Finder."""
-        subprocess.call(['open', self.workflowdir])
+        subprocess.run(['open', self.workflowdir])  # nosec
 
     def open_terminal(self):
         """Open a Terminal window at workflow's :attr:`workflowdir`."""
-        subprocess.call(['open', '-a', 'Terminal',
-                        self.workflowdir])
+        subprocess.run(['open', '-a', 'Terminal', self.workflowdir])  # nosec
 
     def open_help(self):
         """Open :attr:`help_url` in default browser."""
-        subprocess.call(['open', self.help_url])
+        subprocess.run(['open', self.help_url])  # nosec
 
         return 'Opening workflow help URL in browser'
 
@@ -2667,11 +2955,9 @@ class Workflow(object):
 
     def decode(self, text, encoding=None, normalization=None):
         """Return ``text`` as normalised unicode.
-
         If ``encoding`` and/or ``normalization`` is ``None``, the
         ``input_encoding``and ``normalization`` parameters passed to
         :class:`Workflow` are used.
-
         :param text: string
         :type text: encoded or Unicode string. If ``text`` is already a
             Unicode string, it will only be normalised.
@@ -2681,57 +2967,43 @@ class Workflow(object):
         :param normalization: The nomalisation form to apply to ``text``.
         :type normalization: ``unicode`` or ``None``
         :returns: decoded and normalised ``unicode``
-
-        :class:`Workflow` uses "NFC" normalisation by default. This is the
+        :class:`Workflow` uses "NFC" normalization by default. This is the
         standard for Python and will work well with data from the web (via
         :mod:`~workflow.web` or :mod:`json`).
-
-        macOS, on the other hand, uses "NFD" normalisation (nearly), so data
+        macOS, on the other hand, uses "NFD" normalization (nearly), so data
         coming from the system (e.g. via :mod:`subprocess` or
         :func:`os.listdir`/:mod:`os.path`) may not match. You should either
-        normalise this data, too, or change the default normalisation used by
+        normalise this data, too, or change the default normalization used by
         :class:`Workflow`.
-
         """
         encoding = encoding or self._input_encoding
-        normalization = normalization or self._normalizsation
-        if not isinstance(text, unicode):
-            text = unicode(text, encoding)
+        normalization = normalization or self._normalization
+        if not isinstance(text, str):
+            text = str(text, encoding)
         return unicodedata.normalize(normalization, text)
 
     def fold_to_ascii(self, text):
         """Convert non-ASCII characters to closest ASCII equivalent.
-
-        .. versionadded:: 1.3
-
         .. note:: This only works for a subset of European languages.
-
         :param text: text to convert
         :type text: ``unicode``
         :returns: text containing only ASCII characters
         :rtype: ``unicode``
-
         """
         if isascii(text):
             return text
         text = ''.join([ASCII_REPLACEMENTS.get(c, c) for c in text])
-        return unicode(unicodedata.normalize('NFKD',
-                       text).encode('ascii', 'ignore'))
+        return unicodedata.normalize('NFKD', text)
 
     def dumbify_punctuation(self, text):
         """Convert non-ASCII punctuation to closest ASCII equivalent.
-
         This method replaces "smart" quotes and n- or m-dashes with their
         workaday ASCII equivalents. This method is currently not used
         internally, but exists as a helper method for workflow authors.
-
-        .. versionadded: 1.9.7
-
         :param text: text to convert
         :type text: ``unicode``
         :returns: text with only ASCII punctuation
         :rtype: ``unicode``
-
         """
         if isascii(text):
             return text
@@ -2741,13 +3013,11 @@ class Workflow(object):
 
     def _delete_directory_contents(self, dirpath, filter_func):
         """Delete all files in a directory.
-
         :param dirpath: path to directory to clear
         :type dirpath: ``unicode`` or ``str``
         :param filter_func function to determine whether a file shall be
             deleted or not.
         :type filter_func ``callable``
-
         """
         if os.path.exists(dirpath):
             for filename in os.listdir(dirpath):
@@ -2763,17 +3033,16 @@ class Workflow(object):
     def _load_info_plist(self):
         """Load workflow info from ``info.plist``."""
         # info.plist should be in the directory above this one
-        self._info = plistlib.readPlist(self.workflowfile('info.plist'))
+        with open(self.workflowfile('info.plist'), 'rb') as file_obj:
+            self._info = plistlib.load(file_obj)
         self._info_loaded = True
 
     def _create(self, dirpath):
         """Create directory `dirpath` if it doesn't exist.
-
         :param dirpath: path to directory
         :type dirpath: ``unicode``
         :returns: ``dirpath`` argument
         :rtype: ``unicode``
-
         """
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
@@ -2781,10 +3050,8 @@ class Workflow(object):
 
     def _call_security(self, action, service, account, *args):
         """Call ``security`` CLI program that provides access to keychains.
-
         May raise `PasswordNotFound`, `PasswordExists` or `KeychainError`
         exceptions (the first two are subclasses of `KeychainError`).
-
         :param action: The ``security`` action to call, e.g.
                            ``add-generic-password``
         :type action: ``unicode``
@@ -2801,11 +3068,11 @@ class Workflow(object):
         :returns: ``(retcode, output)``. ``retcode`` is an `int`, ``output`` a
                   ``unicode`` string.
         :rtype: `tuple` (`int`, ``unicode``)
-
         """
         cmd = ['security', action, '-s', service, '-a', account] + list(args)
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
+        p = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
         stdout, _ = p.communicate()
         if p.returncode == 44:  # password does not exist
             raise PasswordNotFound()
