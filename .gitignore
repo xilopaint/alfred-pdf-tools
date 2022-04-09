@@ -131,6 +131,7 @@ dmypy.json
 
 # Alfred
 *.alfredworkflow
+.alfredversionchecked
 
 # Desktop Services Store
 .DS_Store
