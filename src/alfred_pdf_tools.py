@@ -3,6 +3,7 @@
 """
 Usage:
     alfred_pdf_tools.py --optimize <query>
+    alfred_pdf_tools.py --deskew <query>
     alfred_pdf_tools.py --progress <query>
     alfred_pdf_tools.py --encrypt <query>
     alfred_pdf_tools.py --decrypt <query>
@@ -19,7 +20,8 @@ Optimize, encrypt and manipulate PDF files.
 
 Options:
     [--optimize <query>]    Optimize PDF files.
-    --progress              Track optimization progress.
+    --deskew                Deskew PDF files.
+    --progress              Track the enhancement progress.
     --encrypt <query>       Encrypt PDF files.
     --decrypt <query>       Decrypt PDF files.
     --mrg <query>           Merge PDF files.
@@ -50,7 +52,7 @@ HELP_URL = 'https://github.com/xilopaint/alfred-pdf-tools'
 
 
 class AlfredPdfToolsError(Exception):
-    """Creates Subclass of Exception class."""
+    """The base class for the workflow exceptions."""
     pass
 
 
@@ -144,8 +146,35 @@ def optimize(resolution, pdf_paths):
         )
 
 
+def deskew(pdf_paths):
+    """Deskew PDF files.
+
+    Args:
+        pdf_paths (list): Paths to selected PDF files.
+    """
+    for pdf_path in pdf_paths:
+        cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt "{pdf_path}" -as -mode copy -n -o "%s [deskewed].pdf" -x'  # noqa
+        proc = Popen(cmd, shell=True, stdout=PIPE)
+
+        while proc.poll() is None:  # Loop while the subprocess is running.
+            line = proc.stdout.readline().decode('utf-8')
+
+            if 'Reading' in line:
+                pg_cnt = line.split()[1]
+                wf.cache_data('page_count', pg_cnt)
+
+            if 'SOURCE PAGE' in line:
+                pg_num = line.split()[2]
+                wf.cache_data('page_number', pg_num)
+
+        notify.notify(
+            'Alfred PDF Tools',
+            'Deskew successfully completed.'
+        )
+
+
 def get_progress():
-    """Show optimization progress."""
+    """Show enhancement progress."""
     wf.rerun = 1
     pg_num = wf.cached_data('page_number', max_age=0)
     pg_cnt = wf.cached_data('page_count', max_age=0)
@@ -156,7 +185,7 @@ def get_progress():
         count = 0
 
     if not pg_cnt and not pg_num:
-        title = 'Optimize action is not running.'
+        title = 'No enhancement action is running.'
         wf.add_item(valid=True, title=title, icon=ICON_ERROR)
 
     if pg_cnt and not pg_num:
@@ -206,7 +235,7 @@ def encrypt(pwd, pdf_paths):
                 pdf.pages.extend(f.pages)
                 encryption = Encryption(owner=pwd, user=pwd)
                 noextpath = os.path.splitext(pdf_path)[0]
-                pdf.save(f'{noextpath} (encrypted).pdf', encryption=encryption)
+                pdf.save(f'{noextpath} [encrypted].pdf', encryption=encryption)
 
         notify.notify(
             'Alfred PDF Tools',
@@ -232,7 +261,7 @@ def decrypt(pwd, pdf_paths):
                 pdf = Pdf.new()
                 pdf.pages.extend(f.pages)
                 noextpath = os.path.splitext(pdf_path)[0]
-                pdf.save(f'{noextpath} (decrypted).pdf')
+                pdf.save(f'{noextpath} [decrypted].pdf')
 
                 notify.notify(
                     'Alfred PDF Tools',
@@ -319,7 +348,7 @@ def split_count(max_pages, abs_path, suffix):
         for n, page_range in enumerate(page_ranges, 1):
             out_file = Pdf.new()
             out_file.pages.extend(page_range)
-            out_file.save(f'{noextpath} ({suffix} {n}).pdf')
+            out_file.save(f'{noextpath} [{suffix} {n}].pdf')
 
     except NotIntegerError:
         notify.notify(
@@ -397,10 +426,10 @@ def split_size(max_size, abs_path, suffix):
             for n, sl in enumerate(slices, 1):
                 out_file = Pdf.new()
                 out_file.pages.extend(inp_file.pages[sl])
-                out_file.save(f'{noextpath} ({suffix} {n}).pdf')
+                out_file.save(f'{noextpath} [{suffix} {n}].pdf')
         else:
             while not stop > pg_cnt:
-                out_file_name = f'{noextpath} ({suffix} {pg_num + 1}).pdf'
+                out_file_name = f'{noextpath} [{suffix} {pg_num + 1}].pdf'
                 chunk = pg_sizes[start:stop]
                 chunk_size = sum(chunk)
                 chunk_pg_cnt = len(chunk)
@@ -515,7 +544,7 @@ def slice_(query, abs_path, is_single, suffix):
                     stop = int(page)
 
                 out_file.pages.extend(inp_file.pages[start:stop])
-            out_file.save(f'{noextpath} (sliced).pdf')
+            out_file.save(f'{noextpath} [sliced].pdf')
         else:
             for part_num, page in enumerate(pages, 1):
                 out_file = Pdf.new()
@@ -538,7 +567,7 @@ def slice_(query, abs_path, is_single, suffix):
                     stop = int(page)
 
                 out_file.pages.extend(inp_file.pages[start:stop])
-                out_file.save(f'{noextpath} ({suffix} {part_num}).pdf')
+                out_file.save(f'{noextpath} [{suffix} {part_num}].pdf')
     except SyntaxError:
         notify.notify(
             'Alfred PDF Tools',
@@ -593,7 +622,7 @@ def crop(pdf_paths):
                 page.MediaBox = [x1, y1, x2, y2]
 
             noextpath = os.path.splitext(pdf_path)[0]
-            out_file.save(f'{noextpath} (cropped).pdf')
+            out_file.save(f'{noextpath} [cropped].pdf')
     except PasswordError:
         notify.notify(
             'Alfred PDF Tools',
@@ -620,7 +649,7 @@ def scale(pdf_paths):
                 out_file.pages[i].add_overlay(page)
 
             noextpath = os.path.splitext(pdf_path)[0]
-            out_file.save(f'{noextpath} (scaled).pdf')
+            out_file.save(f'{noextpath} [scaled].pdf')
     except PasswordError:
         notify.notify(
             'Alfred PDF Tools',
@@ -638,6 +667,8 @@ def main(wf):
 
     if args.get('--optimize'):
         optimize(query, pdf_paths)
+    elif args.get('--deskew'):
+        deskew(pdf_paths)
     elif args.get('--progress'):
         get_progress()
     elif args.get('--encrypt'):

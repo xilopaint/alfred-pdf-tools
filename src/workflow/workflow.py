@@ -41,15 +41,6 @@ UNSET = object()
 # Standard system icons
 ####################################################################
 
-# These icons are default macOS icons. They are super-high quality, and
-# will be familiar to users.
-# This library uses `ICON_ERROR` when a workflow dies in flames, so
-# in my own workflows, I use `ICON_WARNING` for less fatal errors
-# (e.g. bad user input, no results etc.)
-
-# The system icons are all in this directory. There are many more than
-# are listed here
-
 ICON_ROOT = '/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources'
 
 ICON_ACCOUNT = os.path.join(ICON_ROOT, 'Accounts.icns')
@@ -74,7 +65,6 @@ ICON_SWITCH = os.path.join(ICON_ROOT, 'General.icns')
 ICON_SYNC = os.path.join(ICON_ROOT, 'Sync.icns')
 ICON_TRASH = os.path.join(ICON_ROOT, 'TrashIcon.icns')
 ICON_USER = os.path.join(ICON_ROOT, 'UserIcon.icns')
-ICON_WARNING = os.path.join(ICON_ROOT, 'AlertCautionBadgeIcon.icns')
 ICON_WEB = os.path.join(ICON_ROOT, 'BookmarkIcon.icns')
 
 ####################################################################
@@ -2474,7 +2464,7 @@ class Workflow:
             title (unicode): Title of feedback item.
             subtitle (unicode, optional): Subtitle of feedback item.
             icon (str, optional): Icon for feedback item. If not
-                specified, ``ICON_WARNING`` is used.
+                specified, ``ICON_ERROR`` is used.
 
         Returns:
             Item: Newly-created item.
@@ -2483,7 +2473,7 @@ class Workflow:
         if len(self._items):
             return
 
-        icon = icon or ICON_WARNING
+        icon = icon or ICON_ERROR
         return self.add_item(title, subtitle, icon=icon)
 
     def send_feedback(self):

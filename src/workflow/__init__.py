@@ -32,7 +32,6 @@ from .workflow import (
     ICON_SYNC,
     ICON_TRASH,
     ICON_USER,
-    ICON_WARNING,
     ICON_WEB
 )
 
@@ -82,7 +81,6 @@ __all__ = [
     'ICON_SYNC',
     'ICON_TRASH',
     'ICON_USER',
-    'ICON_WARNING',
     'ICON_WEB',
     'MATCH_ALL',
     'MATCH_ALLCHARS',
