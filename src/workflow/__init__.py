@@ -48,11 +48,14 @@ from .workflow import (
     MATCH_SUBSTRING,
 )
 
-__version__ = open(os.path.join(os.path.dirname(__file__), 'version')).read()
-__title__ = ''
-__author__ = ''
+__version__ = open(  # pylint: disable=consider-using-with
+    os.path.join(os.path.dirname(__file__), 'version'),
+    encoding='utf-8'
+).read()
+__title__ = ''  # TODO: Add name to the library
+__author__ = 'Arthur Pinheiro'
 __license__ = 'MIT'
-__copyright__ = ''
+__copyright__ = 'Copyright 2022 Arthur Pinheiro'
 
 __all__ = [
     'Variables',

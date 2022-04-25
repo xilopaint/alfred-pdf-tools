@@ -37,8 +37,9 @@ Options:
 import os
 import sys
 import tempfile
+import re
+import subprocess
 from pathlib import Path
-from subprocess import Popen, PIPE
 
 from docopt import docopt
 from pikepdf import Pdf, Encryption, PasswordError
@@ -52,50 +53,47 @@ HELP_URL = 'https://github.com/xilopaint/alfred-pdf-tools'
 
 
 class AlfredPdfToolsError(Exception):
-    """The base class for the workflow exceptions."""
-    pass
-
-
-class NotIntegerError(AlfredPdfToolsError):
-    """Raised when the user input is not an integer."""
-    pass
-
-
-class NegativeValueError(AlfredPdfToolsError):
-    """Raised when the user input is a negative integer."""
-    pass
+    """Base class for the workflow exceptions."""
 
 
 class SelectionError(AlfredPdfToolsError):
     """Raised when the user selects less than two PDF files."""
-    pass
 
 
 class MultiplePathsError(AlfredPdfToolsError):
     """Raised when the user selects PDF files from diferent dirnames."""
-    pass
 
 
-class SyntaxError(AlfredPdfToolsError):
-    """Raised when the input is not a valid syntax."""
-    pass
+def handle_exceptions(func):
+    """Decorator to handle exceptions in the wrapper function."""
+    def wrapper(*args, **kwargs):
+        """Wrapper function."""
+        try:
+            func(*args, **kwargs)
+        except ValueError:
+            notify.notify(
+                'Alfred PDF Tools',
+                'Invalid input.'
+            )
+        except PasswordError:
+            notify.notify(
+                'Alfred PDF Tools',
+                'Encrypted files are not allowed.'
+            )
+        except SelectionError:
+            notify.notify(
+                'Alfred PDF Tools',
+                'You must select at least two PDF files to merge.'
+            )
+        except MultiplePathsError:
+            notify.notify(
+                'Alfred PDF Tools',
+                'Cannot merge PDF files from different paths.'
+            )
+    return wrapper
 
 
-class IndexError(AlfredPdfToolsError):
-    """Raised when the inputted page number is out of range."""
-    pass
-
-
-class StartValueZeroError(AlfredPdfToolsError):
-    """Raise when the inputted page number is zero."""
-    pass
-
-
-class StartValueReverseError(AlfredPdfToolsError):
-    """Raised when a page range is set in reverse order."""
-    pass
-
-
+@handle_exceptions
 def optimize(resolution, pdf_paths):
     """Optimize PDF files.
 
@@ -103,25 +101,19 @@ def optimize(resolution, pdf_paths):
         resolution (str): Resolution to be applied.
         pdf_paths (list): Paths to selected PDF files.
     """
-    try:
-        if resolution:
-            if not resolution.lstrip('+-').isdigit():
-                raise NotIntegerError
+    if not resolution:
+        resolution = 150
 
-        if resolution:
-            if int(resolution) < 0:
-                raise NegativeValueError
+    if int(resolution) < 0:
+        raise ValueError
 
-        if not resolution:
-            resolution = 150
+    for pdf_path in pdf_paths:
+        cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt "{pdf_path}" -as -mode copy -dpi {resolution} -o "%s [optimized].pdf" -x'  # noqa
 
-        for pdf_path in pdf_paths:
-            cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt "{pdf_path}" -as -mode copy -dpi {resolution} -o "%s (optimized).pdf" -x'  # noqa
-            proc = Popen(cmd, shell=True, stdout=PIPE)
-
-            while proc.poll() is None:  # Loop while the subprocess is running.
-                line = proc.stdout.readline().decode('utf-8')
-
+        with subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'
+        ) as proc:
+            for line in proc.stdout:
                 if 'Reading' in line:
                     pg_cnt = line.split()[1]
                     wf.cache_data('page_count', pg_cnt)
@@ -130,22 +122,21 @@ def optimize(resolution, pdf_paths):
                     pg_num = line.split()[2]
                     wf.cache_data('page_number', pg_num)
 
+        wf.clear_cache(lambda cache_file: cache_file[:4] == 'page')
+
+        if proc.returncode == 0:
             notify.notify(
                 'Alfred PDF Tools',
                 'Optimization successfully completed.'
             )
-    except NotIntegerError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'The argument is not an integer.'
-        )
-    except NegativeValueError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Negative integer is not a valid argument.'
-        )
+        else:
+            notify.notify(
+                'Alfred PDF Tools',
+                'Optimization process failed.'
+            )
 
 
+@handle_exceptions
 def deskew(pdf_paths):
     """Deskew PDF files.
 
@@ -154,23 +145,31 @@ def deskew(pdf_paths):
     """
     for pdf_path in pdf_paths:
         cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt "{pdf_path}" -as -mode copy -n -o "%s [deskewed].pdf" -x'  # noqa
-        proc = Popen(cmd, shell=True, stdout=PIPE)
 
-        while proc.poll() is None:  # Loop while the subprocess is running.
-            line = proc.stdout.readline().decode('utf-8')
+        with subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'  # nosec
+        ) as proc:
+            for line in proc.stdout:
+                if 'Reading' in line:
+                    pg_cnt = line.split()[1]
+                    wf.cache_data('page_count', pg_cnt)
 
-            if 'Reading' in line:
-                pg_cnt = line.split()[1]
-                wf.cache_data('page_count', pg_cnt)
+                if 'SOURCE PAGE' in line:
+                    pg_num = line.split()[2]
+                    wf.cache_data('page_number', pg_num)
 
-            if 'SOURCE PAGE' in line:
-                pg_num = line.split()[2]
-                wf.cache_data('page_number', pg_num)
+            wf.clear_cache(lambda cache_file: cache_file[:4] == 'page')
 
-        notify.notify(
-            'Alfred PDF Tools',
-            'Deskew successfully completed.'
-        )
+        if proc.returncode == 0:
+            notify.notify(
+                'Alfred PDF Tools',
+                'Optimization successfully completed.'
+            )
+        else:
+            notify.notify(
+                'Alfred PDF Tools',
+                'Deskew process failed.'
+            )
 
 
 def get_progress():
@@ -204,7 +203,6 @@ def get_progress():
             wf.rerun = 0  # Stop re-running.
             title = f'Page {pg_cnt} of {pg_cnt} processed (100% completed)'
             wf.add_item(valid=True, title=title, icon='checkmark.png')
-            wf.clear_cache()
 
     count += 1
 
@@ -215,12 +213,13 @@ def get_progress():
 
 def progress_bar(count):
     """Generate progress bar."""
-    bar = [u'\u25CB'] * 5
+    prog_bar = ['\u25CB'] * 5
     i = count % 5
-    bar[i] = u'\u25CF'
-    return u''.join(bar)
+    prog_bar[i] = '\u25CF'
+    return ''.join(prog_bar)
 
 
+@handle_exceptions
 def encrypt(pwd, pdf_paths):
     """Encrypt PDF files.
 
@@ -228,23 +227,17 @@ def encrypt(pwd, pdf_paths):
         pwd (str): Password used in the encryption.
         pdf_paths (list): Paths to selected PDF files.
     """
-    try:
-        for pdf_path in pdf_paths:
-            with Pdf.open(pdf_path) as f:
-                pdf = Pdf.new()
-                pdf.pages.extend(f.pages)
-                encryption = Encryption(owner=pwd, user=pwd)
-                noextpath = os.path.splitext(pdf_path)[0]
-                pdf.save(f'{noextpath} [encrypted].pdf', encryption=encryption)
+    for pdf_path in pdf_paths:
+        with Pdf.open(pdf_path) as f:
+            pdf = Pdf.new()
+            pdf.pages.extend(f.pages)
+            encryption = Encryption(owner=pwd, user=pwd)
+            noextpath = os.path.splitext(pdf_path)[0]
+            pdf.save(f'{noextpath} [encrypted].pdf', encryption=encryption)
 
-        notify.notify(
-            'Alfred PDF Tools',
-            'Encryption successfully completed.'
-            )
-    except PasswordError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'The PDF file is already encrypted.'
+    notify.notify(
+        'Alfred PDF Tools',
+        'Encryption successfully completed.'
         )
 
 
@@ -274,6 +267,7 @@ def decrypt(pwd, pdf_paths):
         )
 
 
+@handle_exceptions
 def merge(out_filename, pdf_paths, should_trash):
     """Merge PDF files.
 
@@ -282,44 +276,28 @@ def merge(out_filename, pdf_paths, should_trash):
         pdf_paths (list): Paths to selected PDF files.
         should_trash (bool): `True` for moving the input PDF files to Trash.
     """
-    try:
-        parent_paths = [Path(pdf_path).parent for pdf_path in pdf_paths]
+    parent_paths = [Path(pdf_path).parent for pdf_path in pdf_paths]
 
-        if len(pdf_paths) < 2:
-            raise SelectionError
+    if len(pdf_paths) < 2:
+        raise SelectionError
 
-        if not parent_paths[1:] == parent_paths[:-1]:
-            raise MultiplePathsError
+    if not parent_paths[1:] == parent_paths[:-1]:
+        raise MultiplePathsError
 
-        pdf = Pdf.new()
+    pdf = Pdf.new()
 
-        for f in pdf_paths:
-            src = Pdf.open(f)
-            pdf.pages.extend(src.pages)
+    for f in pdf_paths:
+        src = Pdf.open(f)
+        pdf.pages.extend(src.pages)
 
-        if should_trash:
-            for pdf_path in pdf_paths:
-                send2trash(pdf_path)
+    if should_trash:
+        for pdf_path in pdf_paths:
+            send2trash(pdf_path)
 
-        pdf.save(f'{parent_paths[0]}/{out_filename}.pdf')
-
-    except SelectionError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'You must select at least two PDF files to merge.'
-        )
-    except MultiplePathsError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Cannot merge PDF files from multiple paths.'
-        )
-    except PasswordError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Merge action cannot handle an encrypted PDF file.'
-        )
+    pdf.save(f'{parent_paths[0]}/{out_filename}.pdf')
 
 
+@handle_exceptions
 def split_count(max_pages, abs_path, suffix):
     """Split PDF file by page count.
 
@@ -328,50 +306,25 @@ def split_count(max_pages, abs_path, suffix):
         abs_path (str): Absolute path of the input PDF file.
         suffix (str): Suffix for the output filenames.
     """
-    try:
-        if not max_pages.lstrip('+-').isdigit():
-            raise NotIntegerError
+    if int(max_pages) < 0:
+        raise ValueError
 
-        if int(max_pages) < 0:
-            raise NegativeValueError
+    inp_file = Pdf.open(abs_path)
 
-        inp_file = Pdf.open(abs_path)
-        noextpath = os.path.splitext(abs_path)[0]
+    pg_cnt = int(max_pages)
+    num_pages = len(inp_file.pages)
+    page_ranges = [
+        inp_file.pages[n:n + pg_cnt] for n in range(0, num_pages, pg_cnt)
+    ]
+    noextpath = os.path.splitext(abs_path)[0]
 
-        pg_cnt = int(max_pages)
-        num_pages = len(inp_file.pages)
-
-        page_ranges = [
-            inp_file.pages[n:n + pg_cnt] for n in range(0, num_pages, pg_cnt)
-        ]
-
-        for n, page_range in enumerate(page_ranges, 1):
-            out_file = Pdf.new()
-            out_file.pages.extend(page_range)
-            out_file.save(f'{noextpath} [{suffix} {n}].pdf')
-
-    except NotIntegerError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'The argument is not an integer.'
-        )
-    except NegativeValueError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Negative integer is not a valid argument.'
-        )
-    except ZeroDivisionError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Zero is not a valid argument.'
-        )
-    except PasswordError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Split action cannot handle an encrypted PDF file.'
-        )
+    for n, page_range in enumerate(page_ranges, 1):
+        out_file = Pdf.new()
+        out_file.pages.extend(page_range)
+        out_file.save(f'{noextpath} [{suffix} {n}].pdf')
 
 
+@handle_exceptions
 def split_size(max_size, abs_path, suffix):
     """Split PDF file by file size.
 
@@ -380,116 +333,104 @@ def split_size(max_size, abs_path, suffix):
         abs_path (str): Absolute path of the input PDF file.
         suffix (str): Suffix for the output filenames.
     """
-    try:
-        if float(max_size) < 0:
-            raise ValueError
+    if float(max_size) < 0:
+        raise ValueError
 
-        max_chunk_sz = float(max_size) * 1000000
-        noextpath = os.path.splitext(abs_path)[0]
+    max_chunk_sz = float(max_size) * 1000000
+    inp_file = Pdf.open(abs_path)
+    pg_cnt = len(inp_file.pages)
+    pg_sizes = []
 
-        inp_file = Pdf.open(abs_path)
-        pg_cnt = len(inp_file.pages)
-
-        pg_sizes = []
-
-        tmp_dir = tempfile.TemporaryDirectory()
-
+    with tempfile.TemporaryDirectory() as tmp_dir:
         for n, page in enumerate(inp_file.pages):
             tmp_file = Pdf.new()
             tmp_file.pages.append(page)
-            tmp_file.save(f'{tmp_dir.name}/page{n}')
-            tmp_file_size = os.path.getsize(f'{tmp_dir.name}/page{n}')
+            tmp_file.save(f'{tmp_dir}/page{n}')
+            tmp_file_size = os.path.getsize(f'{tmp_dir}/page{n}')
             pg_sizes.append(tmp_file_size)
             tmp_file.close()
 
-        inp_file_size = os.path.getsize(abs_path)
-        sum_pg_sizes = sum(pg_sizes)
-        dividend = min(inp_file_size, sum_pg_sizes)
-        divisor = max(inp_file_size, sum_pg_sizes)
-        quotient = dividend / divisor
+    inp_file_size = os.path.getsize(abs_path)
+    sum_pg_sizes = sum(pg_sizes)
+    dividend = min(inp_file_size, sum_pg_sizes)
+    divisor = max(inp_file_size, sum_pg_sizes)
+    quotient = dividend / divisor
 
-        start = 0
-        stop = 1
-        pg_num = 0
+    start = 0
+    stop = 1
+    pg_num = 0
 
-        if quotient > 0.95:
-            pg_chunks = [[(0, pg_sizes.pop(0))]]
+    noextpath = os.path.splitext(abs_path)[0]
 
-            for n, pg_size in enumerate(pg_sizes, 1):
-                if sum(ps for _, ps in pg_chunks[-1]) + pg_size < max_chunk_sz:
-                    pg_chunks[-1].append((n, pg_size))
+    if quotient > 0.95:  # pylint: disable=too-many-nested-blocks
+        pg_chunks = [[(0, pg_sizes.pop(0))]]
+
+        for n, pg_size in enumerate(pg_sizes, 1):
+            if sum(ps for _, ps in pg_chunks[-1]) + pg_size < max_chunk_sz:
+                pg_chunks[-1].append((n, pg_size))
+            else:
+                pg_chunks.append([(n, pg_size)])
+
+        slices = [slice(n[0][0], n[-1][0] + 1) for n in pg_chunks]
+
+        for n, slice__ in enumerate(slices, 1):
+            out_file = Pdf.new()
+            out_file.pages.extend(inp_file.pages[slice__])
+            out_file.save(f'{noextpath} [{suffix} {n}].pdf')
+    else:
+        while not stop > pg_cnt:
+            out_file_name = f'{noextpath} [{suffix} {pg_num + 1}].pdf'
+            chunk = pg_sizes[start:stop]
+            chunk_size = sum(chunk)
+            chunk_pg_cnt = len(chunk)
+
+            if chunk_size < max_chunk_sz:
+                if stop != pg_cnt:
+                    stop += 1
                 else:
-                    pg_chunks.append([(n, pg_size)])
+                    out_file = Pdf.new()
+                    out_file.pages.extend(inp_file.pages[start:stop])
+                    out_file.save(out_file_name)
+                    break
+            else:
+                if chunk_pg_cnt == 1:
+                    out_file = Pdf.new()
+                    out_file.pages.extend(inp_file.pages[start:stop])
+                    out_file.save(out_file_name)
+                    start = stop
+                    stop += 1
+                    pg_num += 1
+                else:
+                    stop -= 1
+                    out_file = Pdf.new()
+                    out_file.pages.extend(inp_file.pages[start:stop])
+                    out_file.save(out_file_name)
+                    chunk_size = os.path.getsize(out_file_name)
+                    next_page = pg_sizes[stop:stop + 1][0]
 
-            slices = [slice(n[0][0], n[-1][0] + 1) for n in pg_chunks]
+                    if chunk_size + next_page < max_chunk_sz:
+                        os.remove(out_file_name)
+                        chunk_size_real = chunk_size / (stop - start)
 
-            for n, sl in enumerate(slices, 1):
-                out_file = Pdf.new()
-                out_file.pages.extend(inp_file.pages[sl])
-                out_file.save(f'{noextpath} [{suffix} {n}].pdf')
-        else:
-            while not stop > pg_cnt:
-                out_file_name = f'{noextpath} [{suffix} {pg_num + 1}].pdf'
-                chunk = pg_sizes[start:stop]
-                chunk_size = sum(chunk)
-                chunk_pg_cnt = len(chunk)
+                        pg_sizes_real = []
 
-                if chunk_size < max_chunk_sz:
-                    if stop != pg_cnt:
+                        for i in range(pg_cnt):
+                            if start <= i < stop:
+                                pg_sizes_real.append(chunk_size_real)
+                            else:
+                                pg_sizes_real.append(pg_sizes[i])
+
+                        pg_sizes = pg_sizes_real
                         stop += 1
                     else:
-                        out_file = Pdf.new()
-                        out_file.pages.extend(inp_file.pages[start:stop])
-                        out_file.save(out_file_name)
-                        break
-                else:
-                    if chunk_pg_cnt == 1:
-                        out_file = Pdf.new()
-                        out_file.pages.extend(inp_file.pages[start:stop])
-                        out_file.save(out_file_name)
                         start = stop
                         stop += 1
                         pg_num += 1
-                    else:
-                        stop -= 1
-                        out_file = Pdf.new()
-                        out_file.pages.extend(inp_file.pages[start:stop])
-                        out_file.save(out_file_name)
-                        chunk_size = os.path.getsize(out_file_name)
-                        next_page = pg_sizes[stop:stop + 1][0]
 
-                        if chunk_size + next_page < max_chunk_sz:
-                            os.remove(out_file_name)
-                            chunk_size_real = chunk_size / (stop - start)
-
-                            pg_sizes_real = []
-
-                            for i in range(pg_cnt):
-                                if i >= start and i < stop:
-                                    pg_sizes_real.append(chunk_size_real)
-                                else:
-                                    pg_sizes_real.append(pg_sizes[i])
-
-                            pg_sizes = pg_sizes_real
-                            stop += 1
-                        else:
-                            start = stop
-                            stop += 1
-                            pg_num += 1
-
-        inp_file.close()
-    except ValueError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'The argument must be a positive numeric value.'
-        )
-    except PasswordError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Split action cannot handle an encrypted PDF file.'
-        )
+    inp_file.close()
 
 
+@handle_exceptions
 def slice_(query, abs_path, is_single, suffix):
     """Slice PDF files.
 
@@ -499,165 +440,93 @@ def slice_(query, abs_path, is_single, suffix):
         is_single (bool): `True` for a single output file.
         suffix (str): Suffix for the output filenames.
     """
-    try:
-        inp_file = Pdf.open(abs_path)
+    # Check for illegal syntax not catched by exceptions.
+    if re.search(r'^\D|^0.|\D0\D|\D0$', query):
+        raise ValueError
 
-        pages = [x.strip() for x in query.split(',')]
+    pg_ranges = [x.split('-') for x in query.split(',')]
+    print(pg_ranges)
 
-        for page in pages:
-            if not page.replace('-', '').isdigit():
-                raise SyntaxError
+    for pg_range in pg_ranges:
+        if pg_range[1]:
+            if int(pg_range[0]) > int(pg_range[1]):
+                raise ValueError
 
-        for page in pages:
-            if '-' in page:
-                if page.split('-')[1]:
-                    stop = int(page.split('-')[1])
-                else:
-                    stop = len(inp_file.pages)
-            else:
-                stop = int(page)
+    inp_file = Pdf.open(abs_path)
+    pg_cnt = len(inp_file.pages)
 
-            if stop > len(inp_file.pages):
-                raise IndexError
+    slices = [
+        slice(int(x[0])-1, int(x[1] or pg_cnt)) for x in pg_ranges
+    ]
 
-        noextpath = os.path.splitext(abs_path)[0]
+    noextpath = os.path.splitext(abs_path)[0]
 
-        if is_single:
+    if is_single:
+        out_file = Pdf.new()
+        for slice__ in slices:
+            print(slice__)
+            out_file.pages.extend(inp_file.pages[slice__])
+        out_file.save(f'{noextpath} [sliced].pdf')
+    else:
+        for part_num, slice__ in enumerate(slices, 1):
             out_file = Pdf.new()
-
-            for page in pages:
-                if '-' in page:
-                    start = int(page.split('-')[0]) - 1
-
-                    if page.split('-')[1]:
-                        stop = int(page.split('-')[1])
-                    else:
-                        stop = len(inp_file.pages)
-
-                    if start == -1:
-                        raise StartValueZeroError
-
-                    if start >= stop:
-                        raise StartValueReverseError
-                else:
-                    start = int(page) - 1
-                    stop = int(page)
-
-                out_file.pages.extend(inp_file.pages[start:stop])
-            out_file.save(f'{noextpath} [sliced].pdf')
-        else:
-            for part_num, page in enumerate(pages, 1):
-                out_file = Pdf.new()
-
-                if '-' in page:
-                    start = int(page.split('-')[0]) - 1
-
-                    if page.split('-')[1]:
-                        stop = int(page.split('-')[1])
-                    else:
-                        stop = len(inp_file.pages)
-
-                    if start == -1:
-                        raise StartValueZeroError
-
-                    if start >= stop:
-                        raise StartValueReverseError
-                else:
-                    start = int(page) - 1
-                    stop = int(page)
-
-                out_file.pages.extend(inp_file.pages[start:stop])
-                out_file.save(f'{noextpath} [{suffix} {part_num}].pdf')
-    except SyntaxError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'The input syntax is not valid.'
-        )
-    except IndexError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Page number out of range.'
-        )
-    except StartValueZeroError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Page number cannot be zero.'
-        )
-    except StartValueReverseError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'You cannot set a page range in reverse order.'
-        )
-    except PasswordError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Slice action cannot handle an encrypted PDF file.'
-        )
+            out_file.pages.extend(inp_file.pages[slice__])
+            out_file.save(f'{noextpath} [{suffix} {part_num}].pdf')
 
 
+@handle_exceptions
 def crop(pdf_paths):
     """Crop two-column pages.
 
     Args:
         pdf_paths (list): Paths to selected PDF files.
     """
-    try:
-        for pdf_path in pdf_paths:
-            inp_file = Pdf.open(pdf_path)
-            out_file = Pdf.new()
+    for pdf_path in pdf_paths:
+        inp_file = Pdf.open(pdf_path)
+        out_file = Pdf.new()
 
-            for page in inp_file.pages:
-                for _ in range(2):
-                    out_file.pages.append(out_file.copy_foreign(page))
+        for page in inp_file.pages:
+            for _ in range(2):
+                out_file.pages.append(out_file.copy_foreign(page))
 
-            for i, page in enumerate(out_file.pages, 1):
-                x1, y1, x2, y2 = page.MediaBox
-                middle = x1 + (x2 - x1) / 2
+        for i, page in enumerate(out_file.pages, 1):
+            x1, y1, x2, y2 = page.MediaBox
+            middle = x1 + (x2 - x1) / 2
 
-                if i % 2:  # Check if the page is even.
-                    x2 = middle
-                else:
-                    x1 = middle
+            if i % 2:  # Check if the page is even.
+                x2 = middle
+            else:
+                x1 = middle
 
-                page.MediaBox = [x1, y1, x2, y2]
+            page.MediaBox = [x1, y1, x2, y2]
 
-            noextpath = os.path.splitext(pdf_path)[0]
-            out_file.save(f'{noextpath} [cropped].pdf')
-    except PasswordError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Slice action cannot handle an encrypted PDF file.'
-        )
+        noextpath = os.path.splitext(pdf_path)[0]
+        out_file.save(f'{noextpath} [cropped].pdf')
 
 
+@handle_exceptions
 def scale(pdf_paths):
     """Scale PDF files to a given page size.
 
     Args:
         pdf_paths (list): Paths to selected PDF files.
     """
-    try:
-        width = float(os.environ['width']) * 72
-        height = float(os.environ['height']) * 72
+    width = float(os.environ['width']) * 72
+    height = float(os.environ['height']) * 72
 
-        for pdf_path in pdf_paths:
-            inp_file = Pdf.open(pdf_path)
-            out_file = Pdf.new()
+    for pdf_path in pdf_paths:
+        inp_file = Pdf.open(pdf_path)
+        out_file = Pdf.new()
 
-            for i, page in enumerate(inp_file.pages):
-                out_file.add_blank_page(page_size=(width, height))
-                out_file.pages[i].add_overlay(page)
+        for i, page in enumerate(inp_file.pages):
+            out_file.add_blank_page(page_size=(width, height))
+            out_file.pages[i].add_overlay(page)
 
-            noextpath = os.path.splitext(pdf_path)[0]
-            out_file.save(f'{noextpath} [scaled].pdf')
-    except PasswordError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'Scale action cannot handle an encrypted PDF file.'
-        )
+        noextpath = os.path.splitext(pdf_path)[0]
+        out_file.save(f'{noextpath} [scaled].pdf')
 
 
-def main(wf):
+def main(wf):  # pylint: disable=redefined-outer-name
     """Run workflow."""
     args = docopt(__doc__)
     query = wf.args[1]

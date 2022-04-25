@@ -63,7 +63,7 @@ Returned by :func:`appinfo`. All attributes are Unicode.
 """
 
 
-def applescriptify(s):
+def applescriptify(string):
     """Escape string for insertion into an AppleScript string.
 
     Replaces ``"`` with `"& quote &"`. Use this function if you want
@@ -79,7 +79,7 @@ def applescriptify(s):
         unicode: Escaped string.
 
     """
-    return s.replace('"', '" & quote & "')
+    return string.replace('"', '" & quote & "')
 
 
 def run_applescript(script, *args, **kwargs):
@@ -340,11 +340,11 @@ def atomic_writer(fpath, mode):
     :type mode: string
 
     """
-    suffix = '.{}.tmp'.format(os.getpid())
+    suffix = f'.{os.getpid()}.tmp'
     temppath = fpath + suffix
-    with open(temppath, mode) as fp:
+    with open(temppath, mode) as f:  # pylint: disable=unspecified-encoding
         try:
-            yield fp
+            yield f
             os.rename(temppath, fpath)
         finally:
             try:
@@ -361,8 +361,8 @@ class LockFile:
 
     >>> path = '/path/to/file'
     >>> with LockFile(path):
-    >>>     with open(path, 'wb') as fp:
-    >>>         fp.write(data)
+    >>>     with open(path, 'wb') as f:
+    >>>         f.write(data)
 
     Args:
         protected_path (unicode): File to protect with a lockfile
@@ -420,23 +420,26 @@ class LockFile:
 
             # Create in append mode so we don't lose any contents
             if self._lockfile is None:
-                self._lockfile = open(self.lockfile, 'a')
+                with open(
+                    self.lockfile, 'a', encoding='utf-8'
+                ) as self._lockfile:
+                    # Try to acquire the lock
+                    try:
+                        fcntl.lockf(
+                            self._lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB
+                        )
+                        self._lock.set()
+                        break
+                    except IOError as err:  # pragma: no cover
+                        if err.errno not in (errno.EACCES, errno.EAGAIN):
+                            raise
 
-            # Try to acquire the lock
-            try:
-                fcntl.lockf(self._lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                self._lock.set()
-                break
-            except IOError as err:  # pragma: no cover
-                if err.errno not in (errno.EACCES, errno.EAGAIN):
-                    raise
+                        # Don't try again
+                        if not blocking:  # pragma: no cover
+                            return False
 
-                # Don't try again
-                if not blocking:  # pragma: no cover
-                    return False
-
-                # Wait, then try again
-                time.sleep(self.delay)
+                        # Wait, then try again
+                        time.sleep(self.delay)
 
         return True
 
@@ -473,7 +476,7 @@ class LockFile:
         self.release()  # pragma: no cover
 
 
-class uninterruptible:
+class uninterruptible:  # pylint: disable=invalid-name
     """Decorator that postpones SIGTERM until wrapped function returns.
 
     .. important:: This decorator is NOT thread-safe.
@@ -496,7 +499,9 @@ class uninterruptible:
         """Decorate `func`."""
         self.func = func
         functools.update_wrapper(self, func)
+        self.class_name = class_name
         self._caught_signal = None
+        self.old_signal_handler = signal.getsignal(signal.SIGTERM)
 
     def signal_handler(self, signum, frame):
         """Called when process receives SIGTERM."""
@@ -506,9 +511,7 @@ class uninterruptible:
         """Trap ``SIGTERM`` and call wrapped function."""
         self._caught_signal = None
         # Register handler for SIGTERM, then call `self.func`
-        self.old_signal_handler = signal.getsignal(signal.SIGTERM)
         signal.signal(signal.SIGTERM, self.signal_handler)
-
         self.func(*args, **kwargs)
 
         # Restore old signal handler
@@ -522,9 +525,9 @@ class uninterruptible:
             elif self.old_signal_handler == signal.SIG_DFL:
                 sys.exit(0)
 
-    def __get__(self, obj=None, klass=None):
+    def __get__(self, obj=None, class_name=None):
         """Decorator API."""
         return self.__class__(
-            self.func.__get__(obj, klass),
-            klass.__name__
+            self.func.__get__(obj, class_name),
+            class_name.__name__
         )

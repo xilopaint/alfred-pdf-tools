@@ -82,11 +82,12 @@ def notify(title='', text='', sound=''):
 
     notificator = os.path.join(os.path.dirname(__file__), 'notificator')
     retcode = subprocess.run(
-        [notificator, '--title', title, '--message', text, '--sound', sound]
+        [notificator, '--title', title, '--message', text, '--sound', sound],
+        check=True
     ).returncode
 
     if retcode == 0:
         return True
 
-    log().error(f'Notificator exited with status {retcode}.')
+    log().error('Notificator exited with status %s', retcode)
     return False

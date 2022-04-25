@@ -23,6 +23,7 @@ _wf = None
 
 
 def wf():
+    """Lazy `Workflow` object."""
     global _wf
     if _wf is None:
         _wf = Workflow()
@@ -83,17 +84,17 @@ def _job_pid(name):
         int: PID of job process (or `None` if job doesn't exist).
     """
     pidfile = _pid_file(name)
-    if not os.path.exists(pidfile):
-        return
 
-    with open(pidfile, 'rb') as fp:
-        read = fp.read()
-        pid = int.from_bytes(read, sys.byteorder)
+    if os.path.exists(pidfile):
+        with open(pidfile, 'rb') as f:
+            read = f.read()
+            pid = int.from_bytes(read, sys.byteorder)
 
-        if _process_exists(pid):
-            return pid
+            if _process_exists(pid):
+                return pid
 
-    os.unlink(pidfile)
+        os.unlink(pidfile)
+    return None
 
 
 def is_running(name):
@@ -133,8 +134,8 @@ def _background(
             if pid > 0:
                 if write:  # write PID of child process to `pidfile`
                     tmp = pidfile + '.tmp'
-                    with open(tmp, 'wb') as fp:
-                        fp.write(pid.to_bytes(4, sys.byteorder))
+                    with open(tmp, 'wb') as f:
+                        f.write(pid.to_bytes(4, sys.byteorder))
                     os.rename(tmp, pidfile)
                 if wait:  # wait for child process to exit
                     os.waitpid(pid, 0)
@@ -155,15 +156,17 @@ def _background(
 
     # Now I am a daemon!
     # Redirect standard file descriptors.
-    si = open(stdin, 'r', 1)
-    so = open(stdout, 'a+', 1)
-    se = open(stderr, 'a+', 1)
-    if hasattr(sys.stdin, 'fileno'):
-        os.dup2(si.fileno(), sys.stdin.fileno())
-    if hasattr(sys.stdout, 'fileno'):
-        os.dup2(so.fileno(), sys.stdout.fileno())
-    if hasattr(sys.stderr, "fileno"):
-        os.dup2(se.fileno(), sys.stderr.fileno())
+    with open(stdin, 'r', 1, encoding='utf-8') as stdin_fd:
+        if hasattr(sys.stdin, 'fileno'):
+            os.dup2(stdin_fd.fileno(), sys.stdin.fileno())
+
+    with open(stdout, 'a+', 1, encoding='utf-8') as stdout_fd:
+        if hasattr(sys.stdout, 'fileno'):
+            os.dup2(stdout_fd.fileno(), sys.stdout.fileno())
+
+    with open(stderr, 'a+', 1, encoding='utf-8') as stderr_fd:
+        if hasattr(sys.stderr, "fileno"):
+            os.dup2(stderr_fd.fileno(), sys.stderr.fileno())
 
 
 def kill(name, sig=signal.SIGTERM):
@@ -211,19 +214,19 @@ def run_in_background(name, args, **kwargs):
     """
     if is_running(name):
         _log().info('[%s] job already running', name)
-        return
+        return None
 
     argcache = _arg_cache(name)
 
     # Cache arguments
-    with open(argcache, 'wb') as fp:
-        pickle.dump({'args': args, 'kwargs': kwargs}, fp)
+    with open(argcache, 'wb') as f:
+        pickle.dump({'args': args, 'kwargs': kwargs}, f)
         _log().debug('[%s] command cached: %s', name, argcache)
 
     # Call this script
     cmd = ['/usr/bin/python3', '-m', 'workflow.background', name]
     _log().debug('[%s] passing job to background runner: %r', name, cmd)
-    retcode = subprocess.run(cmd).returncode
+    retcode = subprocess.run(cmd, check=True).returncode
 
     if retcode:  # pragma: no cover
         _log().error('[%s] background runner failed with %d', name, retcode)
@@ -253,8 +256,8 @@ def main(wf):  # pragma: no cover
     _background(pidfile)
 
     # Load cached arguments
-    with open(argcache, 'rb') as fp:
-        data = pickle.load(fp)
+    with open(argcache, 'rb') as f:
+        data = pickle.load(f)
 
     # Cached arguments
     args = data['args']
@@ -267,7 +270,7 @@ def main(wf):  # pragma: no cover
         # Run the command
         log.debug('[%s] running command: %r', name, args)
 
-        retcode = subprocess.run(args, **kwargs).returncode
+        retcode = subprocess.run(args, **kwargs, check=True).returncode
 
         if retcode:
             log.error('[%s] command failed with status %d', name, retcode)
