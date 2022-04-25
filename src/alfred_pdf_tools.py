@@ -56,6 +56,10 @@ class AlfredPdfToolsError(Exception):
     """Base class for the workflow exceptions."""
 
 
+class IllegalFilePathError(AlfredPdfToolsError):
+    """Raised when a PDF file has an illegal path."""
+
+
 class SelectionError(AlfredPdfToolsError):
     """Raised when the user selects less than two PDF files."""
 
@@ -74,6 +78,11 @@ def handle_exceptions(func):
             notify.notify(
                 'Alfred PDF Tools',
                 'Invalid input.'
+            )
+        except IllegalFilePathError:
+            notify.notify(
+                'Alfred PDF Tools',
+                'Illegal filepath.'
             )
         except PasswordError:
             notify.notify(
@@ -108,6 +117,11 @@ def optimize(resolution, pdf_paths):
         raise ValueError
 
     for pdf_path in pdf_paths:
+        pattern = '.*[$(]{2}.*[)]|.*[`].*[`]'
+
+        if re.match(pattern, pdf_path):
+            raise IllegalFilePathError
+
         cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt "{pdf_path}" -as -mode copy -dpi {resolution} -o "%s [optimized].pdf" -x'  # noqa
 
         with subprocess.Popen(
@@ -144,6 +158,11 @@ def deskew(pdf_paths):
         pdf_paths (list): Paths to selected PDF files.
     """
     for pdf_path in pdf_paths:
+        pattern = '.*[$(]{2}.*[)]|.*[`].*[`]'
+
+        if re.match(pattern, pdf_path):
+            raise IllegalFilePathError
+
         cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt "{pdf_path}" -as -mode copy -n -o "%s [deskewed].pdf" -x'  # noqa
 
         with subprocess.Popen(

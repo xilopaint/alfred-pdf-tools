@@ -445,6 +445,8 @@
 				<false/>
 			</dict>
 		</array>
+		<key>D940F7C5-23FC-4B9E-B63E-8362677448F6</key>
+		<array/>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<array>
 			<dict>
@@ -1948,7 +1950,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 		<string>part</string>
 	</dict>
 	<key>version</key>
-	<string>3.1</string>
+	<string>3.1.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>
