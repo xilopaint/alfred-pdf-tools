@@ -90,7 +90,16 @@ disable=raw-checker-failed,
         suppressed-message,
         useless-suppression,
         deprecated-pragma,
-        use-symbolic-message-instead
+        use-symbolic-message-instead,
+        line-too-long,
+        too-many-branches,
+        too-many-arguments,
+        too-many-locals,
+        too-many-return-statements,
+        too-many-instance-attributes,
+        too-many-statements,
+        too-many-lines,
+        too-many-public-methods
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -175,8 +184,7 @@ spelling-store-unknown-words=no
 
 # List of note tags to take in consideration, separated by a comma.
 notes=FIXME,
-      XXX,
-      TODO
+      XXX
 
 # Regular expression of note tags to take in consideration.
 #notes-rgx=
@@ -412,7 +420,21 @@ good-names=i,
            k,
            ex,
            Run,
-           _
+           _,
+           f,
+           v,
+           n,
+           r,
+           s,
+           o,
+           wf,
+           _wf,
+           _log,
+           dl,
+           x1,
+           x2,
+           y1,
+           y2
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
