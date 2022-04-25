@@ -5,6 +5,8 @@
   <img src="https://img.shields.io/github/v/release/xilopaint/alfred-pdf-tools"></a>
   <a href="https://github.com/xilopaint/alfred-pdf-tools/releases">
   <img src="https://img.shields.io/github/downloads/xilopaint/alfred-pdf-tools/total"></a>
+  <a href="https://github.com/PyCQA/bandit">
+  <img src="https://img.shields.io/badge/security-bandit-yellow"></a>
   <a href="https://github.com/xilopaint/alfred-pdf-tools/blob/main/LICENSE.md">
   <img src="https://img.shields.io/github/license/xilopaint/alfred-pdf-tools"></a>
 </p>
