@@ -38,6 +38,7 @@ import os
 import sys
 import tempfile
 import re
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -56,8 +57,8 @@ class AlfredPdfToolsError(Exception):
     """Base class for the workflow exceptions."""
 
 
-class IllegalFilePathError(AlfredPdfToolsError):
-    """Raised when a PDF file has an illegal path."""
+class DoubleQuotesPathError(AlfredPdfToolsError):
+    """Raised when a PDF file has double quotes in its path."""
 
 
 class SelectionError(AlfredPdfToolsError):
@@ -79,10 +80,10 @@ def handle_exceptions(func):
                 'Alfred PDF Tools',
                 'Invalid input.'
             )
-        except IllegalFilePathError:
+        except DoubleQuotesPathError:
             notify.notify(
                 'Alfred PDF Tools',
-                'Illegal filepath.'
+                'This file action cannot handle a file path with double quotes.'  # noqa
             )
         except PasswordError:
             notify.notify(
@@ -117,17 +118,16 @@ def optimize(resolution, pdf_paths):
         raise ValueError
 
     for pdf_path in pdf_paths:
-        pattern = '.*[$(]{2}.*[)]|.*[`].*[`]'
+        if "\"" in pdf_path:
+            raise DoubleQuotesPathError
 
-        if re.match(pattern, pdf_path):
-            raise IllegalFilePathError
-
-        cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt "{pdf_path}" -as -mode copy -dpi {resolution} -o "%s [optimized].pdf" -x'  # noqa
+        cmd = f'echo | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -dpi {resolution} -o "%s [optimized].pdf" -x'  # noqa
 
         with subprocess.Popen(
             cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'
         ) as proc:
             for line in proc.stdout:
+                print(line)
                 if 'Reading' in line:
                     pg_cnt = line.split()[1]
                     wf.cache_data('page_count', pg_cnt)
@@ -158,12 +158,10 @@ def deskew(pdf_paths):
         pdf_paths (list): Paths to selected PDF files.
     """
     for pdf_path in pdf_paths:
-        pattern = '.*[$(]{2}.*[)]|.*[`].*[`]'
+        if "\"" in pdf_path:
+            raise DoubleQuotesPathError
 
-        if re.match(pattern, pdf_path):
-            raise IllegalFilePathError
-
-        cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt "{pdf_path}" -as -mode copy -n -o "%s [deskewed].pdf" -x'  # noqa
+        cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -n -o "%s [deskewed].pdf" -x'  # noqa
 
         with subprocess.Popen(
             cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'  # nosec
