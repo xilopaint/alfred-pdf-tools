@@ -17,6 +17,8 @@
 
 ## Description
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/77ed8c9ad7ea42f68b4f7136080b036f)](https://app.codacy.com/gh/xilopaint/alfred-pdf-tools?utm_source=github.com&utm_medium=referral&utm_content=xilopaint/alfred-pdf-tools&utm_campaign=Badge_Grade_Settings)
+
 Optimize, encrypt and manipulate PDF files using [Alfred][1].
 
 ## Usage
