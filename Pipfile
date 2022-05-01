@@ -13,6 +13,7 @@ workflow = {editable = true, path = "."}
 pyinstaller = "*"
 bandit = "*"
 flake8 = "*"
+black = "*"
 
 [requires]
 python_version = "3.10"
