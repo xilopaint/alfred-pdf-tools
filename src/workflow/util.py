@@ -46,19 +46,19 @@ class AcquisitionError(Exception):
 AppInfo = namedtuple('AppInfo', ['name', 'path', 'bundleid'])
 """Information about an installed application.
 
-Returned by :func:`appinfo`. All attributes are Unicode.
+Returned by :func:`appinfo`.
 
 .. py:attribute:: name
 
-    Name of the application, e.g. ``u'Safari'``.
+    Name of the application, e.g. ``'Safari'``.
 
 .. py:attribute:: path
 
-    Path to the application bundle, e.g. ``u'/Applications/Safari.app'``.
+    Path to the application bundle, e.g. ``'/Applications/Safari.app'``.
 
 .. py:attribute:: bundleid
 
-    Application's bundle ID, e.g. ``u'com.apple.Safari'``.
+    Application's bundle ID, e.g. ``'com.apple.Safari'``.
 
 """
 
@@ -73,10 +73,10 @@ def applescriptify(string):
         'g " & quote & "python" & quote & "test'
 
     Args:
-        s (unicode): Unicode string to escape.
+        s (str): String to escape.
 
     Returns:
-        unicode: Escaped string.
+        str: Escaped string.
 
     """
     return string.replace('"', '" & quote & "')
@@ -165,7 +165,7 @@ def set_theme(theme_name):
     """Change Alfred's theme.
 
     Args:
-        theme_name (unicode): Name of theme Alfred should use.
+        theme_name (str): Name of theme Alfred should use.
 
     """
     appname = 'com.runningwithcrayons.Alfred'
@@ -237,7 +237,7 @@ def search_in_alfred(query=None):
     Omit ``query`` to simply open Alfred's main window.
 
     Args:
-        query (unicode, optional): Search query.
+        query (str, optional): Search query.
 
     """
     query = query or ''
@@ -250,7 +250,7 @@ def browse_in_alfred(path):
     """Open Alfred's filesystem navigation mode at ``path``.
 
     Args:
-        path (unicode): File or directory path.
+        path (str): File or directory path.
 
     """
     appname = 'com.runningwithcrayons.Alfred'
@@ -262,7 +262,7 @@ def action_in_alfred(paths):
     """Action the give filepaths in Alfred.
 
     Args:
-        paths (list): Unicode paths to files/directories to action.
+        paths (list): Paths to files/directories to action.
 
     """
     appname = 'com.runningwithcrayons.Alfred'
@@ -277,7 +277,7 @@ def reload_workflow(bundleid=None):
     workflow is used.
 
     Args:
-        bundleid (unicode, optional): Bundle ID of workflow to reload.
+        bundleid (str, optional): Bundle ID of workflow to reload.
 
     """
     bundleid = bundleid or os.getenv('alfred_workflow_bundleid')
@@ -335,7 +335,7 @@ def atomic_writer(fpath, mode):
     succeeds. The data is first written to a temporary file.
 
     :param fpath: path of file to write to.
-    :type fpath: ``unicode``
+    :type fpath: ``str``
     :param mode: sames as for :func:`open`
     :type mode: string
 
@@ -365,7 +365,7 @@ class LockFile:
     >>>         f.write(data)
 
     Args:
-        protected_path (unicode): File to protect with a lockfile
+        protected_path (str): File to protect with a lockfile
         timeout (float, optional): Raises an :class:`AcquisitionError`
             if lock cannot be acquired within this number of seconds.
             If ``timeout`` is 0 (the default), wait forever.
@@ -375,7 +375,7 @@ class LockFile:
     Attributes:
         delay (float): How often to check (in seconds) whether the lock
             can be acquired.
-        lockfile (unicode): Path of the lockfile.
+        lockfile (str): Path of the lockfile.
         timeout (float): How long to wait to acquire the lock.
 
     """
@@ -460,7 +460,7 @@ class LockFile:
             except (IOError, OSError):  # pragma: no cover
                 pass
 
-            return True
+            return True  # pylint: disable=lost-exception
 
     def __enter__(self):
         """Acquire lock."""

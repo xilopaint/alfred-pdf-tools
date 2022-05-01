@@ -38,9 +38,9 @@ def _arg_cache(name):
     """Return path to pickle cache file for arguments.
 
     :param name: name of task
-    :type name: ``unicode``
+    :type name: ``str``
     :returns: Path to cache file
-    :rtype: ``unicode`` filepath
+    :rtype: ``str`` filepath
 
     """
     return wf().cachefile(name + '.argcache')
@@ -50,9 +50,9 @@ def _pid_file(name):
     """Return path to PID file for ``name``.
 
     :param name: name of task
-    :type name: ``unicode``
+    :type name: ``str``
     :returns: Path to PID file for task
-    :rtype: ``unicode`` filepath
+    :rtype: ``str`` filepath
 
     """
     return wf().cachefile(name + ".pid")
@@ -101,7 +101,7 @@ def is_running(name):
     """Test whether task ``name`` is currently running.
 
     :param name: name of task
-    :type name: unicode
+    :type name: str
     :returns: ``True`` if task with name ``name`` is running, else ``False``
     :rtype: bool
 
@@ -191,7 +191,7 @@ def run_in_background(name, args, **kwargs):
     r"""Cache arguments then call this script again via :func:`subprocess.run`.
 
     :param name: name of job
-    :type name: unicode
+    :type name: str
     :param args: arguments passed as first argument to :func:`subprocess.run`
     :param \**kwargs: keyword arguments to :func:`subprocess.run`
     :returns: exit code of sub-process

@@ -127,7 +127,6 @@ def optimize(resolution, pdf_paths):
             cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'
         ) as proc:
             for line in proc.stdout:
-                print(line)
                 if 'Reading' in line:
                     pg_cnt = line.split()[1]
                     wf.cache_data('page_count', pg_cnt)
@@ -164,7 +163,7 @@ def deskew(pdf_paths):
         cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -n -o "%s [deskewed].pdf" -x'  # noqa
 
         with subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'  # nosec
+            cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'
         ) as proc:
             for line in proc.stdout:
                 if 'Reading' in line:

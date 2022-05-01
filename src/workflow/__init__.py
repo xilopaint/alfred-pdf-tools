@@ -52,7 +52,7 @@ __version__ = open(  # pylint: disable=consider-using-with
     os.path.join(os.path.dirname(__file__), 'version'),
     encoding='utf-8'
 ).read()
-__title__ = ''  # TODO: Add name to the library
+__title__ = 'Alpynist'
 __author__ = 'Arthur Pinheiro'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022 Arthur Pinheiro'

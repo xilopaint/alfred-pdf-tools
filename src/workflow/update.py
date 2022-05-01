@@ -15,13 +15,10 @@ import os
 import re
 import subprocess
 import tempfile
-from urllib import request
 from collections import defaultdict
 from functools import total_ordering
-from itertools import zip_longest
 
-from workflow.util import atomic_writer
-from . import workflow
+from . import workflow, web
 
 
 RELEASES_BASE = 'https://api.github.com/repos/{}/releases'
@@ -300,20 +297,8 @@ class Version:
                 return True
             if other.suffix and not self.suffix:
                 return False
+            return self._parse_dotted_string(self.suffix) < self._parse_dotted_string(other.suffix)  # noqa
 
-            self_suffix = self._parse_dotted_string(self.suffix)
-            other_suffix = self._parse_dotted_string(other.suffix)
-
-            for s, o in zip_longest(self_suffix, other_suffix):
-                if s is None:  # shorter value wins
-                    return True
-                if o is None:  # longer value loses
-                    return False
-                if type(s) != type(o):  # type coersion  # pylint: disable=unidiomatic-typecheck  # noqa
-                    s, o = str(s), str(o)
-                if s == o:  # next if the same compare
-                    continue
-                return s < o  # finally compare
         return False
 
     def __eq__(self, other):
@@ -360,22 +345,21 @@ def retrieve_download(dl):
     """Saves a download to a temporary file and returns path.
 
     Args:
-        url (unicode): URL to .alfredworkflow file in GitHub repo
+        url (str): URL to .alfredworkflow file in GitHub repo
 
     Returns:
-        unicode: path to downloaded file
+        str: path to downloaded file
 
     """
     if not match_workflow(dl.filename):
-        raise ValueError('attachment not a workflow: ' + dl.filename)
+        raise ValueError(f'attachment not a workflow: {dl.filename}')
 
     path = os.path.join(tempfile.gettempdir(), dl.filename)
     wf().logger.debug('downloading update from %r to %r ...', dl.url, path)
 
-    r = request.urlopen(dl.url)  # pylint: disable=consider-using-with
-
-    with atomic_writer(path, 'wb') as file_obj:
-        file_obj.write(r.read())
+    r = web.get(dl.url)
+    r.raise_for_status()
+    r.save_to_path(path)
 
     return path
 
@@ -384,10 +368,10 @@ def build_api_url(repo):
     """Generate releases URL from GitHub repo.
 
     Args:
-        repo (unicode): Repo name in form ``username/repo``
+        repo (str): Repo name in form ``username/repo``
 
     Returns:
-        unicode: URL to the API endpoint for the repo's releases
+        str: URL to the API endpoint for the repo's releases
 
     """
     if len(repo.split('/')) != 2:
@@ -400,7 +384,7 @@ def get_downloads(repo):
     """Load available ``Download``s for GitHub repo.
 
     Args:
-        repo (unicode): GitHub repo to load releases for.
+        repo (str): GitHub repo to load releases for.
 
     Returns:
         list: Sequence of `Download` contained in GitHub releases.
@@ -409,7 +393,9 @@ def get_downloads(repo):
 
     def _fetch():
         wf().logger.info('retrieving releases for %r ...', repo)
-        return request.urlopen(url).read()
+        r = web.get(url)
+        r.raise_for_status()
+        return r.content
 
     key = 'github-releases-' + repo.replace('/', '-')
     json_resp = wf().cached_data(key, _fetch, max_age=60)
@@ -450,11 +436,11 @@ def check_update(
     """Check whether a newer release is available on GitHub.
 
     Args:
-        repo (unicode): ``username/repo`` for workflow's GitHub repo
-        current_version (unicode): the currently installed version of the
+        repo (str): ``username/repo`` for workflow's GitHub repo
+        current_version (str): the currently installed version of the
             workflow. :ref:`Semantic versioning <semver>` is required.
         prereleases (bool): Whether to include pre-releases.
-        alfred_version (unicode): version of currently-running Alfred.
+        alfred_version (str): version of currently-running Alfred.
             if empty, defaults to ``$alfred_version`` environment variable.
 
     Returns:
