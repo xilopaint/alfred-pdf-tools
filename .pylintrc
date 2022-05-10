@@ -99,7 +99,9 @@ disable=raw-checker-failed,
         too-many-instance-attributes,
         too-many-statements,
         too-many-lines,
-        too-many-public-methods
+        too-many-public-methods,
+        bad-continuation,
+        bad-option-value
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -506,7 +508,8 @@ exclude-protected=_asdict,
                   _fields,
                   _replace,
                   _source,
-                  _make
+                  _make,
+                  _exit
 
 # List of valid names for the first argument in a class method.
 valid-classmethod-first-arg=cls
