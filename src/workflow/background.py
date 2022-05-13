@@ -17,7 +17,7 @@ import sys
 
 from workflow import Workflow
 
-__all__ = ['is_running', 'run_in_background']
+__all__ = ["is_running", "run_in_background"]
 
 _wf = None
 
@@ -43,7 +43,7 @@ def _arg_cache(name):
     :rtype: ``str`` filepath
 
     """
-    return wf().cachefile(name + '.argcache')
+    return wf().cachefile(name + ".argcache")
 
 
 def _pid_file(name):
@@ -86,7 +86,7 @@ def _job_pid(name):
     pidfile = _pid_file(name)
 
     if os.path.exists(pidfile):
-        with open(pidfile, 'rb') as f:
+        with open(pidfile, "rb") as f:
             read = f.read()
             pid = int.from_bytes(read, sys.byteorder)
 
@@ -113,7 +113,7 @@ def is_running(name):
 
 
 def _background(
-    pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'
+    pidfile, stdin="/dev/null", stdout="/dev/null", stderr="/dev/null"
 ):  # pragma: no cover
     """Fork the current process into a background daemon.
 
@@ -133,38 +133,38 @@ def _background(
             pid = os.fork()
             if pid > 0:
                 if write:  # write PID of child process to `pidfile`
-                    tmp = pidfile + '.tmp'
-                    with open(tmp, 'wb') as f:
+                    tmp = pidfile + ".tmp"
+                    with open(tmp, "wb") as f:
                         f.write(pid.to_bytes(4, sys.byteorder))
                     os.rename(tmp, pidfile)
                 if wait:  # wait for child process to exit
                     os.waitpid(pid, 0)
                 os._exit(0)
         except OSError as err:
-            _log().critical('%s: (%d) %s', errmsg, err.errno, err.strerror)
+            _log().critical("%s: (%d) %s", errmsg, err.errno, err.strerror)
             raise err
 
     # Do first fork and wait for second fork to finish.
-    _fork_and_exit_parent('fork #1 failed', wait=True)
+    _fork_and_exit_parent("fork #1 failed", wait=True)
 
     # Decouple from parent environment.
     os.chdir(wf().workflowdir)
     os.setsid()
 
     # Do second fork and write PID to pidfile.
-    _fork_and_exit_parent('fork #2 failed', write=True)
+    _fork_and_exit_parent("fork #2 failed", write=True)
 
     # Now I am a daemon!
     # Redirect standard file descriptors.
-    with open(stdin, 'r', 1, encoding='utf-8') as stdin_fd:
-        if hasattr(sys.stdin, 'fileno'):
+    with open(stdin, "r", 1, encoding="utf-8") as stdin_fd:
+        if hasattr(sys.stdin, "fileno"):
             os.dup2(stdin_fd.fileno(), sys.stdin.fileno())
 
-    with open(stdout, 'a+', 1, encoding='utf-8') as stdout_fd:
-        if hasattr(sys.stdout, 'fileno'):
+    with open(stdout, "a+", 1, encoding="utf-8") as stdout_fd:
+        if hasattr(sys.stdout, "fileno"):
             os.dup2(stdout_fd.fileno(), sys.stdout.fileno())
 
-    with open(stderr, 'a+', 1, encoding='utf-8') as stderr_fd:
+    with open(stderr, "a+", 1, encoding="utf-8") as stderr_fd:
         if hasattr(sys.stderr, "fileno"):
             os.dup2(stderr_fd.fileno(), sys.stderr.fileno())
 
@@ -213,25 +213,25 @@ def run_in_background(name, args, **kwargs):
 
     """
     if is_running(name):
-        _log().info('[%s] job already running', name)
+        _log().info("[%s] job already running", name)
         return None
 
     argcache = _arg_cache(name)
 
     # Cache arguments
-    with open(argcache, 'wb') as f:
-        pickle.dump({'args': args, 'kwargs': kwargs}, f)
-        _log().debug('[%s] command cached: %s', name, argcache)
+    with open(argcache, "wb") as f:
+        pickle.dump({"args": args, "kwargs": kwargs}, f)
+        _log().debug("[%s] command cached: %s", name, argcache)
 
     # Call this script
-    cmd = ['/usr/bin/python3', '-m', 'workflow.background', name]
-    _log().debug('[%s] passing job to background runner: %r', name, cmd)
+    cmd = ["/usr/bin/python3", "-m", "workflow.background", name]
+    _log().debug("[%s] passing job to background runner: %r", name, cmd)
     retcode = subprocess.run(cmd, check=True).returncode
 
     if retcode:  # pragma: no cover
-        _log().error('[%s] background runner failed with %d', name, retcode)
+        _log().error("[%s] background runner failed with %d", name, retcode)
     else:
-        _log().debug('[%s] background job started', name)
+        _log().debug("[%s] background job started", name)
 
     return retcode
 
@@ -247,7 +247,7 @@ def main(wf):  # pragma: no cover
     name = wf.args[0]
     argcache = _arg_cache(name)
     if not os.path.exists(argcache):
-        msg = f'[{name}] command cache not found: {argcache}'
+        msg = f"[{name}] command cache not found: {argcache}"
         log.critical(msg)
         raise IOError(msg)
 
@@ -256,29 +256,29 @@ def main(wf):  # pragma: no cover
     _background(pidfile)
 
     # Load cached arguments
-    with open(argcache, 'rb') as f:
+    with open(argcache, "rb") as f:
         data = pickle.load(f)
 
     # Cached arguments
-    args = data['args']
-    kwargs = data['kwargs']
+    args = data["args"]
+    kwargs = data["kwargs"]
 
     # Delete argument cache file
     os.unlink(argcache)
 
     try:
         # Run the command
-        log.debug('[%s] running command: %r', name, args)
+        log.debug("[%s] running command: %r", name, args)
 
         retcode = subprocess.run(args, **kwargs, check=True).returncode
 
         if retcode:
-            log.error('[%s] command failed with status %d', name, retcode)
+            log.error("[%s] command failed with status %d", name, retcode)
     finally:
         os.unlink(pidfile)
 
-    log.debug('[%s] job complete', name)
+    log.debug("[%s] job complete", name)
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     wf().run(main)

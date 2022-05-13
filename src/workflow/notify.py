@@ -22,20 +22,20 @@ _log = None
 
 #: Available system sounds from System Preferences > Sound > Sound Effects
 SOUNDS = (
-    'Basso',
-    'Blow',
-    'Bottle',
-    'Frog',
-    'Funk',
-    'Glass',
-    'Hero',
-    'Morse',
-    'Ping',
-    'Pop',
-    'Purr',
-    'Sosumi',
-    'Submarine',
-    'Tink',
+    "Basso",
+    "Blow",
+    "Bottle",
+    "Frog",
+    "Funk",
+    "Glass",
+    "Hero",
+    "Morse",
+    "Ping",
+    "Pop",
+    "Purr",
+    "Sosumi",
+    "Submarine",
+    "Tink",
 )
 
 
@@ -63,7 +63,7 @@ def log():
     return _log
 
 
-def notify(title='', text='', sound=''):
+def notify(title="", text="", sound=""):
     """Post notification via Notify.app helper.
 
     Args:
@@ -77,17 +77,16 @@ def notify(title='', text='', sound=''):
     Returns:
         bool: ``True`` if notification was posted, else ``False``.
     """
-    if text == '':
-        raise ValueError('A message is mandatory.')
+    if text == "":
+        raise ValueError("A message is mandatory.")
 
-    notificator = os.path.join(os.path.dirname(__file__), 'notificator')
+    notificator = os.path.join(os.path.dirname(__file__), "notificator")
     retcode = subprocess.run(
-        [notificator, '--title', title, '--message', text, '--sound', sound],
-        check=True
+        [notificator, "--title", title, "--message", text, "--sound", sound], check=True
     ).returncode
 
     if retcode == 0:
         return True
 
-    log().error('Notificator exited with status %s', retcode)
+    log().error("Notificator exited with status %s", retcode)
     return False

@@ -14,60 +14,58 @@ import urllib.parse
 import urllib.error
 import zlib
 
-__version__ = open(  # pylint: disable=consider-using-with
-    os.path.join(os.path.dirname(__file__), 'version'),
-    encoding='utf-8'
+# pylint: disable=consider-using-with
+__version__ = open(
+    os.path.join(os.path.dirname(__file__), "version"), encoding="utf-8"
 ).read()
 
-USER_AGENT = (
-    f'Alfred-Workflow/{__version__} (+http://www.deanishe.net/alfred-workflow)'
-)
+USER_AGENT = f"Alpynist/{__version__}"
 
 # Valid characters for multipart form data boundaries
 BOUNDARY_CHARS = string.digits + string.ascii_letters
 
 # HTTP response codes
 RESPONSES = {
-    100: 'Continue',
-    101: 'Switching Protocols',
-    200: 'OK',
-    201: 'Created',
-    202: 'Accepted',
-    203: 'Non-Authoritative Information',
-    204: 'No Content',
-    205: 'Reset Content',
-    206: 'Partial Content',
-    300: 'Multiple Choices',
-    301: 'Moved Permanently',
-    302: 'Found',
-    303: 'See Other',
-    304: 'Not Modified',
-    305: 'Use Proxy',
-    307: 'Temporary Redirect',
-    400: 'Bad Request',
-    401: 'Unauthorized',
-    402: 'Payment Required',
-    403: 'Forbidden',
-    404: 'Not Found',
-    405: 'Method Not Allowed',
-    406: 'Not Acceptable',
-    407: 'Proxy Authentication Required',
-    408: 'Request Timeout',
-    409: 'Conflict',
-    410: 'Gone',
-    411: 'Length Required',
-    412: 'Precondition Failed',
-    413: 'Request Entity Too Large',
-    414: 'Request-URI Too Long',
-    415: 'Unsupported Media Type',
-    416: 'Requested Range Not Satisfiable',
-    417: 'Expectation Failed',
-    500: 'Internal Server Error',
-    501: 'Not Implemented',
-    502: 'Bad Gateway',
-    503: 'Service Unavailable',
-    504: 'Gateway Timeout',
-    505: 'HTTP Version Not Supported'
+    100: "Continue",
+    101: "Switching Protocols",
+    200: "OK",
+    201: "Created",
+    202: "Accepted",
+    203: "Non-Authoritative Information",
+    204: "No Content",
+    205: "Reset Content",
+    206: "Partial Content",
+    300: "Multiple Choices",
+    301: "Moved Permanently",
+    302: "Found",
+    303: "See Other",
+    304: "Not Modified",
+    305: "Use Proxy",
+    307: "Temporary Redirect",
+    400: "Bad Request",
+    401: "Unauthorized",
+    402: "Payment Required",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    406: "Not Acceptable",
+    407: "Proxy Authentication Required",
+    408: "Request Timeout",
+    409: "Conflict",
+    410: "Gone",
+    411: "Length Required",
+    412: "Precondition Failed",
+    413: "Request Entity Too Large",
+    414: "Request-URI Too Long",
+    415: "Unsupported Media Type",
+    416: "Requested Range Not Satisfiable",
+    417: "Expectation Failed",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Timeout",
+    505: "HTTP Version Not Supported",
 }
 
 
@@ -107,10 +105,10 @@ class CaseInsensitiveDictionary(dict):
         return dict.__contains__(self, key.lower())
 
     def __getitem__(self, key):
-        return dict.__getitem__(self, key.lower())['val']
+        return dict.__getitem__(self, key.lower())["val"]
 
     def __setitem__(self, key, value):
-        return dict.__setitem__(self, key.lower(), {'key': key, 'val': value})
+        return dict.__setitem__(self, key.lower(), {"key": key, "val": value})
 
     def get(self, key, default=None):
         """Return value for case-insensitive key or default."""
@@ -119,7 +117,7 @@ class CaseInsensitiveDictionary(dict):
         except KeyError:
             return default
         else:
-            return v['val']
+            return v["val"]
 
     def update(self, other):
         """Update values from other ``dict``."""
@@ -128,40 +126,38 @@ class CaseInsensitiveDictionary(dict):
 
     def items(self):
         """Return ``(key, value)`` pairs."""
-        return [(v['key'], v['val']) for v in dict.values(self)]
+        return [(v["key"], v["val"]) for v in dict.values(self)]
 
     def keys(self):
         """Return original keys."""
-        return [v['key'] for v in dict.values(self)]
+        return [v["key"] for v in dict.values(self)]
 
     def values(self):
         """Return all values."""
-        return [v['val'] for v in dict.values(self)]
+        return [v["val"] for v in dict.values(self)]
 
     def iteritems(self):
         """Iterate over ``(key, value)`` pairs."""
         for v in dict.values(self):
-            yield v['key'], v['val']
+            yield v["key"], v["val"]
 
     def iterkeys(self):
         """Iterate over original keys."""
         for v in dict.values(self):
-            yield v['key']
+            yield v["key"]
 
     def itervalues(self):
         """Interate over values."""
         for v in dict.values(self):
-            yield v['val']
+            yield v["val"]
 
 
 class Request(urllib.request.Request):
-    """
-    Subclass of :class:`urllib.request.Request` that supports custom methods.
-    """
+    """Subclass of :class:`urllib.request.Request` that supports custom methods."""
 
     def __init__(self, *args, **kwargs):
         """Create a new :class:`Request`."""
-        self._method = kwargs.pop('method', None)
+        self._method = kwargs.pop("method", None)
         urllib.request.Request.__init__(self, *args, **kwargs)
 
     def get_method(self):
@@ -210,7 +206,8 @@ class Response:
 
         # Execute query
         try:
-            self.raw = urllib.request.urlopen(request)  # pylint: disable=consider-using-with # noqa
+            # pylint: disable=consider-using-with
+            self.raw = urllib.request.urlopen(request)
         except urllib.error.HTTPError as err:
             self.error = err
             try:
@@ -239,8 +236,9 @@ class Response:
             # Transfer-Encoding appears to not be used in the wild
             # (contrary to the HTTP standard), but no harm in testing
             # for it
-            if 'gzip' in headers.get('content-encoding', '') or \
-                    'gzip' in headers.get('transfer-encoding', ''):
+            if "gzip" in headers.get("content-encoding", "") or "gzip" in headers.get(
+                "transfer-encoding", ""
+            ):
                 self._gzipped = True
 
     @property
@@ -256,9 +254,7 @@ class Response:
     @stream.setter
     def stream(self, value):
         if self._content_loaded:
-            raise RuntimeError(
-                "`content` has already been read from this Response."
-            )
+            raise RuntimeError("`content` has already been read from this Response.")
 
         self._stream = value
 
@@ -318,10 +314,7 @@ class Response:
 
         """
         if self.encoding:
-            return unicodedata.normalize(
-                'NFC',
-                str(self.content, self.encoding)
-            )
+            return unicodedata.normalize("NFC", str(self.content, self.encoding))
         return self.content
 
     def iter_content(self, chunk_size=4096, decode_unicode=False):
@@ -340,18 +333,17 @@ class Response:
             )
 
         if self._content_loaded:
-            raise RuntimeError(
-                "`content` has already been read from this Response.")
+            raise RuntimeError("`content` has already been read from this Response.")
 
         def decode_stream(iterator, r):
-            dec = codecs.getincrementaldecoder(r.encoding)(errors='replace')
+            dec = codecs.getincrementaldecoder(r.encoding)(errors="replace")
 
             for chunk in iterator:
                 data = dec.decode(chunk)
                 if data:
                     yield data
 
-            data = dec.decode(b'', final=True)
+            data = dec.decode(b"", final=True)
             if data:  # pragma: no cover
                 yield data
 
@@ -389,18 +381,17 @@ class Response:
 
         self.stream = True
 
-        with open(filepath, 'wb') as fileobj:
+        with open(filepath, "wb") as fileobj:
             for data in self.iter_content():
                 fileobj.write(data)
 
     def raise_for_status(self):
         """Raise stored error if one occurred.
 
-        error will be instance of :class:`urllib2.HTTPError`
+        error will be instance of :class:`urllib.error.HTTPError`
         """
         if self.error is not None:
             raise self.error
-        return
 
     def _get_encoding(self):
         """Get encoding from HTTP headers or content.
@@ -417,30 +408,31 @@ class Response:
 
         if not self.stream:  # Try sniffing response content
             # Encoding declared in document should override HTTP headers
-            if self.mimetype == 'text/html':  # sniff HTML headers
+            if self.mimetype == "text/html":  # sniff HTML headers
                 match = re.search(
-                    r"""<meta.+charset=["']{0,1}(.+?)["'].*>""",
-                    self.content
+                    r"""<meta.+charset=["']{0,1}(.+?)["'].*>""", self.content
                 )
                 if match:
                     encoding = match.group(1)
 
-            elif ((self.mimetype.startswith('application/') or self.mimetype.startswith('text/')) and 'xml' in self.mimetype):  # noqa
+            elif (
+                self.mimetype.startswith("application/")
+                or self.mimetype.startswith("text/")
+            ) and "xml" in self.mimetype:  # noqa
                 match = re.search(
-                    r"""<?xml.+encoding=["'](.+?)["'][^>]*\?>""",
-                    self.content
+                    r"""<?xml.+encoding=["'](.+?)["'][^>]*\?>""", self.content
                 )
                 if match:
                     encoding = match.group(1)
 
         # Format defaults
-        if self.mimetype == 'application/json' and not encoding:
+        if self.mimetype == "application/json" and not encoding:
             # The default encoding for JSON
-            encoding = 'utf-8'
+            encoding = "utf-8"
 
-        elif self.mimetype == 'application/xml' and not encoding:
+        elif self.mimetype == "application/xml" and not encoding:
             # The default for 'application/xml'
-            encoding = 'utf-8'
+            encoding = "utf-8"
 
         if encoding:
             encoding = encoding.lower()
@@ -449,8 +441,16 @@ class Response:
 
 
 def request(
-    method, url, params=None, data=None, headers=None, files=None,
-    auth=None, timeout=60, allow_redirects=False, stream=False
+    method,
+    url,
+    params=None,
+    data=None,
+    headers=None,
+    files=None,
+    auth=None,
+    timeout=60,
+    allow_redirects=False,
+    stream=False,
 ):
     """Initiate an HTTP(S) request. Returns :class:`Response` object.
 
@@ -480,12 +480,14 @@ def request(
     :returns: Response object
     :rtype: :class:`Response`
 
-
     The ``files`` argument is a dictionary::
 
-        {'fieldname' : { 'filename': 'blah.txt',
-                         'content': '<binary data>',
-                         'mimetype': 'text/plain'}
+        {
+            "fieldname": {
+                "filename": "blah.txt",
+                "content": "<binary data>",
+                "mimetype": "text/plain",
+            }
         }
 
     * ``fieldname`` is the name of the field in the HTML form.
@@ -519,17 +521,15 @@ def request(
     else:
         headers = CaseInsensitiveDictionary(headers)
 
-    if 'user-agent' not in headers:
-        headers['user-agent'] = USER_AGENT
+    if "user-agent" not in headers:
+        headers["user-agent"] = USER_AGENT
 
     # Accept gzip-encoded content
-    encodings = [
-        s.strip() for s in headers.get('accept-encoding', '').split(',')
-    ]
-    if 'gzip' not in encodings:
-        encodings.append('gzip')
+    encodings = [s.strip() for s in headers.get("accept-encoding", "").split(",")]
+    if "gzip" not in encodings:
+        encodings.append("gzip")
 
-    headers['accept-encoding'] = ', '.join(encodings)
+    headers["accept-encoding"] = ", ".join(encodings)
 
     if files:
         if not data:
@@ -559,8 +559,13 @@ def request(
 
 
 def get(
-    url, params=None, headers=None, auth=None,
-    timeout=60, allow_redirects=True, stream=False
+    url,
+    params=None,
+    headers=None,
+    auth=None,
+    timeout=60,
+    allow_redirects=True,
+    stream=False,
 ):
     """Initiate a GET request. Arguments as for :func:`request`.
 
@@ -568,15 +573,26 @@ def get(
 
     """
     return request(
-        'GET', url, params,
-        headers=headers, auth=auth, timeout=timeout,
-        allow_redirects=allow_redirects, stream=stream
+        "GET",
+        url,
+        params,
+        headers=headers,
+        auth=auth,
+        timeout=timeout,
+        allow_redirects=allow_redirects,
+        stream=stream,
     )
 
 
 def delete(
-    url, params=None, data=None, headers=None, auth=None,
-    timeout=60, allow_redirects=True, stream=False
+    url,
+    params=None,
+    data=None,
+    headers=None,
+    auth=None,
+    timeout=60,
+    allow_redirects=True,
+    stream=False,
 ):
     """Initiate a DELETE request. Arguments as for :func:`request`.
 
@@ -584,14 +600,28 @@ def delete(
 
     """
     return request(
-        'DELETE', url, params, data, headers=headers, auth=auth,
-        timeout=timeout, allow_redirects=allow_redirects, stream=stream
+        "DELETE",
+        url,
+        params,
+        data,
+        headers=headers,
+        auth=auth,
+        timeout=timeout,
+        allow_redirects=allow_redirects,
+        stream=stream,
     )
 
 
 def post(
-    url, params=None, data=None, headers=None, files=None,
-    auth=None, timeout=60, allow_redirects=False, stream=False
+    url,
+    params=None,
+    data=None,
+    headers=None,
+    files=None,
+    auth=None,
+    timeout=60,
+    allow_redirects=False,
+    stream=False,
 ):
     """Initiate a POST request. Arguments as for :func:`request`.
 
@@ -599,14 +629,29 @@ def post(
 
     """
     return request(
-        'POST', url, params, data, headers,
-        files, auth, timeout, allow_redirects, stream
+        "POST",
+        url,
+        params,
+        data,
+        headers,
+        files,
+        auth,
+        timeout,
+        allow_redirects,
+        stream,
     )
 
 
 def put(
-    url, params=None, data=None, headers=None, files=None,
-    auth=None, timeout=60, allow_redirects=False, stream=False
+    url,
+    params=None,
+    data=None,
+    headers=None,
+    files=None,
+    auth=None,
+    timeout=60,
+    allow_redirects=False,
+    stream=False,
 ):
     """Initiate a PUT request. Arguments as for :func:`request`.
 
@@ -614,15 +659,14 @@ def put(
 
     """
     return request(
-        'PUT', url, params, data, headers,
-        files, auth, timeout, allow_redirects, stream
+        "PUT", url, params, data, headers, files, auth, timeout, allow_redirects, stream
     )
 
 
 def encode_multipart_formdata(fields, files):
     """Encode form data (``fields``) and ``files`` for POST request.
 
-    :param fields: mapping of ``{name : value}`` pairs for normal form fields.
+    :param fields: mapping of ``{name: value}`` pairs for normal form fields.
     :type fields: dict
     :param files: dictionary of fieldnames/files elements for file data.
                   See below for details.
@@ -633,9 +677,12 @@ def encode_multipart_formdata(fields, files):
 
     The ``files`` argument is a dictionary::
 
-        {'fieldname' : { 'filename': 'blah.txt',
-                         'content': '<binary data>',
-                         'mimetype': 'text/plain'}
+        {
+            "fieldname": {
+                "filename": "blah.txt",
+                "content": "<binary data>",
+                "mimetype": "text/plain",
+            }
         }
 
     - ``fieldname`` is the name of the field in the HTML form.
@@ -644,6 +691,7 @@ def encode_multipart_formdata(fields, files):
       will be used.
 
     """
+
     def get_content_type(filename):
         """Return or guess mimetype of ``filename``.
 
@@ -653,52 +701,50 @@ def encode_multipart_formdata(fields, files):
         :rtype: str
 
         """
-        return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        return mimetypes.guess_type(filename)[0] or "application/octet-stream"
 
-    boundary = '-----' + ''.join(
-        random.choice(BOUNDARY_CHARS) for i in range(30)
-    )
-    crlf = '\r\n'
+    boundary = "-----" + "".join(random.choice(BOUNDARY_CHARS) for i in range(30))
+    crlf = "\r\n"
     output = []
 
     # Normal form fields
-    for (name, value) in list(fields.items()):
-        if isinstance(name, str):
-            name = name.encode('utf-8')
-        if isinstance(value, str):
-            value = value.encode('utf-8')
-        output.append('--' + boundary)
-        output.append(f'Content-Disposition: form-data; name="{name}"')
-        output.append('')
-        output.append(value)
+    for (k, v) in list(fields.items()):
+        if isinstance(k, str):
+            k = k.encode("utf-8")
+        if isinstance(v, str):
+            v = v.encode("utf-8")
+        output.append("--" + boundary)
+        output.append(f'Content-Disposition: form-data; name="{k}"')
+        output.append("")
+        output.append(v)
 
     # Files to upload
-    for name, d in list(files.items()):
-        filename = d['filename']
-        content = d['content']
-        if 'mimetype' in d:
-            mimetype = d['mimetype']
+    for k, v in list(files.items()):
+        filename = v["filename"]
+        content = v["content"]
+        if "mimetype" in v:
+            mimetype = v["mimetype"]
         else:
             mimetype = get_content_type(filename)
-        if isinstance(name, str):
-            name = name.encode('utf-8')
+        if isinstance(k, str):
+            k = k.encode("utf-8")
         if isinstance(filename, str):
-            filename = filename.encode('utf-8')
+            filename = filename.encode("utf-8")
         if isinstance(mimetype, str):
-            mimetype = mimetype.encode('utf-8')
-        output.append('--' + boundary)
+            mimetype = mimetype.encode("utf-8")
+        output.append("--" + boundary)
         output.append(
-            f'Content-Disposition: form-data; name="{name}"; filename="{filename}"'  # noqa
+            f'Content-Disposition: form-data; name="{k}"; filename="{filename}"'  # noqa
         )
-        output.append(f'Content-Type: {mimetype}')
-        output.append('')
+        output.append(f"Content-Type: {mimetype}")
+        output.append("")
         output.append(content)
 
-    output.append('--' + boundary + '--')
-    output.append('')
+    output.append("--" + boundary + "--")
+    output.append("")
     body = crlf.join(output)
     headers = {
-        'Content-Type': f'multipart/form-data; boundary={boundary}',
-        'Content-Length': str(len(body)),
+        "Content-Type": f"multipart/form-data; boundary={boundary}",
+        "Content-Length": str(len(body)),
     }
     return (headers, body)

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 """
 Usage:
@@ -49,8 +49,8 @@ from send2trash import send2trash
 from workflow import Workflow, notify, ICON_ERROR
 
 
-UPDATE_SETTINGS = {'github_slug': 'xilopaint/alfred-pdf-tools'}
-HELP_URL = 'https://github.com/xilopaint/alfred-pdf-tools'
+UPDATE_SETTINGS = {"github_slug": "xilopaint/alfred-pdf-tools"}
+HELP_URL = "https://github.com/xilopaint/alfred-pdf-tools"
 
 
 class AlfredPdfToolsError(Exception):
@@ -71,35 +71,29 @@ class MultiplePathsError(AlfredPdfToolsError):
 
 def handle_exceptions(func):
     """Decorator to handle exceptions in the wrapper function."""
+
     def wrapper(*args, **kwargs):
         """Wrapper function."""
         try:
             func(*args, **kwargs)
         except ValueError:
-            notify.notify(
-                'Alfred PDF Tools',
-                'Invalid input.'
-            )
+            notify.notify("Alfred PDF Tools", "Invalid input.")
         except DoubleQuotesPathError:
             notify.notify(
-                'Alfred PDF Tools',
-                'This file action cannot handle a file path with double quotes.'  # noqa
+                "Alfred PDF Tools",
+                "This file action cannot handle a file path with double quotes.",
             )
         except PasswordError:
-            notify.notify(
-                'Alfred PDF Tools',
-                'Encrypted files are not allowed.'
-            )
+            notify.notify("Alfred PDF Tools", "Encrypted files are not allowed.")
         except SelectionError:
             notify.notify(
-                'Alfred PDF Tools',
-                'You must select at least two PDF files to merge.'
+                "Alfred PDF Tools", "You must select at least two PDF files to merge."
             )
         except MultiplePathsError:
             notify.notify(
-                'Alfred PDF Tools',
-                'Cannot merge PDF files from different paths.'
+                "Alfred PDF Tools", "Cannot merge PDF files from different paths."
             )
+
     return wrapper
 
 
@@ -118,35 +112,29 @@ def optimize(resolution, pdf_paths):
         raise ValueError
 
     for pdf_path in pdf_paths:
-        if "\"" in pdf_path:
+        if '"' in pdf_path:
             raise DoubleQuotesPathError
 
-        cmd = f'echo | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -dpi {resolution} -o "%s [optimized].pdf" -x'  # noqa
+        cmd = f"echo | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"  # noqa
 
         with subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'
+            cmd, stdout=subprocess.PIPE, shell=True, encoding="utf-8"
         ) as proc:
             for line in proc.stdout:
-                if 'Reading' in line:
+                if "Reading" in line:
                     pg_cnt = line.split()[1]
-                    wf.cache_data('page_count', pg_cnt)
+                    wf.cache_data("page_count", pg_cnt)
 
-                if 'SOURCE PAGE' in line:
+                if "SOURCE PAGE" in line:
                     pg_num = line.split()[2]
-                    wf.cache_data('page_number', pg_num)
+                    wf.cache_data("page_number", pg_num)
 
-        wf.clear_cache(lambda cache_file: cache_file[:4] == 'page')
+        wf.clear_cache(lambda cache_file: cache_file[:4] == "page")
 
         if proc.returncode == 0:
-            notify.notify(
-                'Alfred PDF Tools',
-                'Optimization successfully completed.'
-            )
+            notify.notify("Alfred PDF Tools", "Optimization successfully completed.")
         else:
-            notify.notify(
-                'Alfred PDF Tools',
-                'Optimization process failed.'
-            )
+            notify.notify("Alfred PDF Tools", "Optimization process failed.")
 
 
 @handle_exceptions
@@ -157,54 +145,48 @@ def deskew(pdf_paths):
         pdf_paths (list): Paths to selected PDF files.
     """
     for pdf_path in pdf_paths:
-        if "\"" in pdf_path:
+        if '"' in pdf_path:
             raise DoubleQuotesPathError
 
-        cmd = f'echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -n -o "%s [deskewed].pdf" -x'  # noqa
+        cmd = f"echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -n -o '%s [deskewed].pdf' -x"  # noqa
 
         with subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, shell=True, encoding='utf-8'
+            cmd, stdout=subprocess.PIPE, shell=True, encoding="utf-8"
         ) as proc:
             for line in proc.stdout:
-                if 'Reading' in line:
+                if "Reading" in line:
                     pg_cnt = line.split()[1]
-                    wf.cache_data('page_count', pg_cnt)
+                    wf.cache_data("page_count", pg_cnt)
 
-                if 'SOURCE PAGE' in line:
+                if "SOURCE PAGE" in line:
                     pg_num = line.split()[2]
-                    wf.cache_data('page_number', pg_num)
+                    wf.cache_data("page_number", pg_num)
 
-            wf.clear_cache(lambda cache_file: cache_file[:4] == 'page')
+            wf.clear_cache(lambda cache_file: cache_file[:4] == "page")
 
         if proc.returncode == 0:
-            notify.notify(
-                'Alfred PDF Tools',
-                'Optimization successfully completed.'
-            )
+            notify.notify("Alfred PDF Tools", "Optimization successfully completed.")
         else:
-            notify.notify(
-                'Alfred PDF Tools',
-                'Deskew process failed.'
-            )
+            notify.notify("Alfred PDF Tools", "Deskew process failed.")
 
 
 def get_progress():
     """Show enhancement progress."""
     wf.rerun = 1
-    pg_num = wf.cached_data('page_number', max_age=0)
-    pg_cnt = wf.cached_data('page_count', max_age=0)
+    pg_num = wf.cached_data("page_number", max_age=0)
+    pg_cnt = wf.cached_data("page_count", max_age=0)
 
     try:
-        count = int(os.environ['count'])
+        count = int(os.environ["count"])
     except KeyError:
         count = 0
 
     if not pg_cnt and not pg_num:
-        title = 'No enhancement action is running.'
+        title = "No enhancement action is running."
         wf.add_item(valid=True, title=title, icon=ICON_ERROR)
 
     if pg_cnt and not pg_num:
-        title = 'Reading the PDF file...'
+        title = "Reading the PDF file..."
         subtitle = progress_bar(count)
         wf.add_item(valid=True, title=title, subtitle=subtitle)
 
@@ -212,27 +194,27 @@ def get_progress():
         pct = str(int(round((float(pg_num) / float(pg_cnt)) * 100)))
 
         if pg_num != pg_cnt:
-            title = f'Page {pg_num} of {pg_cnt} processed ({pct}% completed)'
+            title = f"Page {pg_num} of {pg_cnt} processed ({pct}% completed)"
             subtitle = progress_bar(count)
             wf.add_item(valid=True, title=title, subtitle=subtitle)
         else:
             wf.rerun = 0  # Stop re-running.
-            title = f'Page {pg_cnt} of {pg_cnt} processed (100% completed)'
-            wf.add_item(valid=True, title=title, icon='checkmark.png')
+            title = f"Page {pg_cnt} of {pg_cnt} processed (100% completed)"
+            wf.add_item(valid=True, title=title, icon="checkmark.png")
 
     count += 1
 
-    wf.setvar('count', count)
+    wf.setvar("count", count)
 
     wf.send_feedback()
 
 
 def progress_bar(count):
     """Generate progress bar."""
-    prog_bar = ['\u25CB'] * 5
+    prog_bar = ["\u25CB"] * 5
     i = count % 5
-    prog_bar[i] = '\u25CF'
-    return ''.join(prog_bar)
+    prog_bar[i] = "\u25CF"
+    return "".join(prog_bar)
 
 
 @handle_exceptions
@@ -249,12 +231,9 @@ def encrypt(pwd, pdf_paths):
             pdf.pages.extend(f.pages)
             encryption = Encryption(owner=pwd, user=pwd)
             noextpath = os.path.splitext(pdf_path)[0]
-            pdf.save(f'{noextpath} [encrypted].pdf', encryption=encryption)
+            pdf.save(f"{noextpath} [encrypted].pdf", encryption=encryption)
 
-    notify.notify(
-        'Alfred PDF Tools',
-        'Encryption successfully completed.'
-        )
+    notify.notify("Alfred PDF Tools", "Encryption successfully completed.")
 
 
 def decrypt(pwd, pdf_paths):
@@ -270,17 +249,11 @@ def decrypt(pwd, pdf_paths):
                 pdf = Pdf.new()
                 pdf.pages.extend(f.pages)
                 noextpath = os.path.splitext(pdf_path)[0]
-                pdf.save(f'{noextpath} [decrypted].pdf')
+                pdf.save(f"{noextpath} [decrypted].pdf")
 
-                notify.notify(
-                    'Alfred PDF Tools',
-                    'Decryption successfully completed.'
-                )
+                notify.notify("Alfred PDF Tools", "Decryption successfully completed.")
     except PasswordError:
-        notify.notify(
-            'Alfred PDF Tools',
-            'The entered password is not valid.'
-        )
+        notify.notify("Alfred PDF Tools", "The entered password is not valid.")
 
 
 @handle_exceptions
@@ -310,7 +283,7 @@ def merge(out_filename, pdf_paths, should_trash):
         for pdf_path in pdf_paths:
             send2trash(pdf_path)
 
-    pdf.save(f'{parent_paths[0]}/{out_filename}.pdf')
+    pdf.save(f"{parent_paths[0]}/{out_filename}.pdf")
 
 
 @handle_exceptions
@@ -329,15 +302,13 @@ def split_count(max_pages, abs_path, suffix):
 
     pg_cnt = int(max_pages)
     num_pages = len(inp_file.pages)
-    page_ranges = [
-        inp_file.pages[n:n + pg_cnt] for n in range(0, num_pages, pg_cnt)
-    ]
+    page_ranges = [inp_file.pages[n : n + pg_cnt] for n in range(0, num_pages, pg_cnt)]
     noextpath = os.path.splitext(abs_path)[0]
 
     for n, page_range in enumerate(page_ranges, 1):
         out_file = Pdf.new()
         out_file.pages.extend(page_range)
-        out_file.save(f'{noextpath} [{suffix} {n}].pdf')
+        out_file.save(f"{noextpath} [{suffix} {n}].pdf")
 
 
 @handle_exceptions
@@ -361,8 +332,8 @@ def split_size(max_size, abs_path, suffix):
         for n, page in enumerate(inp_file.pages):
             tmp_file = Pdf.new()
             tmp_file.pages.append(page)
-            tmp_file.save(f'{tmp_dir}/page{n}')
-            tmp_file_size = os.path.getsize(f'{tmp_dir}/page{n}')
+            tmp_file.save(f"{tmp_dir}/page{n}")
+            tmp_file_size = os.path.getsize(f"{tmp_dir}/page{n}")
             pg_sizes.append(tmp_file_size)
             tmp_file.close()
 
@@ -392,10 +363,10 @@ def split_size(max_size, abs_path, suffix):
         for n, slice__ in enumerate(slices, 1):
             out_file = Pdf.new()
             out_file.pages.extend(inp_file.pages[slice__])
-            out_file.save(f'{noextpath} [{suffix} {n}].pdf')
+            out_file.save(f"{noextpath} [{suffix} {n}].pdf")
     else:
         while not stop > pg_cnt:
-            out_file_name = f'{noextpath} [{suffix} {pg_num + 1}].pdf'
+            out_file_name = f"{noextpath} [{suffix} {pg_num + 1}].pdf"
             chunk = pg_sizes[start:stop]
             chunk_size = sum(chunk)
             chunk_pg_cnt = len(chunk)
@@ -422,7 +393,7 @@ def split_size(max_size, abs_path, suffix):
                     out_file.pages.extend(inp_file.pages[start:stop])
                     out_file.save(out_file_name)
                     chunk_size = os.path.getsize(out_file_name)
-                    next_page = pg_sizes[stop:stop + 1][0]
+                    next_page = pg_sizes[stop : stop + 1][0]
 
                     if chunk_size + next_page < max_chunk_sz:
                         os.remove(out_file_name)
@@ -457,10 +428,10 @@ def slice_(query, abs_path, is_single, suffix):
         suffix (str): Suffix for the output filenames.
     """
     # Check for illegal syntax not catched by exceptions.
-    if re.search(r'^\D|^0.|\D0\D|\D0$', query):
+    if re.search(r"^\D|^0.|\D0\D|\D0$", query):
         raise ValueError
 
-    pg_ranges = [x.split('-') for x in query.split(',')]
+    pg_ranges = [x.split("-") for x in query.split(",")]
     print(pg_ranges)
 
     for pg_range in pg_ranges:
@@ -471,9 +442,7 @@ def slice_(query, abs_path, is_single, suffix):
     inp_file = Pdf.open(abs_path)
     pg_cnt = len(inp_file.pages)
 
-    slices = [
-        slice(int(x[0])-1, int(x[1] or pg_cnt)) for x in pg_ranges
-    ]
+    slices = [slice(int(x[0]) - 1, int(x[1] or pg_cnt)) for x in pg_ranges]
 
     noextpath = os.path.splitext(abs_path)[0]
 
@@ -482,12 +451,12 @@ def slice_(query, abs_path, is_single, suffix):
         for slice__ in slices:
             print(slice__)
             out_file.pages.extend(inp_file.pages[slice__])
-        out_file.save(f'{noextpath} [sliced].pdf')
+        out_file.save(f"{noextpath} [sliced].pdf")
     else:
         for part_num, slice__ in enumerate(slices, 1):
             out_file = Pdf.new()
             out_file.pages.extend(inp_file.pages[slice__])
-            out_file.save(f'{noextpath} [{suffix} {part_num}].pdf')
+            out_file.save(f"{noextpath} [{suffix} {part_num}].pdf")
 
 
 @handle_exceptions
@@ -517,7 +486,7 @@ def crop(pdf_paths):
             page.MediaBox = [x1, y1, x2, y2]
 
         noextpath = os.path.splitext(pdf_path)[0]
-        out_file.save(f'{noextpath} [cropped].pdf')
+        out_file.save(f"{noextpath} [cropped].pdf")
 
 
 @handle_exceptions
@@ -527,8 +496,8 @@ def scale(pdf_paths):
     Args:
         pdf_paths (list): Paths to selected PDF files.
     """
-    width = float(os.environ['width']) * 72
-    height = float(os.environ['height']) * 72
+    width = float(os.environ["width"]) * 72
+    height = float(os.environ["height"]) * 72
 
     for pdf_path in pdf_paths:
         inp_file = Pdf.open(pdf_path)
@@ -539,53 +508,51 @@ def scale(pdf_paths):
             out_file.pages[i].add_overlay(page)
 
         noextpath = os.path.splitext(pdf_path)[0]
-        out_file.save(f'{noextpath} [scaled].pdf')
+        out_file.save(f"{noextpath} [scaled].pdf")
 
 
 def main(wf):  # pylint: disable=redefined-outer-name
     """Run workflow."""
     args = docopt(__doc__)
     query = wf.args[1]
-    abs_path = os.environ['abs_path']
-    pdf_paths = abs_path.split('\t')
-    suffix = os.environ['suffix']
+    abs_path = os.environ["abs_path"]
+    pdf_paths = abs_path.split("\t")
+    suffix = os.environ["suffix"]
 
-    if args.get('--optimize'):
+    if args.get("--optimize"):
         optimize(query, pdf_paths)
-    elif args.get('--deskew'):
+    elif args.get("--deskew"):
         deskew(pdf_paths)
-    elif args.get('--progress'):
+    elif args.get("--progress"):
         get_progress()
-    elif args.get('--encrypt'):
+    elif args.get("--encrypt"):
         encrypt(query, pdf_paths)
-    elif args.get('--decrypt'):
+    elif args.get("--decrypt"):
         decrypt(query, pdf_paths)
-    elif args.get('--mrg'):
+    elif args.get("--mrg"):
         merge(query, pdf_paths, False)
-    elif args.get('--mrg-trash'):
+    elif args.get("--mrg-trash"):
         merge(query, pdf_paths, True)
-    elif args.get('--split-count'):
+    elif args.get("--split-count"):
         split_count(query, abs_path, suffix)
-    elif args.get('--split-size'):
+    elif args.get("--split-size"):
         split_size(query, abs_path, suffix)
-    elif args.get('--slice-multi'):
+    elif args.get("--slice-multi"):
         slice_(query, abs_path, False, suffix)
-    elif args.get('--slice-single'):
+    elif args.get("--slice-single"):
         slice_(query, abs_path, True, suffix)
-    elif args.get('--crop'):
+    elif args.get("--crop"):
         crop(pdf_paths)
-    elif args.get('--scale'):
+    elif args.get("--scale"):
         scale(pdf_paths)
 
     if wf.update_available:
         notify.notify(
-            'Alfred PDF Tools',
-            'A newer version of the workflow is available.',
-            'Glass'
+            "Alfred PDF Tools", "A newer version of the workflow is available.", "Glass"
         )
         wf.start_update()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     wf = Workflow(update_settings=UPDATE_SETTINGS, help_url=HELP_URL)
     sys.exit(wf.run(main))
