@@ -115,10 +115,10 @@ def optimize(resolution, pdf_paths):
         if '"' in pdf_path:
             raise DoubleQuotesPathError
 
-        cmd = f"echo | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"  # noqa
+        cmd = f"{os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"  # noqa
 
         with subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, shell=True, encoding="utf-8"
+            shlex.split(cmd), stdout=subprocess.PIPE, encoding="utf-8"
         ) as proc:
             for line in proc.stdout:
                 if "Reading" in line:
@@ -148,10 +148,10 @@ def deskew(pdf_paths):
         if '"' in pdf_path:
             raise DoubleQuotesPathError
 
-        cmd = f"echo -y | {os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -as -mode copy -n -o '%s [deskewed].pdf' -x"  # noqa
+        cmd = f"{os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -n -o '%s [deskewed].pdf' -x"  # noqa
 
         with subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, shell=True, encoding="utf-8"
+            shlex.split(cmd), stdout=subprocess.PIPE, encoding="utf-8"
         ) as proc:
             for line in proc.stdout:
                 if "Reading" in line:
