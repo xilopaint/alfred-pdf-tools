@@ -832,8 +832,8 @@ class Variables(dict):
 
     It is a subclass of :class:`dict`.
 
-    >>> v = Variables(username='deanishe', password='hunter2')
-    >>> v.arg = u'output value'
+    >>> v = Variables(username="deanishe", password="hunter2")
+    >>> v.arg = "output value"
     >>> print(v)
 
     See :ref:`variables-run-script` in the User Guide for more
@@ -855,6 +855,7 @@ class Variables(dict):
 
     def __init__(self, arg=None, **variables):
         """Create a new `Variables` object."""
+        # print("foo")
         self.arg = arg
         self.config = {}
         super().__init__(**variables)
@@ -863,11 +864,14 @@ class Variables(dict):
     def obj(self):
         """``alfredworkflow`` :class:`dict`."""
         obj_ = {}
+
         if self:
-            d2 = {}
+            variables = {}
+
             for k, v in self.items():
-                d2[k] = v
-            obj_["variables"] = d2
+                variables[k] = v
+
+            obj_["variables"] = variables
 
         if self.config:
             obj_["config"] = self.config

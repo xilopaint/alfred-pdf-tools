@@ -282,7 +282,7 @@ class Response:
 
     @property
     def content(self):
-        """Raw content of response (i.e. bytes).
+        """Content of the response in bytes.
 
         :returns: Body of HTTP response
         :rtype: bytes
@@ -304,7 +304,7 @@ class Response:
 
     @property
     def text(self):
-        """Unicode-decoded content of response body.
+        """Content of the response in unicode.
 
         If no encoding can be determined from HTTP headers or the content
         itself, the encoded response body will be returned instead.
@@ -329,7 +329,7 @@ class Response:
         """
         if not self.stream:
             raise RuntimeError(
-                "You cannot call `iter_content` on a Response unless you passed `stream=True` to `get()`/`post()`/`request()`."  # noqa
+                "You cannot call `iter_content` on a Response unless you passed `stream=True` to `get()`/`post()`/`request()`."
             )
 
         if self._content_loaded:
@@ -445,6 +445,7 @@ def request(
     url,
     params=None,
     data=None,
+    json_data=None,
     headers=None,
     files=None,
     auth=None,
@@ -463,10 +464,11 @@ def request(
     :param data: mapping of form data ``{'field_name': 'value'}`` or
         :class:`str`
     :type data: dict or str
+    :param json_data: json data to send in the body of the request
+        :class:`dict`
+    :type json_data: dict
     :param headers: HTTP headers
     :type headers: dict
-    :param cookies: cookies to send to server
-    :type cookies: dict
     :param files: files to upload (see below).
     :type files: dict
     :param auth: username, password
@@ -496,7 +498,6 @@ def request(
       will be used.
 
     """
-    # TODO: cookies
     socket.setdefaulttimeout(timeout)
 
     # Default handlers
@@ -521,27 +522,34 @@ def request(
     else:
         headers = CaseInsensitiveDictionary(headers)
 
-    if "user-agent" not in headers:
-        headers["user-agent"] = USER_AGENT
+    if "User-Agent" not in headers:
+        headers["User-Agent"] = USER_AGENT
 
     # Accept gzip-encoded content
-    encodings = [s.strip() for s in headers.get("accept-encoding", "").split(",")]
+    encodings = [s.strip() for s in headers.get("Accept-Encoding", "").split(",")]
     if "gzip" not in encodings:
         encodings.append("gzip")
 
-    headers["accept-encoding"] = ", ".join(encodings)
+    headers["Accept-Encoding"] = ", ".join(encodings)
 
     if files:
         if not data:
             data = {}
-        new_headers, data = encode_multipart_formdata(data, files)
+        new_headers, data = _encode_multipart_formdata(data, files)
         headers.update(new_headers)
     elif data and isinstance(data, dict):
         data = urllib.parse.urlencode(data)
 
+    if data:
+        data = data.encode("utf-8")
+
+    if json_data and not data:
+        data = json.dumps(json_data).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
     # Make sure everything is encoded text
 
-    if params:  # GET args (POST args are handled in encode_multipart_formdata)
+    if params:  # GET args (POST args are handled in _encode_multipart_formdata)
 
         scheme, netloc, path, query, fragment = urllib.parse.urlsplit(url)
 
@@ -616,6 +624,7 @@ def post(
     url,
     params=None,
     data=None,
+    json_data=None,
     headers=None,
     files=None,
     auth=None,
@@ -633,6 +642,7 @@ def post(
         url,
         params,
         data,
+        json_data,
         headers,
         files,
         auth,
@@ -663,7 +673,7 @@ def put(
     )
 
 
-def encode_multipart_formdata(fields, files):
+def _encode_multipart_formdata(fields, files):
     """Encode form data (``fields``) and ``files`` for POST request.
 
     :param fields: mapping of ``{name: value}`` pairs for normal form fields.
