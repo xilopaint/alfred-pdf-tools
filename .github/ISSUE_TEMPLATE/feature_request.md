@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for this project
 title: ''
-labels: bug, duplicate, enhancement, help wanted, invalid, wontfix
+labels: enhancement
 assignees: ''
 
 ---
