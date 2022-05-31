@@ -30,8 +30,6 @@ from copy import deepcopy
 from typing import Optional
 from uuid import uuid4
 
-from . import update
-from .update import Version
 from .util import atomic_writer, LockFile, uninterruptible, set_config
 
 
@@ -1221,6 +1219,8 @@ class Workflow:
     @property
     def alfred_version(self):
         """Alfred version as :class:`~workflow.update.Version` object."""
+        from .update import Version
+
         return Version(self.alfred_env.get("version"))
 
     @property
@@ -1392,6 +1392,8 @@ class Workflow:
                 version = self.info.get("version")
 
             if version:
+                from .update import Version
+
                 version = Version(version)
 
             self._version = version
@@ -2556,6 +2558,8 @@ class Workflow:
 
             version = self.settings.get("__workflow_last_version")
             if version:
+                from .update import Version
+
                 version = Version(version)
 
             self._last_version_run = version
@@ -2581,6 +2585,8 @@ class Workflow:
             version = self.version
 
         if isinstance(version, str):
+            from .update import Version
+
             version = Version(version)
 
         self.settings["__workflow_last_version"] = str(version)
@@ -2673,6 +2679,8 @@ class Workflow:
             installed, else ``False``
 
         """
+        from . import update
+
         repo = self._update_settings["github_slug"]
         version = str(self.version)
 

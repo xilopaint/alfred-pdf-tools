@@ -101,7 +101,8 @@ disable=raw-checker-failed,
         too-many-lines,
         too-many-public-methods,
         bad-continuation,
-        bad-option-value
+        bad-option-value,
+        import-outside-toplevel
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -428,8 +429,6 @@ good-names=i,
            n,
            r,
            wf,
-           _wf,
-           _log,
            dl,
            x1,
            x2,

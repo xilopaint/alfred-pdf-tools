@@ -14,10 +14,11 @@ directory.
 import os
 import subprocess
 
-from . import workflow
+from workflow import Workflow
 
-_wf = None
-_log = None
+
+wf = Workflow()
+logger = wf.logger
 
 
 #: Available system sounds from System Preferences > Sound > Sound Effects
@@ -37,30 +38,6 @@ SOUNDS = (
     "Submarine",
     "Tink",
 )
-
-
-def wf():
-    """Return Workflow object for this module.
-
-    Returns:
-        workflow.Workflow: Workflow object for current workflow.
-    """
-    global _wf
-    if _wf is None:
-        _wf = workflow.Workflow()
-    return _wf
-
-
-def log():
-    """Return logger for this module.
-
-    Returns:
-        logging.Logger: Logger for this module.
-    """
-    global _log
-    if _log is None:
-        _log = wf().logger
-    return _log
 
 
 def notify(title="", text="", sound=""):
@@ -88,5 +65,5 @@ def notify(title="", text="", sound=""):
     if retcode == 0:
         return True
 
-    log().error("Notificator exited with status %s", retcode)
+    logger.error("Notificator exited with status %s", retcode)
     return False

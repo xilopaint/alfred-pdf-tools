@@ -18,22 +18,13 @@ import tempfile
 from collections import defaultdict
 from functools import total_ordering
 
-from . import workflow, web
+from . import Workflow, web
 
 
 RELEASES_BASE = "https://api.github.com/repos/{}/releases"
 match_workflow = re.compile(r"\.alfred(\d+)?workflow$").search
 
-_wf = None
-
-
-# pylint: disable=duplicate-code
-def wf():
-    """Lazy `Workflow` object."""
-    global _wf
-    if _wf is None:
-        _wf = workflow.Workflow()
-    return _wf
+wf = Workflow()
 
 
 @total_ordering
@@ -86,7 +77,7 @@ class Download:
             try:
                 version = Version(tag)
             except ValueError as err:
-                wf().logger.debug('ignored release: bad version "%s": %s', tag, err)
+                wf.logger.debug('ignored release: bad version "%s": %s', tag, err)
                 continue
 
             dls = []
@@ -95,7 +86,7 @@ class Download:
                 filename = os.path.basename(url)
                 is_match = match_workflow(filename)
                 if not is_match:
-                    wf().logger.debug("unwanted file: %s", filename)
+                    wf.logger.debug("unwanted file: %s", filename)
                     continue
 
                 ext = is_match.group(0)
@@ -105,7 +96,7 @@ class Download:
             valid = True
             for ext, n in list(dupes.items()):
                 if n > 1:
-                    wf().logger.debug(
+                    wf.logger.debug(
                         'ignored release "%s": multiple assets with extension "%s"',
                         tag,
                         ext,
@@ -353,7 +344,7 @@ def retrieve_download(dl):
         raise ValueError(f"attachment not a workflow: {dl.filename}")
 
     path = os.path.join(tempfile.gettempdir(), dl.filename)
-    wf().logger.debug("downloading update from %r to %r ...", dl.url, path)
+    wf.logger.debug("downloading update from %r to %r ...", dl.url, path)
 
     r = web.get(dl.url)
     r.raise_for_status()
@@ -390,13 +381,13 @@ def get_downloads(repo):
     url = build_api_url(repo)
 
     def _fetch():
-        wf().logger.info("retrieving releases for %r ...", repo)
+        wf.logger.info("retrieving releases for %r ...", repo)
         r = web.get(url)
         r.raise_for_status()
         return r.content
 
     key = "github-releases-" + repo.replace("/", "-")
-    json_resp = wf().cached_data(key, _fetch, max_age=60)
+    json_resp = wf.cached_data(key, _fetch, max_age=60)
 
     return Download.from_releases(json_resp)
 
@@ -411,10 +402,10 @@ def latest_download(dls, alfred_version=None, prereleases=False):
     dls.sort(reverse=True)
     for dl in dls:
         if dl.prerelease and not prereleases:
-            wf().logger.debug("ignored prerelease: %s", dl.version)
+            wf.logger.debug("ignored prerelease: %s", dl.version)
             continue
         if version and dl.alfred_version > version:
-            wf().logger.debug(
+            wf.logger.debug(
                 "ignored incompatible (%s > %s): %s",
                 dl.alfred_version,
                 version,
@@ -422,7 +413,7 @@ def latest_download(dls, alfred_version=None, prereleases=False):
             )
             continue
 
-        wf().logger.debug("latest version: %s (%s)", dl.version, dl.filename)
+        wf.logger.debug("latest version: %s (%s)", dl.version, dl.filename)
         return dl
 
     return None
@@ -453,28 +444,28 @@ def check_update(repo, current_version, prereleases=False, alfred_version=None):
 
     dls = get_downloads(repo)
     if not dls:
-        wf().logger.warning("no valid downloads for %s", repo)
-        wf().cache_data(key, no_update)
+        wf.logger.warning("no valid downloads for %s", repo)
+        wf.cache_data(key, no_update)
         return False
 
-    wf().logger.info("%d download(s) for %s", len(dls), repo)
+    wf.logger.info("%d download(s) for %s", len(dls), repo)
 
     dl = latest_download(dls, alfred_version, prereleases)
 
     if not dl:
-        wf().logger.warning("no compatible downloads for %s", repo)
-        wf().cache_data(key, no_update)
+        wf.logger.warning("no compatible downloads for %s", repo)
+        wf.cache_data(key, no_update)
         return False
 
-    wf().logger.debug("latest=%r, installed=%r", dl.version, current)
+    wf.logger.debug("latest=%r, installed=%r", dl.version, current)
 
     if dl.version > current:
-        wf().cache_data(
+        wf.cache_data(
             key, {"version": str(dl.version), "download": dl.dict, "available": True}
         )
         return True
 
-    wf().cache_data(key, no_update)
+    wf.cache_data(key, no_update)
     return False
 
 
@@ -487,23 +478,23 @@ def install_update():
     key = "__workflow_latest_version"
     # data stored when no update is available
     no_update = {"available": False, "download": None, "version": None}
-    status = wf().cached_data(key, max_age=0)
+    status = wf.cached_data(key, max_age=0)
 
     if not status or not status.get("available"):
-        wf().logger.info("no update available")
+        wf.logger.info("no update available")
         return False
 
     dl = status.get("download")
     if not dl:
-        wf().logger.info("no download information")
+        wf.logger.info("no download information")
         return False
 
     path = retrieve_download(Download.from_dict(dl))
 
-    wf().logger.info("installing updated workflow ...")
+    wf.logger.info("installing updated workflow ...")
     subprocess.call(["open", path])  # nosec
 
-    wf().cache_data(key, no_update)
+    wf.cache_data(key, no_update)
     return True
 
 
@@ -540,5 +531,5 @@ if __name__ == "__main__":  # pragma: nocover
         else:
             show_help(1)
     except Exception as err:  # ensure traceback is in log file
-        wf().logger.exception(err)
+        wf.logger.exception(err)
         raise err
