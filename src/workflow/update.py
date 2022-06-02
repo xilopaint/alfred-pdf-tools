@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=redefined-outer-name
 
 """Self-updating from GitHub.
 
@@ -501,7 +502,7 @@ def install_update():
 if __name__ == "__main__":  # pragma: nocover
     import sys
 
-    prereleases = False
+    prereleases = False  # pylint: disable=invalid-name
 
     def show_help(status=0):
         """Print help message."""
@@ -514,7 +515,7 @@ if __name__ == "__main__":  # pragma: nocover
 
     if "--prereleases" in argv:
         argv.remove("--prereleases")
-        prereleases = True
+        prereleases = True  # pylint: disable=invalid-name
 
     if len(argv) != 4:
         show_help(1)

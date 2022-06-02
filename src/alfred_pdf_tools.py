@@ -97,6 +97,33 @@ def handle_exceptions(func):
     return wrapper
 
 
+def run_k2pdfopt(cmd):
+    """Execute k2pdfopt with the provided command caching the page numbers of the PDF
+    file to track the progress of the process.
+
+    Args:
+        cmd (str): Command to run.
+
+    Returns:
+        int: Return code of the child process.
+    """
+    with subprocess.Popen(
+        shlex.split(cmd), stdout=subprocess.PIPE, encoding="utf-8"
+    ) as proc:
+        for line in proc.stdout:
+            if "Reading" in line:
+                pg_cnt = line.split()[1]
+                wf.cache_data("page_count", pg_cnt)
+
+            if "SOURCE PAGE" in line:
+                pg_num = line.split()[2]
+                wf.cache_data("page_number", pg_num)
+
+    wf.clear_cache(lambda cache_file: cache_file[:4] == "page")
+
+    return proc.returncode
+
+
 @handle_exceptions
 def optimize(resolution, pdf_paths):
     """Optimize PDF files.
@@ -116,22 +143,9 @@ def optimize(resolution, pdf_paths):
             raise DoubleQuotesPathError
 
         cmd = f"{os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"  # noqa
+        returncode = run_k2pdfopt(cmd)
 
-        with subprocess.Popen(
-            shlex.split(cmd), stdout=subprocess.PIPE, encoding="utf-8"
-        ) as proc:
-            for line in proc.stdout:
-                if "Reading" in line:
-                    pg_cnt = line.split()[1]
-                    wf.cache_data("page_count", pg_cnt)
-
-                if "SOURCE PAGE" in line:
-                    pg_num = line.split()[2]
-                    wf.cache_data("page_number", pg_num)
-
-        wf.clear_cache(lambda cache_file: cache_file[:4] == "page")
-
-        if proc.returncode == 0:
+        if returncode == 0:
             notify.notify("Alfred PDF Tools", "Optimization successfully completed.")
         else:
             notify.notify("Alfred PDF Tools", "Optimization process failed.")
@@ -149,23 +163,10 @@ def deskew(pdf_paths):
             raise DoubleQuotesPathError
 
         cmd = f"{os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -n -o '%s [deskewed].pdf' -x"  # noqa
+        returncode = run_k2pdfopt(cmd)
 
-        with subprocess.Popen(
-            shlex.split(cmd), stdout=subprocess.PIPE, encoding="utf-8"
-        ) as proc:
-            for line in proc.stdout:
-                if "Reading" in line:
-                    pg_cnt = line.split()[1]
-                    wf.cache_data("page_count", pg_cnt)
-
-                if "SOURCE PAGE" in line:
-                    pg_num = line.split()[2]
-                    wf.cache_data("page_number", pg_num)
-
-            wf.clear_cache(lambda cache_file: cache_file[:4] == "page")
-
-        if proc.returncode == 0:
-            notify.notify("Alfred PDF Tools", "Optimization successfully completed.")
+        if returncode == 0:
+            notify.notify("Alfred PDF Tools", "Deskew successfully completed.")
         else:
             notify.notify("Alfred PDF Tools", "Deskew process failed.")
 

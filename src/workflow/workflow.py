@@ -516,7 +516,7 @@ class BaseSerializer:
     is_binary: Optional[bool] = None
 
     @classmethod
-    def binary_mode(cls):
+    def binary_mode(cls):  # pylint: disable=missing-function-docstring
         return "b" if cls.is_binary else ""
 
     @classmethod
@@ -526,12 +526,12 @@ class BaseSerializer:
 
     @classmethod
     @contextmanager
-    def atomic_writer(cls, path, mode):
+    def atomic_writer(cls, path, mode):  # pylint: disable=missing-function-docstring
         yield from cls._opener(atomic_writer, path, mode)
 
     @classmethod
     @contextmanager
-    def open(cls, path, mode):
+    def open(cls, path, mode):  # pylint: disable=missing-function-docstring
         yield from cls._opener(open, path, mode)
 
 
