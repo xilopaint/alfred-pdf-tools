@@ -7,10 +7,12 @@
   <img src="https://img.shields.io/github/downloads/xilopaint/alfred-pdf-tools/total"></a>
   <a href="https://github.com/psf/black">
   <img src="https://img.shields.io/badge/code%20style-black-000000"></a>
-  <a href="https://www.codacy.com/gh/xilopaint/alfred-pdf-tools/dashboard">
-  <img src="https://app.codacy.com/project/badge/Grade/3b9d7ae47ec34509a2ba833b0e0d5cc0"></a>
+  <a href="https://github.com/PyCQA/pylint">
+  <img src="https://img.shields.io/badge/linting-pylint-yellowgreen"></a>
   <a href="https://github.com/PyCQA/bandit">
   <img src="https://img.shields.io/badge/security-bandit-yellow"></a>
+  <a href="https://www.codacy.com/gh/xilopaint/alfred-pdf-tools/dashboard">
+  <img src="https://app.codacy.com/project/badge/Grade/3b9d7ae47ec34509a2ba833b0e0d5cc0"></a>
   <a href="https://github.com/xilopaint/alfred-pdf-tools/blob/main/LICENSE.md">
   <img src="https://img.shields.io/github/license/xilopaint/alfred-pdf-tools"></a>
 </p>
