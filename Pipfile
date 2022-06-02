@@ -12,7 +12,6 @@ workflow = {editable = true, path = "."}
 [dev-packages]
 pyinstaller = "*"
 bandit = "*"
-flake8 = "*"
 black = "*"
 
 [requires]
