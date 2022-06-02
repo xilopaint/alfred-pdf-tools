@@ -224,7 +224,7 @@ def run_in_background(name, args, **kwargs):
     return retcode
 
 
-def main(wf):  # pragma: no cover
+def main(wf):  # pragma: no cover  # pylint: disable=redefined-outer-name
     """Run command in a background process.
 
     Load cached arguments, fork into background, then call

@@ -4,8 +4,8 @@ import codecs
 import json
 import mimetypes
 import os
-import random
 import re
+import secrets
 import socket
 import string
 import unicodedata
@@ -183,7 +183,7 @@ class Response:
 
     """
 
-    def __init__(self, request, stream=False):
+    def __init__(self, request, stream=False):  # pylint: disable=redefined-outer-name
         """Call `request` with :mod:`urllib` and process results.
 
         :param request: :class:`Request` instance
@@ -547,10 +547,7 @@ def request(
         data = json.dumps(json_data).encode("utf-8")
         headers["Content-Type"] = "application/json"
 
-    # Make sure everything is encoded text
-
     if params:  # GET args (POST args are handled in _encode_multipart_formdata)
-
         scheme, netloc, path, query, fragment = urllib.parse.urlsplit(url)
 
         if query:  # Combine query string and `params`
@@ -713,7 +710,7 @@ def _encode_multipart_formdata(fields, files):
         """
         return mimetypes.guess_type(filename)[0] or "application/octet-stream"
 
-    boundary = "-----" + "".join(random.choice(BOUNDARY_CHARS) for i in range(30))
+    boundary = "-----" + "".join(secrets.choice(BOUNDARY_CHARS) for i in range(30))
     crlf = "\r\n"
     output = []
 
