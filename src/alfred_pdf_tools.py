@@ -449,6 +449,7 @@ def slice_(query, abs_path, is_single, suffix):
 
     if is_single:
         out_file = Pdf.new()
+
         for slice__ in slices:
             print(slice__)
             out_file.pages.extend(inp_file.pages[slice__])
