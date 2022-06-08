@@ -33,17 +33,18 @@ Options:
     --crop                  Crop two-column pages.
     --scale <query>         Scale PDF files to a given page size.
 """
-
 import os
 import sys
 import tempfile
 import re
 import shlex
 import subprocess
+from copy import copy
+from math import floor
 from pathlib import Path
 
 from docopt import docopt
-from pikepdf import Pdf, Encryption, PasswordError
+from PyPDF2 import PdfReader, PdfWriter, PdfMerger, PageRange, PageObject, errors
 from send2trash import send2trash
 
 from workflow import Workflow, notify, ICON_ERROR
@@ -83,7 +84,7 @@ def handle_exceptions(func):
                 "Alfred PDF Tools",
                 "This file action cannot handle a file path with double quotes.",
             )
-        except PasswordError:
+        except errors.PdfReadError:
             notify.notify("Alfred PDF Tools", "Encrypted files are not allowed.")
         except SelectionError:
             notify.notify(
@@ -142,7 +143,7 @@ def optimize(resolution, pdf_paths):
         if '"' in pdf_path:
             raise DoubleQuotesPathError
 
-        cmd = f"{os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"  # noqa
+        cmd = f"./bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"
         returncode = run_k2pdfopt(cmd)
 
         if returncode == 0:
@@ -162,7 +163,7 @@ def deskew(pdf_paths):
         if '"' in pdf_path:
             raise DoubleQuotesPathError
 
-        cmd = f"{os.path.dirname(__file__)}/bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -n -o '%s [deskewed].pdf' -x"  # noqa
+        cmd = f"./bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -n -o '%s [deskewed].pdf' -x"
         returncode = run_k2pdfopt(cmd)
 
         if returncode == 0:
@@ -227,14 +228,20 @@ def encrypt(pwd, pdf_paths):
         pdf_paths (list): Paths to selected PDF files.
     """
     for pdf_path in pdf_paths:
-        with Pdf.open(pdf_path) as f:
-            pdf = Pdf.new()
-            pdf.pages.extend(f.pages)
-            encryption = Encryption(owner=pwd, user=pwd)
-            noextpath = os.path.splitext(pdf_path)[0]
-            pdf.save(f"{noextpath} [encrypted].pdf", encryption=encryption)
+        reader = PdfReader(pdf_path)
+        writer = PdfWriter()
 
-    notify.notify("Alfred PDF Tools", "Encryption successfully completed.")
+        for page in reader.pages:
+            writer.add_page(page)
+
+        writer.encrypt(pwd)
+        noextpath = os.path.splitext(pdf_path)[0]
+        out_file = f"{noextpath} [encrypted].pdf"
+
+        with open(out_file, "wb") as f:
+            writer.write(f)
+
+        notify.notify("Alfred PDF Tools", "Encryption successfully completed.")
 
 
 def decrypt(pwd, pdf_paths):
@@ -246,14 +253,22 @@ def decrypt(pwd, pdf_paths):
     """
     try:
         for pdf_path in pdf_paths:
-            with Pdf.open(pdf_path, password=pwd) as f:
-                pdf = Pdf.new()
-                pdf.pages.extend(f.pages)
-                noextpath = os.path.splitext(pdf_path)[0]
-                pdf.save(f"{noextpath} [decrypted].pdf")
+            reader = PdfReader(pdf_path)
 
-                notify.notify("Alfred PDF Tools", "Decryption successfully completed.")
-    except PasswordError:
+            reader.decrypt(pwd)
+            writer = PdfWriter()
+
+            for page in reader.pages:
+                writer.add_page(page)
+
+            noextpath = os.path.splitext(pdf_path)[0]
+            out_file = f"{noextpath} [decrypted].pdf"
+
+            with open(out_file, "wb") as f:
+                writer.write(f)
+
+            notify.notify("Alfred PDF Tools", "Decryption successfully completed.")
+    except errors.PdfReadError:
         notify.notify("Alfred PDF Tools", "The entered password is not valid.")
 
 
@@ -274,17 +289,17 @@ def merge(out_filename, pdf_paths, should_trash):
     if not parent_paths[1:] == parent_paths[:-1]:
         raise MultiplePathsError
 
-    pdf = Pdf.new()
+    merger = PdfMerger()
 
-    for f in pdf_paths:
-        src = Pdf.open(f)
-        pdf.pages.extend(src.pages)
+    for pdf_path in pdf_paths:
+        reader = PdfReader(pdf_path)
+        merger.append(reader)
 
     if should_trash:
         for pdf_path in pdf_paths:
             send2trash(pdf_path)
 
-    pdf.save(f"{parent_paths[0]}/{out_filename}.pdf")
+    merger.write(f"{parent_paths[0]}/{out_filename}.pdf")
 
 
 @handle_exceptions
@@ -299,17 +314,17 @@ def split_count(max_pages, abs_path, suffix):
     if int(max_pages) < 0:
         raise ValueError
 
-    inp_file = Pdf.open(abs_path)
+    reader = PdfReader(abs_path)
 
     pg_cnt = int(max_pages)
-    num_pages = len(inp_file.pages)
-    page_ranges = [inp_file.pages[n : n + pg_cnt] for n in range(0, num_pages, pg_cnt)]
+    num_pages = len(reader.pages)
+    page_ranges = [PageRange(slice(n, n + pg_cnt)) for n in range(0, num_pages, pg_cnt)]
     noextpath = os.path.splitext(abs_path)[0]
 
     for n, page_range in enumerate(page_ranges, 1):
-        out_file = Pdf.new()
-        out_file.pages.extend(page_range)
-        out_file.save(f"{noextpath} [{suffix} {n}].pdf")
+        merger = PdfMerger()
+        merger.append(reader, pages=page_range, import_bookmarks=False)
+        merger.write(f"{noextpath} [{suffix} {n}].pdf")
 
 
 @handle_exceptions
@@ -325,18 +340,20 @@ def split_size(max_size, abs_path, suffix):
         raise ValueError
 
     max_chunk_sz = float(max_size) * 1000000
-    inp_file = Pdf.open(abs_path)
-    pg_cnt = len(inp_file.pages)
+    reader = PdfReader(abs_path)
+    pg_cnt = len(reader.pages)
     pg_sizes = []
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        for n, page in enumerate(inp_file.pages):
-            tmp_file = Pdf.new()
-            tmp_file.pages.append(page)
-            tmp_file.save(f"{tmp_dir}/page{n}")
+        for n, page in enumerate(reader.pages):
+            writer = PdfWriter()
+            writer.add_page(page)
+
+            with open(f"{tmp_dir}/page{n}", "wb") as f:
+                writer.write(f)
+
             tmp_file_size = os.path.getsize(f"{tmp_dir}/page{n}")
             pg_sizes.append(tmp_file_size)
-            tmp_file.close()
 
     inp_file_size = os.path.getsize(abs_path)
     sum_pg_sizes = sum(pg_sizes)
@@ -359,12 +376,12 @@ def split_size(max_size, abs_path, suffix):
             else:
                 pg_chunks.append([(n, pg_size)])
 
-        slices = [slice(n[0][0], n[-1][0] + 1) for n in pg_chunks]
+        slices = [PageRange(slice(n[0][0], n[-1][0] + 1)) for n in pg_chunks]
 
         for n, slice__ in enumerate(slices, 1):
-            out_file = Pdf.new()
-            out_file.pages.extend(inp_file.pages[slice__])
-            out_file.save(f"{noextpath} [{suffix} {n}].pdf")
+            merger = PdfMerger()
+            merger.append(reader, pages=slice__, import_bookmarks=False)
+            merger.write(f"{noextpath} [{suffix} {n}].pdf")
     else:
         while not stop > pg_cnt:
             out_file_name = f"{noextpath} [{suffix} {pg_num + 1}].pdf"
@@ -376,23 +393,23 @@ def split_size(max_size, abs_path, suffix):
                 if stop != pg_cnt:
                     stop += 1
                 else:
-                    out_file = Pdf.new()
-                    out_file.pages.extend(inp_file.pages[start:stop])
-                    out_file.save(out_file_name)
+                    merger = PdfMerger()
+                    merger.append(reader, pages=(start, stop), import_bookmarks=False)
+                    merger.write(out_file_name)
                     break
             else:
                 if chunk_pg_cnt == 1:
-                    out_file = Pdf.new()
-                    out_file.pages.extend(inp_file.pages[start:stop])
-                    out_file.save(out_file_name)
+                    merger = PdfMerger()
+                    merger.append(reader, pages=(start, stop), import_bookmarks=False)
+                    merger.write(out_file_name)
                     start = stop
                     stop += 1
                     pg_num += 1
                 else:
                     stop -= 1
-                    out_file = Pdf.new()
-                    out_file.pages.extend(inp_file.pages[start:stop])
-                    out_file.save(out_file_name)
+                    merger = PdfMerger()
+                    merger.append(reader, pages=(start, stop), import_bookmarks=False)
+                    merger.write(out_file_name)
                     chunk_size = os.path.getsize(out_file_name)
                     next_page = pg_sizes[stop : stop + 1][0]
 
@@ -415,8 +432,6 @@ def split_size(max_size, abs_path, suffix):
                         stop += 1
                         pg_num += 1
 
-    inp_file.close()
-
 
 @handle_exceptions
 def slice_(query, abs_path, is_single, suffix):
@@ -433,32 +448,35 @@ def slice_(query, abs_path, is_single, suffix):
         raise ValueError
 
     pg_ranges = [x.split("-") for x in query.split(",")]
-    print(pg_ranges)
 
     for pg_range in pg_ranges:
-        if pg_range[1]:
+        if len(pg_range) > 1 and pg_range[1] != "":
             if int(pg_range[0]) > int(pg_range[1]):
                 raise ValueError
 
-    inp_file = Pdf.open(abs_path)
-    pg_cnt = len(inp_file.pages)
+    reader = PdfReader(abs_path)
+    pg_cnt = len(reader.pages)
 
-    slices = [slice(int(x[0]) - 1, int(x[1] or pg_cnt)) for x in pg_ranges]
+    slices = [
+        (int(x[0]) - 1, int(x[1] or pg_cnt))
+        if len(x) > 1
+        else (int(x[0]) - 1, int(x[0]))
+        for x in pg_ranges
+    ]
 
     noextpath = os.path.splitext(abs_path)[0]
 
     if is_single:
-        out_file = Pdf.new()
+        merger = PdfMerger()
 
         for slice__ in slices:
-            print(slice__)
-            out_file.pages.extend(inp_file.pages[slice__])
-        out_file.save(f"{noextpath} [sliced].pdf")
+            merger.append(reader, pages=slice__, import_bookmarks=False)
+        merger.write(f"{noextpath} [sliced].pdf")
     else:
         for part_num, slice__ in enumerate(slices, 1):
-            out_file = Pdf.new()
-            out_file.pages.extend(inp_file.pages[slice__])
-            out_file.save(f"{noextpath} [{suffix} {part_num}].pdf")
+            merger = PdfMerger()
+            merger.append(reader, pages=slice__, import_bookmarks=False)
+            merger.write(f"{noextpath} [{suffix} {part_num}].pdf")
 
 
 @handle_exceptions
@@ -469,26 +487,56 @@ def crop(pdf_paths):
         pdf_paths (list): Paths to selected PDF files.
     """
     for pdf_path in pdf_paths:
-        inp_file = Pdf.open(pdf_path)
-        out_file = Pdf.new()
+        reader = PdfReader(pdf_path)
+        writer = PdfWriter()
 
-        for page in inp_file.pages:
-            for _ in range(2):
-                out_file.pages.append(out_file.copy_foreign(page))
+        for page in reader.pages:
+            # Make two copies of the input page.
+            page_copy_1 = copy(page)
+            page_copy_2 = copy(page)
 
-        for i, page in enumerate(out_file.pages, 1):
-            x1, y1, x2, y2 = page.MediaBox
-            middle = x1 + (x2 - x1) / 2
+            # The new mediaboxes are the previous cropboxes.
+            page_copy_1.mediabox = copy(page_copy_1.cropbox)
+            page_copy_2.mediabox = copy(page_copy_1.cropbox)
 
-            if i % 2:  # Check if the page is even.
-                x2 = middle
+            x1, y1 = page_copy_1.mediabox.lower_left
+            x2, y2 = page_copy_1.mediabox.upper_right
+
+            x1, y1 = floor(x1), floor(y1)
+            x2, y2 = floor(x2), floor(y2)
+            x3, y3 = x1 + floor((x2 - x1) / 2), y1 + floor((y2 - y1) / 2)
+
+            if (x2 - x1) > (y2 - y1):
+                # Horizontal
+                page_copy_1.mediabox.lower_left = (x1, y1)
+                page_copy_1.mediabox.upper_right = (x3, y2)
+
+                page_copy_2.mediabox.lower_left = (x3, y1)
+                page_copy_2.mediabox.upper_right = (x2, y2)
             else:
-                x1 = middle
+                # Vertical
+                page_copy_1.mediabox.lower_left = (x1, y1)
+                page_copy_1.mediabox.upper_right = (x2, y3)
 
-            page.MediaBox = [x1, y1, x2, y2]
+                page_copy_2.mediabox.lower_left = (x1, y3)
+                page_copy_2.mediabox.upper_right = (x2, y2)
+
+            page_copy_1.artbox = page_copy_1.mediabox
+            page_copy_1.bleedbox = page_copy_1.mediabox
+            page_copy_1.cropbox = page_copy_1.mediabox
+
+            page_copy_2.artbox = page_copy_2.mediabox
+            page_copy_2.bleedbox = page_copy_2.mediabox
+            page_copy_2.cropbox = page_copy_2.mediabox
+
+            writer.add_page(page_copy_1)
+            writer.add_page(page_copy_2)
 
         noextpath = os.path.splitext(pdf_path)[0]
-        out_file.save(f"{noextpath} [cropped].pdf")
+        out_file = f"{noextpath} [cropped].pdf"
+
+        with open(out_file, "wb") as f:
+            writer.write(f)
 
 
 @handle_exceptions
@@ -502,15 +550,20 @@ def scale(pdf_paths):
     height = float(os.environ["height"]) * 72
 
     for pdf_path in pdf_paths:
-        inp_file = Pdf.open(pdf_path)
-        out_file = Pdf.new()
+        reader = PdfReader(pdf_path)
+        writer = PdfWriter()
 
-        for i, page in enumerate(inp_file.pages):
-            out_file.add_blank_page(page_size=(width, height))
-            out_file.pages[i].add_overlay(page)
+        for page in reader.pages:
+            out_page = PageObject.create_blank_page(None, width, height)
+            out_page.merge_page(page)
+
+            writer.add_page(out_page)
 
         noextpath = os.path.splitext(pdf_path)[0]
-        out_file.save(f"{noextpath} [scaled].pdf")
+        out_file = f"{noextpath} [scaled].pdf"
+
+        with open(out_file, "wb") as f:
+            writer.write(f)
 
 
 def main(wf):  # pylint: disable=redefined-outer-name

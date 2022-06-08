@@ -492,7 +492,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --optimize "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --optimize "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -573,7 +573,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --deskew "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --deskew "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -656,7 +656,7 @@
 				<string></string>
 				<key>script</key>
 				<string>export abs_path=""
-./alfred_pdf_tools --progress "{query}"</string>
+python3 alfred_pdf_tools.py --progress "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -723,7 +723,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --encrypt "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --encrypt "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -804,7 +804,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --decrypt "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --decrypt "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -847,7 +847,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --mrg "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --mrg "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -928,7 +928,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --mrg-trash "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --mrg-trash "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -951,7 +951,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --split-count "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --split-count "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1070,7 +1070,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --split-size "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --split-size "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1113,7 +1113,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --slice-multi "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --slice-multi "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1194,7 +1194,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --slice-single "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --slice-single "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1294,7 +1294,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --crop "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --crop "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1383,7 +1383,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>./alfred_pdf_tools --scale "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --scale "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1950,7 +1950,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 		<string>part</string>
 	</dict>
 	<key>version</key>
-	<string>3.1.3</string>
+	<string>4.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>
