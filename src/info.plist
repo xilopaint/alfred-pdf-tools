@@ -1949,6 +1949,8 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 		<key>suffix</key>
 		<string>part</string>
 	</dict>
+	<key>variablesdontexport</key>
+	<array/>
 	<key>version</key>
 	<string>4.0</string>
 	<key>webaddress</key>
