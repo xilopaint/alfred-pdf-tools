@@ -235,7 +235,7 @@ def encrypt(pwd, pdf_paths):
             writer.add_page(page)
 
         writer.encrypt(pwd)
-        noextpath = os.path.splitext(pdf_path)[0]
+        noextpath = Path(pdf_path).with_suffix("")
         out_file = f"{noextpath} [encrypted].pdf"
 
         with open(out_file, "wb") as f:
@@ -261,7 +261,7 @@ def decrypt(pwd, pdf_paths):
             for page in reader.pages:
                 writer.add_page(page)
 
-            noextpath = os.path.splitext(pdf_path)[0]
+            noextpath = Path(pdf_path).with_suffix("")
             out_file = f"{noextpath} [decrypted].pdf"
 
             with open(out_file, "wb") as f:
@@ -319,7 +319,7 @@ def split_count(max_pages, abs_path, suffix):
     pg_cnt = int(max_pages)
     num_pages = len(reader.pages)
     page_ranges = [PageRange(slice(n, n + pg_cnt)) for n in range(0, num_pages, pg_cnt)]
-    noextpath = os.path.splitext(abs_path)[0]
+    noextpath = Path(abs_path).with_suffix("")
 
     for n, page_range in enumerate(page_ranges, 1):
         merger = PdfMerger()
@@ -365,7 +365,7 @@ def split_size(max_size, abs_path, suffix):
     stop = 1
     pg_num = 0
 
-    noextpath = os.path.splitext(abs_path)[0]
+    noextpath = Path(abs_path).with_suffix("")
 
     if quotient > 0.95:  # pylint: disable=too-many-nested-blocks
         pg_chunks = [[(0, pg_sizes.pop(0))]]
@@ -464,7 +464,7 @@ def slice_(query, abs_path, is_single, suffix):
         for x in pg_ranges
     ]
 
-    noextpath = os.path.splitext(abs_path)[0]
+    noextpath = Path(abs_path).with_suffix("")
 
     if is_single:
         merger = PdfMerger()
@@ -532,7 +532,7 @@ def crop(pdf_paths):
             writer.add_page(page_copy_1)
             writer.add_page(page_copy_2)
 
-        noextpath = os.path.splitext(pdf_path)[0]
+        noextpath = Path(pdf_path).with_suffix("")
         out_file = f"{noextpath} [cropped].pdf"
 
         with open(out_file, "wb") as f:
@@ -559,7 +559,7 @@ def scale(pdf_paths):
 
             writer.add_page(out_page)
 
-        noextpath = os.path.splitext(pdf_path)[0]
+        noextpath = Path(pdf_path).with_suffix("")
         out_file = f"{noextpath} [scaled].pdf"
 
         with open(out_file, "wb") as f:
