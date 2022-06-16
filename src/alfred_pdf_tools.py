@@ -49,9 +49,10 @@ from send2trash import send2trash
 
 from workflow import Workflow, notify, ICON_ERROR
 
-
 UPDATE_SETTINGS = {"github_slug": "xilopaint/alfred-pdf-tools"}
 HELP_URL = "https://github.com/xilopaint/alfred-pdf-tools"
+
+wf = Workflow(update_settings=UPDATE_SETTINGS, help_url=HELP_URL)
 
 
 class AlfredPdfToolsError(Exception):
@@ -143,7 +144,7 @@ def optimize(resolution, pdf_paths):
         if '"' in pdf_path:
             raise DoubleQuotesPathError
 
-        cmd = f"./bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"
+        cmd = f"'{Path(__file__).parent}/bin/k2pdfopt' {shlex.quote(pdf_path)} -ui- -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"
         returncode = run_k2pdfopt(cmd)
 
         if returncode == 0:
@@ -163,7 +164,7 @@ def deskew(pdf_paths):
         if '"' in pdf_path:
             raise DoubleQuotesPathError
 
-        cmd = f"./bin/k2pdfopt {shlex.quote(pdf_path)} -ui- -as -mode copy -n -o '%s [deskewed].pdf' -x"
+        cmd = f"'{Path(__file__).parent}/bin/k2pdfopt' {shlex.quote(pdf_path)} -ui- -as -mode copy -n -o '%s [deskewed].pdf' -x"
         returncode = run_k2pdfopt(cmd)
 
         if returncode == 0:
@@ -609,5 +610,4 @@ def main(wf):  # pylint: disable=redefined-outer-name
 
 
 if __name__ == "__main__":
-    wf = Workflow(update_settings=UPDATE_SETTINGS, help_url=HELP_URL)
     sys.exit(wf.run(main))
