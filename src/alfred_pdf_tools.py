@@ -278,7 +278,7 @@ def merge(out_filename, pdf_paths, should_trash):
     """Merge PDF files.
 
     Args:
-        out_filename (str): Filename of the output PDF file.
+        out_filename (str): Filename of the output PDF file without extension.
         pdf_paths (list): Paths to selected PDF files.
         should_trash (bool): `True` for moving the input PDF files to Trash.
     """
