@@ -30,7 +30,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
     @patch("workflow.notify.notify")
     def test_optimize(self, notify, cache_data):
         """Test optimize file action."""
-        self.assertIsNone(optimize(150, ["./resources/crazyones.pdf"]))
+        self.assertIsNone(optimize("150", ["./resources/crazyones.pdf"]))
         cache_data.assert_called()
         notify.assert_called_once_with(
             "Alfred PDF Tools", "Optimization successfully completed."

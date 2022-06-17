@@ -19,7 +19,7 @@ Usage:
 Optimize, encrypt and manipulate PDF files.
 
 Options:
-    [--optimize <res>]           Optimize PDF files.
+    --optimize <res>             Optimize PDF files.
     --deskew                     Deskew PDF files.
     --progress                   Track the enhancement progress.
     --encrypt <pwd>              Encrypt PDF files.
@@ -134,9 +134,6 @@ def optimize(resolution, pdf_paths):
         resolution (str): Resolution to be applied.
         pdf_paths (list): Paths to selected PDF files.
     """
-    if not resolution:
-        resolution = 150
-
     if int(resolution) < 0:
         raise ValueError
 
@@ -574,7 +571,6 @@ def main(wf):  # pylint: disable=redefined-outer-name
     abs_path = os.environ["abs_path"]
     pdf_paths = abs_path.split("\t")
     suffix = os.environ["suffix"]
-    print(f"foo: {query}")
 
     if args.get("--optimize"):
         optimize(query, pdf_paths)

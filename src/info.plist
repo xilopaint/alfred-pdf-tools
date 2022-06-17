@@ -12,7 +12,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>6FDFC63C-AF80-4ECA-9C00-9C778D158009</string>
+				<string>A7259DEF-B27E-4619-B2CF-1A5770F5F36E</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -336,6 +336,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>A7259DEF-B27E-4619-B2CF-1A5770F5F36E</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6FDFC63C-AF80-4ECA-9C00-9C778D158009</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>AA6B54AF-4B81-4DA1-85D2-C766121A6094</key>
 		<array/>
 		<key>AC5203DA-AD43-4637-BCAC-3301CBB679D1</key>
@@ -568,6 +581,23 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>matchmode</key>
+				<integer>2</integer>
+				<key>matchstring</key>
+				<string></string>
+				<key>replacestring</key>
+				<string>150</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.replace</string>
+			<key>uid</key>
+			<string>A7259DEF-B27E-4619-B2CF-1A5770F5F36E</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -656,7 +686,7 @@
 				<string></string>
 				<key>script</key>
 				<string>export abs_path=""
-python3 alfred_pdf_tools.py --progress "{query}"</string>
+python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1534,7 +1564,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Multi-Slice</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>1260</integer>
 		</dict>
@@ -1554,7 +1584,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Single-Slice</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>1400</integer>
 		</dict>
@@ -1574,7 +1604,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Split by File Size</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>1120</integer>
 		</dict>
@@ -1612,7 +1642,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Split by Page Count</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>980</integer>
 		</dict>
@@ -1659,7 +1689,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Merge and Move to Trash</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>830</integer>
 		</dict>
@@ -1713,7 +1743,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Optimize</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>535</integer>
 			<key>ypos</key>
 			<integer>20</integer>
 		</dict>
@@ -1724,7 +1754,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Encrypt</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>410</integer>
 		</dict>
@@ -1809,6 +1839,13 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>ypos</key>
 			<integer>760</integer>
 		</dict>
+		<key>A7259DEF-B27E-4619-B2CF-1A5770F5F36E</key>
+		<dict>
+			<key>xpos</key>
+			<integer>430</integer>
+			<key>ypos</key>
+			<integer>50</integer>
+		</dict>
 		<key>AA6B54AF-4B81-4DA1-85D2-C766121A6094</key>
 		<dict>
 			<key>colorindex</key>
@@ -1816,7 +1853,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Decrypt</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>550</integer>
 		</dict>
@@ -1845,7 +1882,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Scale</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>1680</integer>
 		</dict>
@@ -1865,7 +1902,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Crop</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>1540</integer>
 		</dict>
@@ -1892,7 +1929,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Merge</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>690</integer>
 		</dict>
@@ -1921,7 +1958,7 @@ This workflow relies on [pikepdf][5] library by James R. Barlow, [docopt][6] by 
 			<key>note</key>
 			<string>Deskew</string>
 			<key>xpos</key>
-			<integer>525</integer>
+			<integer>530</integer>
 			<key>ypos</key>
 			<integer>160</integer>
 		</dict>
