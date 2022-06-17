@@ -233,8 +233,7 @@ def encrypt(pwd, pdf_paths):
             writer.add_page(page)
 
         writer.encrypt(pwd)
-        noextpath = Path(pdf_path).with_suffix("")
-        out_file = f"{noextpath} [encrypted].pdf"
+        out_file = f"{Path(pdf_path).with_suffix('')} [encrypted].pdf"
 
         with open(out_file, "wb") as f:
             writer.write(f)
@@ -262,8 +261,7 @@ def decrypt(pwd, pdf_paths):
             notify.notify("Alfred PDF Tools", "The entered password is not valid.")
             sys.exit(1)
 
-        noextpath = Path(pdf_path).with_suffix("")
-        out_file = f"{noextpath} [decrypted].pdf"
+        out_file = f"{Path(pdf_path).with_suffix('')} [decrypted].pdf"
 
         with open(out_file, "wb") as f:
             writer.write(f)
@@ -318,12 +316,11 @@ def split_count(max_pages, abs_path, suffix):
     pg_cnt = int(max_pages)
     num_pages = len(reader.pages)
     page_ranges = [PageRange(slice(n, n + pg_cnt)) for n in range(0, num_pages, pg_cnt)]
-    noextpath = Path(abs_path).with_suffix("")
 
     for n, page_range in enumerate(page_ranges, 1):
         merger = PdfMerger()
         merger.append(reader, pages=page_range, import_bookmarks=False)
-        merger.write(f"{noextpath} [{suffix} {n}].pdf")
+        merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {n}].pdf")
 
 
 @handle_exceptions
@@ -364,8 +361,6 @@ def split_size(max_size, abs_path, suffix):
     stop = 1
     pg_num = 0
 
-    noextpath = Path(abs_path).with_suffix("")
-
     if quotient > 0.95:  # pylint: disable=too-many-nested-blocks
         pg_chunks = [[(0, pg_sizes.pop(0))]]
 
@@ -380,10 +375,12 @@ def split_size(max_size, abs_path, suffix):
         for n, slice__ in enumerate(slices, 1):
             merger = PdfMerger()
             merger.append(reader, pages=slice__, import_bookmarks=False)
-            merger.write(f"{noextpath} [{suffix} {n}].pdf")
+            merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {n}].pdf")
     else:
         while not stop > pg_cnt:
-            out_file_name = f"{noextpath} [{suffix} {pg_num + 1}].pdf"
+            out_file_name = (
+                f"{Path(abs_path).with_suffix('')} [{suffix} {pg_num + 1}].pdf"
+            )
             chunk = pg_sizes[start:stop]
             chunk_size = sum(chunk)
             chunk_pg_cnt = len(chunk)
@@ -463,19 +460,17 @@ def slice_(query, abs_path, is_single, suffix):
         for x in pg_ranges
     ]
 
-    noextpath = Path(abs_path).with_suffix("")
-
     if is_single:
         merger = PdfMerger()
 
         for slice__ in slices:
             merger.append(reader, pages=slice__, import_bookmarks=False)
-        merger.write(f"{noextpath} [sliced].pdf")
+        merger.write(f"{Path(abs_path).with_suffix('')} [sliced].pdf")
     else:
         for part_num, slice__ in enumerate(slices, 1):
             merger = PdfMerger()
             merger.append(reader, pages=slice__, import_bookmarks=False)
-            merger.write(f"{noextpath} [{suffix} {part_num}].pdf")
+            merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {part_num}].pdf")
 
 
 @handle_exceptions
@@ -531,8 +526,7 @@ def crop(pdf_paths):
             writer.add_page(page_copy_1)
             writer.add_page(page_copy_2)
 
-        noextpath = Path(pdf_path).with_suffix("")
-        out_file = f"{noextpath} [cropped].pdf"
+        out_file = f"{Path(pdf_path).with_suffix('')} [cropped].pdf"
 
         with open(out_file, "wb") as f:
             writer.write(f)
@@ -558,8 +552,7 @@ def scale(pdf_paths):
 
             writer.add_page(out_page)
 
-        noextpath = Path(pdf_path).with_suffix("")
-        out_file = f"{noextpath} [scaled].pdf"
+        out_file = f"{Path(pdf_path).with_suffix('')} [scaled].pdf"
 
         with open(out_file, "wb") as f:
             writer.write(f)
