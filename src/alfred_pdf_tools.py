@@ -249,25 +249,26 @@ def decrypt(pwd, pdf_paths):
         pwd (str): Password used in the decryption.
         pdf_paths (list): Paths to selected PDF files.
     """
-    try:
-        for pdf_path in pdf_paths:
-            reader = PdfReader(pdf_path)
+    for pdf_path in pdf_paths:
+        reader = PdfReader(pdf_path)
+        reader.decrypt(pwd)
 
-            reader.decrypt(pwd)
-            writer = PdfWriter()
+        writer = PdfWriter()
 
+        try:
             for page in reader.pages:
                 writer.add_page(page)
+        except errors.PdfReadError:
+            notify.notify("Alfred PDF Tools", "The entered password is not valid.")
+            sys.exit(1)
 
-            noextpath = Path(pdf_path).with_suffix("")
-            out_file = f"{noextpath} [decrypted].pdf"
+        noextpath = Path(pdf_path).with_suffix("")
+        out_file = f"{noextpath} [decrypted].pdf"
 
-            with open(out_file, "wb") as f:
-                writer.write(f)
+        with open(out_file, "wb") as f:
+            writer.write(f)
 
-            notify.notify("Alfred PDF Tools", "Decryption successfully completed.")
-    except errors.PdfReadError:
-        notify.notify("Alfred PDF Tools", "The entered password is not valid.")
+        notify.notify("Alfred PDF Tools", "Decryption successfully completed.")
 
 
 @handle_exceptions

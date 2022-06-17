@@ -62,6 +62,9 @@ class AlfredPdfToolsTests(unittest.TestCase):
             "Alfred PDF Tools", "Decryption successfully completed."
         )
 
+        with self.assertRaises(SystemExit):
+            decrypt("hunter2", ["./resources/encrypted_file.pdf"])
+
     def test_merge(self):
         """Test merge file action."""
         self.assertIsNone(
