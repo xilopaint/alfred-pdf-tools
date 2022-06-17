@@ -122,6 +122,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Makefile
+Makefile
+
 # Local History
 .history
 
