@@ -2,36 +2,36 @@
 
 """
 Usage:
-    alfred_pdf_tools.py --optimize <query>
-    alfred_pdf_tools.py --deskew <query>
-    alfred_pdf_tools.py --progress <query>
-    alfred_pdf_tools.py --encrypt <query>
-    alfred_pdf_tools.py --decrypt <query>
-    alfred_pdf_tools.py --mrg <query>
-    alfred_pdf_tools.py --mrg-trash <query>
-    alfred_pdf_tools.py --split-count <query>
-    alfred_pdf_tools.py --split-size <query>
+    alfred_pdf_tools.py --optimize <res>
+    alfred_pdf_tools.py --deskew <paths>
+    alfred_pdf_tools.py --progress
+    alfred_pdf_tools.py --encrypt <pwd>
+    alfred_pdf_tools.py --decrypt <pwd>
+    alfred_pdf_tools.py --mrg <filename>
+    alfred_pdf_tools.py --mrg-trash <filename>
+    alfred_pdf_tools.py --split-count <max_pages>
+    alfred_pdf_tools.py --split-size <max_size>
     alfred_pdf_tools.py --slice-multi <query>
     alfred_pdf_tools.py --slice-single <query>
-    alfred_pdf_tools.py --crop <query>
-    alfred_pdf_tools.py --scale <query>
+    alfred_pdf_tools.py --crop <paths>
+    alfred_pdf_tools.py --scale <paths>
 
 Optimize, encrypt and manipulate PDF files.
 
 Options:
-    [--optimize <query>]    Optimize PDF files.
-    --deskew                Deskew PDF files.
-    --progress              Track the enhancement progress.
-    --encrypt <query>       Encrypt PDF files.
-    --decrypt <query>       Decrypt PDF files.
-    --mrg <query>           Merge PDF files.
-    --mrg-trash <query>     Merge PDF files and move them to trash.
-    --split-count <query>   Split PDF file by page count.
-    --split-size <query>    Split PDF file by file size.
-    --slice-multi <query>   Multi-slice PDF files.
-    --slice-single <query>  Single-slice PDF files.
-    --crop                  Crop two-column pages.
-    --scale <query>         Scale PDF files to a given page size.
+    [--optimize <res>]           Optimize PDF files.
+    --deskew                     Deskew PDF files.
+    --progress                   Track the enhancement progress.
+    --encrypt <pwd>              Encrypt PDF files.
+    --decrypt <pwd>              Decrypt PDF files.
+    --mrg <filename>             Merge PDF files.
+    --mrg-trash <filename>       Merge PDF files and move them to trash.
+    --split-count <max_pages>    Split PDF file by page count.
+    --split-size <max_size>      Split PDF file by file size.
+    --slice-multi <query>        Multi-slice PDF files.
+    --slice-single <query>       Single-slice PDF files.
+    --crop <paths>               Crop two-column pages.
+    --scale <paths>              Scale PDF files to a given page size.
 """
 import os
 import sys
@@ -439,12 +439,12 @@ def slice_(query, abs_path, is_single, suffix):
     """Slice PDF files.
 
     Args:
-        query (str): Syntax indicating page numbers and/or page ranges.
+        query (str): Syntax indicating page numbers and/or page ranges (e.g. "2, 4-6, 9-")
         abs_path (str): Absolute path of the input PDF file.
         is_single (bool): `True` for a single output file.
         suffix (str): Suffix for the output filenames.
     """
-    # Check for illegal syntax not catched by exceptions.
+    # Query parameter validation.
     if re.search(r"^\D|^0.|\D0\D|\D0$", query):
         raise ValueError
 
@@ -570,10 +570,11 @@ def scale(pdf_paths):
 def main(wf):  # pylint: disable=redefined-outer-name
     """Run workflow."""
     args = docopt(__doc__)
-    query = wf.args[1]
+    query = wf.args[1] if len(wf.args) > 1 else None
     abs_path = os.environ["abs_path"]
     pdf_paths = abs_path.split("\t")
     suffix = os.environ["suffix"]
+    print(f"foo: {query}")
 
     if args.get("--optimize"):
         optimize(query, pdf_paths)
