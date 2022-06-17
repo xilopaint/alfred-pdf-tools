@@ -147,6 +147,8 @@ def optimize(resolution, pdf_paths):
         if returncode == 0:
             notify.notify("Alfred PDF Tools", "Optimization successfully completed.")
         else:
+            out_file = f"{Path(pdf_path).with_suffix('')} [optimized].pdf"
+            Path(out_file).unlink(missing_ok=True)
             notify.notify("Alfred PDF Tools", "Optimization process failed.")
 
 
