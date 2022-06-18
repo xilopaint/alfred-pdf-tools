@@ -36,6 +36,8 @@ class AlfredPdfToolsTests(unittest.TestCase):
             "Alfred PDF Tools", "Optimization successfully completed."
         )
 
+        self.assertIsNone(optimize("150", ["./resources/corrupted.pdf"]))
+
     @patch("alfred_pdf_tools.wf.cache_data")
     @patch("workflow.notify.notify")
     def test_deskew(self, notify, cache_data):
@@ -45,6 +47,8 @@ class AlfredPdfToolsTests(unittest.TestCase):
         notify.assert_called_once_with(
             "Alfred PDF Tools", "Deskew successfully completed."
         )
+
+        self.assertIsNone(deskew(["./resources/corrupted.pdf"]))
 
     @patch("workflow.notify.notify")
     def test_encrypt(self, notify):

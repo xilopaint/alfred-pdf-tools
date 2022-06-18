@@ -110,7 +110,10 @@ def run_k2pdfopt(cmd):
         int: Return code of the child process.
     """
     with subprocess.Popen(
-        shlex.split(cmd), stdout=subprocess.PIPE, encoding="utf-8"
+        shlex.split(cmd),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        encoding="utf-8",
     ) as proc:
         for line in proc.stdout:
             if "Reading" in line:
