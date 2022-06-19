@@ -3,7 +3,7 @@
 """
 Usage:
     alfred_pdf_tools.py --optimize <res>
-    alfred_pdf_tools.py --deskew <paths>
+    alfred_pdf_tools.py --deskew
     alfred_pdf_tools.py --progress
     alfred_pdf_tools.py --encrypt <pwd>
     alfred_pdf_tools.py --decrypt <pwd>
@@ -13,7 +13,7 @@ Usage:
     alfred_pdf_tools.py --split-size <max_size>
     alfred_pdf_tools.py --slice-multi <query>
     alfred_pdf_tools.py --slice-single <query>
-    alfred_pdf_tools.py --crop <paths>
+    alfred_pdf_tools.py --crop
     alfred_pdf_tools.py --scale <paths>
 
 Optimize, encrypt and manipulate PDF files.
@@ -30,7 +30,7 @@ Options:
     --split-size <max_size>      Split PDF file by file size.
     --slice-multi <query>        Multi-slice PDF files.
     --slice-single <query>       Single-slice PDF files.
-    --crop <paths>               Crop two-column pages.
+    --crop                       Crop two-column pages.
     --scale <paths>              Scale PDF files to a given page size.
 """
 import os

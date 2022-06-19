@@ -603,7 +603,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python3 alfred_pdf_tools.py --deskew "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --deskew</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -1324,7 +1324,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python3 alfred_pdf_tools.py --crop "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --crop</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
