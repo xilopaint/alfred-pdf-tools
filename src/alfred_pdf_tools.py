@@ -297,6 +297,11 @@ def merge(out_filename, pdf_paths, should_trash):
         reader = PdfReader(pdf_path)
         merger.append(reader)
 
+    if out_filename == "":
+        out_filename = Path(pdf_paths[0]).with_suffix('').parts[-1]
+        if not should_trash:
+            out_filename += "_merged"
+
     if should_trash:
         for pdf_path in pdf_paths:
             send2trash(pdf_path)
@@ -581,9 +586,9 @@ def main(wf):  # pylint: disable=redefined-outer-name  # pragma: no cover
         encrypt(query, pdf_paths)
     elif args.get("--decrypt"):
         decrypt(query, pdf_paths)
-    elif args.get("--mrg"):
+    elif args.get("--mrg") is not None:
         merge(query, pdf_paths, False)
-    elif args.get("--mrg-trash"):
+    elif args.get("--mrg-trash") is not None:
         merge(query, pdf_paths, True)
     elif args.get("--split-count"):
         split_count(query, abs_path, suffix)
