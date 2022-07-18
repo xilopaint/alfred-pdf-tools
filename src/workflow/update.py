@@ -18,6 +18,7 @@ import subprocess
 import tempfile
 from collections import defaultdict
 from functools import total_ordering
+from itertools import zip_longest
 
 from . import Workflow, web
 
@@ -308,9 +309,19 @@ class Version:
             if other.suffix and not self.suffix:
                 return False
 
-            return self._parse_dotted_string(self.suffix) < self._parse_dotted_string(
-                other.suffix
-            )
+            self_suffix = self._parse_dotted_string(self.suffix)
+            other_suffix = self._parse_dotted_string(other.suffix)
+
+            for s, o in zip_longest(self_suffix, other_suffix):
+                if s is None:  # shorter value wins
+                    return True
+                if o is None:  # longer value loses
+                    return False
+                if isinstance(s, str) != isinstance(o, str):  # type coersion
+                    s, o = str(s), str(o)
+                elif s == o:  # next if the same compare
+                    continue
+                return s < o  # finally compare
 
         return False
 
@@ -328,7 +339,7 @@ class Version:
     def __gt__(self, other):
         """Implement comparison."""
         if not isinstance(other, Version):
-            raise ValueError(f"not a Version instance: {format(other)!r}")
+            raise ValueError(f"not a Version instance: {other!r}")
 
         return other.__lt__(self)
 

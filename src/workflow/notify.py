@@ -22,7 +22,7 @@ logger = wf.logger
 
 
 def notify(title="", text="", sound=""):
-    """Post notification via Notify.app helper.
+    """Post notification via Notificator helper.
 
     Args:
         title (str, optional): Notification title.

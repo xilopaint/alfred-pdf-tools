@@ -82,6 +82,26 @@ def applescriptify(string):
     return string.replace('"', '" & quote & "')
 
 
+def run_command(cmd, **kwargs):
+    """Run a command and return the output.
+
+    .. versionadded:: 1.31
+
+    A thin wrapper around :func:`subprocess.check_output` that ensures
+    all arguments are encoded to UTF-8 first.
+
+    Args:
+        cmd (list): Command arguments to pass to :func:`~subprocess.check_output`.
+        **kwargs: Keyword arguments to pass to :func:`~subprocess.check_output`.
+
+    Returns:
+        str: Output returned by :func:`~subprocess.check_output`.
+
+    """
+    cmd = [str(s) for s in cmd]
+    return subprocess.check_output(cmd, **kwargs).decode()
+
+
 def run_applescript(script, *args, **kwargs):
     """Execute an AppleScript script and return its output.
 
@@ -114,7 +134,7 @@ def run_applescript(script, *args, **kwargs):
 
     cmd.extend(args)
 
-    return subprocess.run(cmd, **kwargs, check=True, stdout=subprocess.PIPE).stdout
+    return run_command(cmd, **kwargs)
 
 
 def run_jxa(script, *args):
@@ -302,14 +322,14 @@ def appinfo(name):
         f'(kMDItemDisplayName == "{name}" || kMDItemFSName == "{name}.app"))',
     ]
 
-    output = subprocess.run(cmd, check=True, stdout=subprocess.PIPE).stdout.strip()
+    output = run_command(cmd).strip()
 
     if not output:
         return None
 
-    path = output.split("\n")[0]
+    path = output.split("\n", maxsplit=1)[0]
     cmd = ["mdls", "-raw", "-name", "kMDItemCFBundleIdentifier", path]
-    bid = subprocess.run(cmd, check=True, stdout=subprocess.PIPE).stdout.strip()
+    bid = run_command(cmd).strip()
 
     if not bid:  # pragma: no cover
         return None
@@ -410,22 +430,23 @@ class LockFile:
 
             # Create in append mode so we don't lose any contents
             if self._lockfile is None:
-                with open(self.lockfile, "a", encoding="utf-8") as self._lockfile:
-                    # Try to acquire the lock
-                    try:
-                        fcntl.lockf(self._lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                        self._lock.set()
-                        break
-                    except IOError as err:  # pragma: no cover
-                        if err.errno not in (errno.EACCES, errno.EAGAIN):
-                            raise
+                self._lockfile = open(self.lockfile, "a", encoding="utf-8")  # pylint: disable=consider-using-with
 
-                        # Don't try again
-                        if not blocking:  # pragma: no cover
-                            return False
+            # Try to acquire the lock
+            try:
+                fcntl.lockf(self._lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                self._lock.set()
+                break
+            except IOError as err:  # pragma: no cover
+                if err.errno not in (errno.EACCES, errno.EAGAIN):
+                    raise
 
-                        # Wait, then try again
-                        time.sleep(self.delay)
+                # Don't try again
+                if not blocking:  # pragma: no cover
+                    return False
+
+                # Wait, then try again
+                time.sleep(self.delay)
 
         return True
 
@@ -497,6 +518,7 @@ class uninterruptible:  # pylint: disable=invalid-name
         """Trap ``SIGTERM`` and call wrapped function."""
         self._caught_signal = None
         # Register handler for SIGTERM, then call `self.func`
+        self.old_signal_handler = signal.getsignal(signal.SIGTERM)
         signal.signal(signal.SIGTERM, self.signal_handler)
         self.func(*args, **kwargs)
 

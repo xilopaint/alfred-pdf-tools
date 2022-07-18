@@ -568,7 +568,7 @@ class JSONSerializer(BaseSerializer):
         :type file_obj: ``file`` object
 
         """
-        return json.dump(obj, file_obj, indent=2, encoding="utf-8")
+        return json.dump(obj, file_obj, indent=2)
 
 
 class PickleSerializer(BaseSerializer):
@@ -1392,7 +1392,7 @@ class Workflow:
                 filepath = self.workflowfile("version")
 
                 if os.path.exists(filepath):
-                    with open(filepath, "rb") as fileobj:
+                    with open(filepath, "r", encoding="utf-8") as fileobj:
                         version = fileobj.read()
 
             # info.plist
