@@ -100,6 +100,7 @@ def run_applescript(script, *args, **kwargs):
 
     """
     lang = "AppleScript"
+
     if "lang" in kwargs:
         lang = kwargs["lang"]
         del kwargs["lang"]
@@ -147,6 +148,7 @@ def run_trigger(name, bundleid=None, arg=None):
     bundleid = bundleid or os.getenv("alfred_workflow_bundleid")
     appname = "com.runningwithcrayons.Alfred"
     opts = {"inWorkflow": bundleid}
+
     if arg:
         opts["withArgument"] = arg
 
@@ -155,7 +157,6 @@ def run_trigger(name, bundleid=None, arg=None):
         arg=json.dumps(name),
         opts=json.dumps(opts, sort_keys=True),
     )
-
     run_applescript(script, lang="JavaScript")
 
 
@@ -192,13 +193,11 @@ def set_config(name, value, bundleid=None, exportable=False):
         "inWorkflow": bundleid,
         "exportable": exportable,
     }
-
     script = JXA_SET_CONFIG.format(
         app=json.dumps(appname),
         arg=json.dumps(name),
         opts=json.dumps(opts, sort_keys=True),
     )
-
     run_applescript(script, lang="JavaScript")
 
 
@@ -216,13 +215,11 @@ def unset_config(name, bundleid=None):
     bundleid = bundleid or os.getenv("alfred_workflow_bundleid")
     appname = "com.runningwithcrayons.Alfred"
     opts = {"inWorkflow": bundleid}
-
     script = JXA_UNSET_CONFIG.format(
         app=json.dumps(appname),
         arg=json.dumps(name),
         opts=json.dumps(opts, sort_keys=True),
     )
-
     run_applescript(script, lang="JavaScript")
 
 
@@ -280,7 +277,6 @@ def reload_workflow(bundleid=None):
     script = JXA_RELOAD_WORKFLOW.format(
         app=json.dumps(appname), arg=json.dumps(bundleid)
     )
-
     run_applescript(script, lang="JavaScript")
 
 
@@ -307,13 +303,14 @@ def appinfo(name):
     ]
 
     output = subprocess.run(cmd, check=True, stdout=subprocess.PIPE).stdout.strip()
+
     if not output:
         return None
 
     path = output.split("\n")[0]
-
     cmd = ["mdls", "-raw", "-name", "kMDItemCFBundleIdentifier", path]
     bid = subprocess.run(cmd, check=True, stdout=subprocess.PIPE).stdout.strip()
+
     if not bid:  # pragma: no cover
         return None
 
@@ -509,6 +506,7 @@ class uninterruptible:  # pylint: disable=invalid-name
         # Handle any signal caught during execution
         if self._caught_signal is not None:
             signum, frame = self._caught_signal
+
             if callable(self.old_signal_handler):
                 self.old_signal_handler(signum, frame)
             elif self.old_signal_handler == signal.SIG_DFL:
