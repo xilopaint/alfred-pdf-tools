@@ -160,12 +160,10 @@
 			</dict>
 		</array>
 		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
-		<array/>
-		<key>59B8A2D9-03BD-4563-A9F4-2EC6DA1ACA85</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</string>
+				<string>FF741E87-BD73-4D61-A342-32DF0B7CBDEC</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -301,7 +299,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>CAAA0A26-58C2-485A-A709-CE8861EAFD7A</string>
+				<string>F2F788C0-6F9B-4AD0-A281-1B07D497BEAA</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -350,7 +348,18 @@
 			</dict>
 		</array>
 		<key>AA6B54AF-4B81-4DA1-85D2-C766121A6094</key>
-		<array/>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>F6DE372D-1629-4B02-8C1F-4051F5FAE462</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>AC5203DA-AD43-4637-BCAC-3301CBB679D1</key>
 		<array>
 			<dict>
@@ -394,19 +403,6 @@
 		</array>
 		<key>BC33847E-333E-4CCB-A37B-8346C6E24ED1</key>
 		<array/>
-		<key>CAAA0A26-58C2-485A-A709-CE8861EAFD7A</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>59B8A2D9-03BD-4563-A9F4-2EC6DA1ACA85</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>CEBD82BA-6268-426D-9BFE-62BCD4C27471</key>
 		<array>
 			<dict>
@@ -482,6 +478,49 @@
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>E8DDF600-7C9D-4081-91E3-4AA86C2FA79C</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>8A4C6DD3-706E-4FA2-8AD7-B3E8C67B6F88</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>sourceoutputuid</key>
+				<string>_button1</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>F2F788C0-6F9B-4AD0-A281-1B07D497BEAA</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>F6DE372D-1629-4B02-8C1F-4051F5FAE462</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>E8DDF600-7C9D-4081-91E3-4AA86C2FA79C</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>sourceoutputuid</key>
+				<string>D0113E33-C9FD-4031-AF30-E48FDF9D2600</string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
@@ -829,6 +868,21 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>{query}</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.terminalcommand</string>
+			<key>uid</key>
+			<string>8A4C6DD3-706E-4FA2-8AD7-B3E8C67B6F88</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -852,6 +906,27 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>button1</key>
+				<string>Install</string>
+				<key>button2</key>
+				<string>Cancel</string>
+				<key>button3</key>
+				<string></string>
+				<key>description</key>
+				<string>Alfred PDF Tools requires additional components to support AES decryption. The installation will take place in the workflow folder and your system will not be affected.</string>
+				<key>title</key>
+				<string>Install additional required components?</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.dialog</string>
+			<key>uid</key>
+			<string>E8DDF600-7C9D-4081-91E3-4AA86C2FA79C</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>passthroughargument</key>
@@ -866,6 +941,38 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>06552DE1-94A4-4A71-8CB8-BDE51B933214</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>conditions</key>
+				<array>
+					<dict>
+						<key>inputstring</key>
+						<string></string>
+						<key>matchcasesensitive</key>
+						<true/>
+						<key>matchmode</key>
+						<integer>4</integer>
+						<key>matchstring</key>
+						<string>pip install pycryptodome.*</string>
+						<key>outputlabel</key>
+						<string></string>
+						<key>uid</key>
+						<string>D0113E33-C9FD-4031-AF30-E48FDF9D2600</string>
+					</dict>
+				</array>
+				<key>elselabel</key>
+				<string>else</string>
+				<key>hideelse</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.conditional</string>
+			<key>uid</key>
+			<string>F6DE372D-1629-4B02-8C1F-4051F5FAE462</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -896,7 +1003,7 @@ python3 alfred_pdf_tools.py --progress</string>
 			<key>config</key>
 			<dict>
 				<key>acceptsmulti</key>
-				<integer>1</integer>
+				<integer>2</integer>
 				<key>filetypes</key>
 				<array>
 					<string>com.adobe.pdf</string>
@@ -972,6 +1079,21 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>576B0800-54DF-4371-8890-B0F77231DE58</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>tasksettings</key>
+				<dict/>
+				<key>taskuid</key>
+				<string>com.alfredapp.automation.core/files-and-folders/path.trash</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.automation.task</string>
+			<key>uid</key>
+			<string>FF741E87-BD73-4D61-A342-32DF0B7CBDEC</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1389,6 +1511,8 @@ python3 alfred_pdf_tools.py --progress</string>
 				<false/>
 				<key>items</key>
 				<string>[{"title":"A4","arg":"8.3x11.7"},{"title":"A5","arg":"5.8x8.3"},{"title":"US Letter","arg":"8.5x11"},{"title":"US Legal","arg":"8.5x14"},{"title":"Tabloid","arg":"11x17"},{"title":"Ledger","arg":"17x11"},{"title":"Executive","arg":"7.25x10.5"}]</string>
+				<key>matchmode</key>
+				<integer>0</integer>
 				<key>runningsubtext</key>
 				<string></string>
 				<key>subtext</key>
@@ -1413,9 +1537,9 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>python3 alfred_pdf_tools.py --scale "{query}"</string>
+				<string>python3 alfred_pdf_tools.py --scale $1 $2</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
@@ -1427,6 +1551,25 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>delimiter</key>
+				<string>x</string>
+				<key>outputas</key>
+				<integer>1</integer>
+				<key>trimarguments</key>
+				<true/>
+				<key>variableprefix</key>
+				<string>split</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.split</string>
+			<key>uid</key>
+			<string>F2F788C0-6F9B-4AD0-A281-1B07D497BEAA</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1448,96 +1591,36 @@ python3 alfred_pdf_tools.py --progress</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string>{query}</string>
-				<key>passthroughargument</key>
-				<false/>
-				<key>variables</key>
-				<dict>
-					<key>height</key>
-					<string>{var:dimension2}</string>
-					<key>width</key>
-					<string>{var:dimension1}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>59B8A2D9-03BD-4563-A9F4-2EC6DA1ACA85</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>delimiter</key>
-				<string>x</string>
-				<key>trimarguments</key>
-				<true/>
-				<key>variableprefix</key>
-				<string>dimension</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.split</string>
-			<key>uid</key>
-			<string>CAAA0A26-58C2-485A-A709-CE8861EAFD7A</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
 	</array>
 	<key>readme</key>
 	<string># Alfred PDF Tools
 
-Optimize, encrypt and manipulate PDF files using [Alfred][1].
+Optimize, encrypt and manipulate PDF files using [Alfred](http://www.alfredapp.com/).
 
 ## Usage
 
-**Alfred PDF Tools** can be used by the following [file actions][2]:
+**Alfred PDF Tools** can be used by the following [file actions](https://www.alfredapp.com/blog/tips-and-tricks/file-actions-from-alfred-or-finder/):
 
-* `Optimize`: Optimize the selected PDF files by entering the intended
-  resolution of the output file (150 dpi is used if no value is input) and the
-  document will be improved with increased contrast and straightened text;
+* `Optimize`: Optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is used if no value is input) and the document will be improved with increased contrast and straightened text;
 * `Deskew`: Straighten the selected PDF files with no further appearance changes;
-
-&gt; Tip: Invoke Alfred and type the `progress` keyword to track the enhancement
-&gt; process from either of the first two mentioned file actions.
-
+ `Tip: Invoke Alfred and type the `progress` keyword to track the enhancement process from either of the first two mentioned file actions.`
 * `Encrypt`: Encrypt the selected PDF files by entering a password;
-* `Decrypt`: Decrypt the selected PDF files by entering their password or just
-  `↩` if they're not password protected;
-* `Merge`: Merge the selected PDF files. Use the `⌘` modifier key if you also
-  want to move the source files to Trash;
+* `Decrypt`: Decrypt the selected PDF files by entering their password or just `↩` if they're not password protected;
+* `Merge`: Merge the selected PDF files. Use the `⌘` modifier key if you also want to move the source files to Trash;
 * `Split by Page Count`: Split the selected PDF file by page count;
 * `Split by File Size`: Split the selected PDF file by file size;
-* `Slice in Multiple Files`: Slice the selected PDF file in multiple files by
-   entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-);
-* `Slice in a Single File`: Slice the selected PDF file in a single file by
-  entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-);
+* `Slice in Multiple Files`: Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-);
+* `Slice in a Single File`: Slice the selected PDF file in a single file by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-);
 * `Crop`: Convert two-column pages in single pages;
 * `Scale`: Scale the selected PDF files to a given paper size.
 
 ## Contribute
 
-To report a bug or request a feature, please [create an issue][3] or [submit a
-pull request][4].
+To report a bug or request a feature, please [create an issue](https://github.com/xilopaint/alfred-pdf-tools/issues) or [submit a pull request](https://github.com/xilopaint/alfred-pdf-tools/pulls).
 
 ## Credits
 
-This workflow relies on [PyPDF2][5] library by Martin Thoma, [docopt][6] by
-Vladimir Keleshev, [K2pdfopt][7] by Johannes Buchnerand and [Send2Trash][8] by
-Virgil Dupras.
-
-[1]:http://www.alfredapp.com/
-[2]:https://www.alfredapp.com/blog/tips-and-tricks/file-actions-from-alfred-or-finder/
-[3]:https://github.com/xilopaint/alfred-pdf-tools/issues
-[4]:https://github.com/xilopaint/alfred-pdf-tools/pulls
-[5]:https://github.com/py-pdf/PyPDF2
-[6]:https://github.com/docopt/docopt
-[7]:http://www.willus.com/k2pdfopt/
-[8]:https://github.com/hsoft/send2trash</string>
+This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Martin Thoma, [docopt](https://github.com/docopt/docopt) by Vladimir Keleshev and [K2pdfopt](http://www.willus.com/k2pdfopt/) by Johannes Buchnerand.</string>
 	<key>uidata</key>
 	<dict>
 		<key>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</key>
@@ -1545,18 +1628,18 @@ Virgil Dupras.
 			<key>colorindex</key>
 			<integer>8</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>20</integer>
+			<real>20</real>
 		</dict>
 		<key>06552DE1-94A4-4A71-8CB8-BDE51B933214</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>3</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>580</integer>
+			<real>580</real>
 		</dict>
 		<key>166CC59B-C6E1-4E1E-A777-BEEB3B50E6FB</key>
 		<dict>
@@ -1565,18 +1648,18 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Multi-Slice</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>1260</integer>
+			<real>1260</real>
 		</dict>
 		<key>1C706960-938F-4C14-899F-4A2675685FBB</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>8</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>20</integer>
+			<real>20</real>
 		</dict>
 		<key>20249FBE-519D-4ECF-9CF8-7C3A8A6A9676</key>
 		<dict>
@@ -1585,18 +1668,18 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Single-Slice</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>1400</integer>
+			<real>1400</real>
 		</dict>
 		<key>2412A11E-00A7-400B-90FD-BAEBC00EA23A</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>790</integer>
+			<real>790</real>
 		</dict>
 		<key>264B67E5-5011-4DA7-8AF3-4175185C5C81</key>
 		<dict>
@@ -1605,36 +1688,36 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Split by File Size</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>1120</integer>
+			<real>1120</real>
 		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>1260</integer>
+			<real>1260</real>
 		</dict>
 		<key>37B8FB00-AFF1-4723-AE09-C0DE64D9690C</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>1290</integer>
+			<real>1290</real>
 		</dict>
 		<key>39C10607-DDD5-4570-A341-62E929B139A3</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>1680</integer>
+			<real>1680</real>
 		</dict>
 		<key>3D6F7F2A-1518-4529-98BA-331FC0F0FBE2</key>
 		<dict>
@@ -1643,45 +1726,45 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Split by Page Count</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>980</integer>
+			<real>980</real>
 		</dict>
 		<key>42722AC6-72A3-4622-B814-ED41C982708F</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>2</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>1150</integer>
+			<real>1150</real>
 		</dict>
 		<key>49850373-29CA-4A8D-AFF0-0BD2336ECF48</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>1400</integer>
+			<real>1400</real>
 		</dict>
 		<key>5357A0C2-9D29-4B99-AF5E-89D679CA7534</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>1400</integer>
+			<real>1400</real>
 		</dict>
 		<key>552BB866-EA02-4906-87A1-9C6265305BD3</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>12</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>1570</integer>
+			<real>1570</real>
 		</dict>
 		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
 		<dict>
@@ -1690,52 +1773,45 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Merge and Move to Trash</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>830</integer>
-		</dict>
-		<key>59B8A2D9-03BD-4563-A9F4-2EC6DA1ACA85</key>
-		<dict>
-			<key>xpos</key>
-			<integer>460</integer>
-			<key>ypos</key>
-			<integer>1710</integer>
+			<real>830</real>
 		</dict>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>2</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>1120</integer>
+			<real>1120</real>
 		</dict>
 		<key>674BC503-FB7B-435E-9AB0-54DA1DE7D1AA</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>8</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>50</integer>
+			<real>50</real>
 		</dict>
 		<key>69C74723-599D-4F65-B216-94A022C75630</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>1430</integer>
+			<real>1430</real>
 		</dict>
 		<key>6BEF424F-661B-4ABC-8F61-11B74B510A81</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>3</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>550</integer>
+			<real>550</real>
 		</dict>
 		<key>6FDFC63C-AF80-4ECA-9C00-9C778D158009</key>
 		<dict>
@@ -1744,9 +1820,9 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Optimize</string>
 			<key>xpos</key>
-			<integer>535</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>20</integer>
+			<real>20</real>
 		</dict>
 		<key>79C0A050-CA6C-4B0F-B567-3EA24D625B98</key>
 		<dict>
@@ -1755,97 +1831,106 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Encrypt</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>410</integer>
+			<real>410</real>
 		</dict>
 		<key>820BE1DD-B58C-4745-8429-4572451D931D</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>12</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>1540</integer>
+			<real>1540</real>
+		</dict>
+		<key>8A4C6DD3-706E-4FA2-8AD7-B3E8C67B6F88</key>
+		<dict>
+			<key>note</key>
+			<string>Install PyCryptodome</string>
+			<key>xpos</key>
+			<real>770</real>
+			<key>ypos</key>
+			<real>550</real>
 		</dict>
 		<key>8AF0A682-F978-4C78-B309-50EB5813CDC2</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>8</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>295</integer>
+			<real>295</real>
 		</dict>
 		<key>8C94D95D-1805-46BC-91D1-29027BFD475E</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>3</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>410</integer>
+			<real>410</real>
 		</dict>
 		<key>8D609CB2-2D7C-468B-A754-C9958CFBB5C4</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>8</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>160</integer>
+			<real>160</real>
 		</dict>
 		<key>91D78E37-51F7-43B9-B831-D41856B0B7A6</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>2</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>980</integer>
+			<real>980</real>
 		</dict>
 		<key>92E0C5E5-35E4-4521-BAE0-B9BD9EA493CC</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>2</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>1120</integer>
+			<real>1120</real>
 		</dict>
 		<key>943A590E-F14A-43F8-839C-0D6F07453AE7</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>1680</integer>
+			<real>1680</real>
 		</dict>
 		<key>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>3</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>440</integer>
+			<real>440</real>
 		</dict>
 		<key>A6A91646-8622-45F4-B763-4A6ACBAFD08C</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>760</integer>
+			<real>760</real>
 		</dict>
 		<key>A7259DEF-B27E-4619-B2CF-1A5770F5F36E</key>
 		<dict>
 			<key>xpos</key>
-			<integer>430</integer>
+			<real>395</real>
 			<key>ypos</key>
-			<integer>50</integer>
+			<real>50</real>
 		</dict>
 		<key>AA6B54AF-4B81-4DA1-85D2-C766121A6094</key>
 		<dict>
@@ -1854,27 +1939,27 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Decrypt</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>550</integer>
+			<real>550</real>
 		</dict>
 		<key>AC5203DA-AD43-4637-BCAC-3301CBB679D1</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>8</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>190</integer>
+			<real>190</real>
 		</dict>
 		<key>AF48E08D-4D41-4835-B7D2-FD131E6D7E23</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>2</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>1010</integer>
+			<real>1010</real>
 		</dict>
 		<key>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</key>
 		<dict>
@@ -1883,18 +1968,18 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Scale</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>1680</integer>
+			<real>1680</real>
 		</dict>
 		<key>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>3</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>410</integer>
+			<real>410</real>
 		</dict>
 		<key>BC33847E-333E-4CCB-A37B-8346C6E24ED1</key>
 		<dict>
@@ -1903,25 +1988,18 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Crop</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>1540</integer>
-		</dict>
-		<key>CAAA0A26-58C2-485A-A709-CE8861EAFD7A</key>
-		<dict>
-			<key>xpos</key>
-			<integer>395</integer>
-			<key>ypos</key>
-			<integer>1710</integer>
+			<real>1540</real>
 		</dict>
 		<key>CEBD82BA-6268-426D-9BFE-62BCD4C27471</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>760</integer>
+			<real>760</real>
 		</dict>
 		<key>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</key>
 		<dict>
@@ -1930,27 +2008,27 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Merge</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>690</integer>
+			<real>690</real>
 		</dict>
 		<key>D22080C6-09B9-404B-95A0-574ECE1E10F5</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<integer>175</integer>
+			<real>180</real>
 			<key>ypos</key>
-			<integer>1710</integer>
+			<real>1710</real>
 		</dict>
 		<key>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>2</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>980</integer>
+			<real>980</real>
 		</dict>
 		<key>D940F7C5-23FC-4B9E-B63E-8362677448F6</key>
 		<dict>
@@ -1959,36 +2037,81 @@ Virgil Dupras.
 			<key>note</key>
 			<string>Deskew</string>
 			<key>xpos</key>
-			<integer>530</integer>
+			<real>460</real>
 			<key>ypos</key>
-			<integer>160</integer>
+			<real>160</real>
 		</dict>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<integer>25</integer>
+			<real>30</real>
 			<key>ypos</key>
-			<integer>1260</integer>
+			<real>1260</real>
 		</dict>
 		<key>E472A751-60C0-4A98-84F6-E800BC2C8B6F</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>3</integer>
 			<key>xpos</key>
-			<integer>245</integer>
+			<real>245</real>
 			<key>ypos</key>
-			<integer>550</integer>
+			<real>550</real>
+		</dict>
+		<key>E8DDF600-7C9D-4081-91E3-4AA86C2FA79C</key>
+		<dict>
+			<key>xpos</key>
+			<real>675</real>
+			<key>ypos</key>
+			<real>570</real>
+		</dict>
+		<key>F2F788C0-6F9B-4AD0-A281-1B07D497BEAA</key>
+		<dict>
+			<key>xpos</key>
+			<real>395</real>
+			<key>ypos</key>
+			<real>1710</real>
+		</dict>
+		<key>F6DE372D-1629-4B02-8C1F-4051F5FAE462</key>
+		<dict>
+			<key>xpos</key>
+			<real>610</real>
+			<key>ypos</key>
+			<real>580</real>
+		</dict>
+		<key>FF741E87-BD73-4D61-A342-32DF0B7CBDEC</key>
+		<dict>
+			<key>xpos</key>
+			<real>650</real>
+			<key>ypos</key>
+			<real>830</real>
 		</dict>
 	</dict>
-	<key>variables</key>
-	<dict>
-		<key>suffix</key>
-		<string>part</string>
-	</dict>
-	<key>variablesdontexport</key>
-	<array/>
+	<key>userconfigurationconfig</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>part</string>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Text used in the tag appended to the output PDF filenames for Split and Slice file actions.</string>
+			<key>label</key>
+			<string>Suffix</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>suffix</string>
+		</dict>
+	</array>
 	<key>version</key>
 	<string>4.0.2</string>
 	<key>webaddress</key>

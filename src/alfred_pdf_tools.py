@@ -14,7 +14,7 @@ Usage:
     alfred_pdf_tools.py --slice-multi <query>
     alfred_pdf_tools.py --slice-single <query>
     alfred_pdf_tools.py --crop
-    alfred_pdf_tools.py --scale <paths>
+    alfred_pdf_tools.py --scale <width> <height>
 
 Optimize, encrypt and manipulate PDF files.
 
@@ -31,8 +31,9 @@ Options:
     --slice-multi <query>        Multi-slice PDF files.
     --slice-single <query>       Single-slice PDF files.
     --crop                       Crop two-column pages.
-    --scale <paths>              Scale PDF files to a given page size.
+    --scale <width> <height>     Scale PDF files to a given page size.
 """
+import json
 import os
 import sys
 import tempfile
@@ -45,9 +46,8 @@ from pathlib import Path
 
 from docopt import docopt
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger, PageRange, PageObject, errors
-from send2trash import send2trash
 
-from workflow import Workflow, notify, ICON_ERROR
+from workflow import Workflow, Variables, notify, ICON_ERROR
 
 UPDATE_SETTINGS = {"github_slug": "xilopaint/alfred-pdf-tools"}
 HELP_URL = "https://github.com/xilopaint/alfred-pdf-tools"
@@ -80,13 +80,13 @@ def handle_exceptions(func):
             func(*args, **kwargs)
         except ValueError:
             notify.notify("Alfred PDF Tools", "Invalid input.")
+        except errors.PdfReadError:
+            notify.notify("Alfred PDF Tools", "Encrypted files are not allowed.")
         except DoubleQuotesPathError:
             notify.notify(
                 "Alfred PDF Tools",
                 "This file action cannot handle a file path with double quotes.",
             )
-        except errors.PdfReadError:
-            notify.notify("Alfred PDF Tools", "Encrypted files are not allowed.")
         except SelectionError:
             notify.notify(
                 "Alfred PDF Tools", "You must select at least two PDF files to merge."
@@ -246,6 +246,7 @@ def encrypt(pwd, pdf_paths):
         notify.notify("Alfred PDF Tools", "Encryption successfully completed.")
 
 
+@handle_exceptions
 def decrypt(pwd, pdf_paths):
     """Decrypt PDF files.
 
@@ -268,20 +269,24 @@ def decrypt(pwd, pdf_paths):
 
         out_file = f"{Path(pdf_path).with_suffix('')} [decrypted].pdf"
 
-        with open(out_file, "wb") as f:
-            writer.write(f)
+        try:
+            with open(out_file, "wb") as f:
+                writer.write(f)
+        except errors.DependencyError:  # pragma: no cover
+            Path(out_file).unlink(missing_ok=True)
+            print(f"pip install pycryptodome -t '{Path(__file__).parent}'", end="")
+            sys.exit(1)
 
         notify.notify("Alfred PDF Tools", "Decryption successfully completed.")
 
 
 @handle_exceptions
-def merge(out_filename, pdf_paths, should_trash):
+def merge(out_filename, pdf_paths):
     """Merge PDF files.
 
     Args:
         out_filename (str): Filename of the output PDF file without extension.
         pdf_paths (list): Paths to selected PDF files.
-        should_trash (bool): `True` for moving the input PDF files to Trash.
     """
     parent_paths = [Path(pdf_path).parent for pdf_path in pdf_paths]
 
@@ -297,11 +302,10 @@ def merge(out_filename, pdf_paths, should_trash):
         reader = PdfReader(pdf_path)
         merger.append(reader)
 
-    if should_trash:
-        for pdf_path in pdf_paths:
-            send2trash(pdf_path)
-
     merger.write(f"{parent_paths[0]}/{out_filename}.pdf")
+
+    v = Variables(pdf_paths)
+    print(json.dumps(v.obj))
 
 
 @handle_exceptions
@@ -324,7 +328,7 @@ def split_count(max_pages, abs_path, suffix):
 
     for n, page_range in enumerate(page_ranges, 1):
         merger = PdfMerger()
-        merger.append(reader, pages=page_range, import_bookmarks=False)
+        merger.append(reader, pages=page_range)
         merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {n}].pdf")
 
 
@@ -379,7 +383,7 @@ def split_size(max_size, abs_path, suffix):
 
         for n, slice__ in enumerate(slices, 1):
             merger = PdfMerger()
-            merger.append(reader, pages=slice__, import_bookmarks=False)
+            merger.append(reader, pages=slice__)
             merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {n}].pdf")
     else:
         while not stop > pg_cnt:
@@ -395,13 +399,13 @@ def split_size(max_size, abs_path, suffix):
                     stop += 1
                 else:
                     merger = PdfMerger()
-                    merger.append(reader, pages=(start, stop), import_bookmarks=False)
+                    merger.append(reader, pages=(start, stop))
                     merger.write(out_file_name)
                     break
             else:
                 if chunk_pg_cnt == 1:
                     merger = PdfMerger()
-                    merger.append(reader, pages=(start, stop), import_bookmarks=False)
+                    merger.append(reader, pages=(start, stop))
                     merger.write(out_file_name)
                     start = stop
                     stop += 1
@@ -409,7 +413,7 @@ def split_size(max_size, abs_path, suffix):
                 else:
                     stop -= 1
                     merger = PdfMerger()
-                    merger.append(reader, pages=(start, stop), import_bookmarks=False)
+                    merger.append(reader, pages=(start, stop))
                     merger.write(out_file_name)
                     chunk_size = os.path.getsize(out_file_name)
                     next_page = pg_sizes[stop : stop + 1][0]
@@ -469,12 +473,12 @@ def slice_(query, abs_path, is_single, suffix):
         merger = PdfMerger()
 
         for slice__ in slices:
-            merger.append(reader, pages=slice__, import_bookmarks=False)
+            merger.append(reader, pages=slice__)
         merger.write(f"{Path(abs_path).with_suffix('')} [sliced].pdf")
     else:
         for part_num, slice__ in enumerate(slices, 1):
             merger = PdfMerger()
-            merger.append(reader, pages=slice__, import_bookmarks=False)
+            merger.append(reader, pages=slice__)
             merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {part_num}].pdf")
 
 
@@ -544,8 +548,8 @@ def scale(pdf_paths):
     Args:
         pdf_paths (list): Paths to selected PDF files.
     """
-    width = float(os.environ["width"]) * 72
-    height = float(os.environ["height"]) * 72
+    width = float(sys.argv[2]) * 72
+    height = float(sys.argv[3]) * 72
 
     for pdf_path in pdf_paths:
         reader = PdfReader(pdf_path)
@@ -582,9 +586,9 @@ def main(wf):  # pylint: disable=redefined-outer-name  # pragma: no cover
     elif args.get("--decrypt"):
         decrypt(query, pdf_paths)
     elif args.get("--mrg"):
-        merge(query, pdf_paths, False)
+        merge(query, pdf_paths)
     elif args.get("--mrg-trash"):
-        merge(query, pdf_paths, True)
+        merge(query, pdf_paths)
     elif args.get("--split-count"):
         split_count(query, abs_path, suffix)
     elif args.get("--split-size"):

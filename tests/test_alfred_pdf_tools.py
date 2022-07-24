@@ -1,6 +1,5 @@
 # pylint: disable=wrong-import-position, missing-class-docstring
 """Unit tests for alfred_pdf_tools"""
-import os
 import shutil
 import sys
 import unittest
@@ -72,11 +71,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
     def test_merge(self):
         """Test merge file action."""
         self.assertIsNone(
-            merge(
-                "tmp_1",
-                ["./resources/file_1.pdf", "./resources/file_2.pdf"],
-                should_trash=False,
-            )
+            merge("tmp_1", ["./resources/file_1.pdf", "./resources/file_2.pdf"])
         )
         reader = PdfReader("./resources/tmp_1.pdf")
 
@@ -87,11 +82,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
         shutil.copy("./resources/file_2.pdf", "./resources/file_4.pdf")
 
         self.assertIsNone(
-            merge(
-                "tmp_2",
-                ["./resources/file_3.pdf", "./resources/file_4.pdf"],
-                should_trash=True,
-            )
+            merge("tmp_2", ["./resources/file_3.pdf", "./resources/file_4.pdf"])
         )
         reader = PdfReader("./resources/tmp_2.pdf")
 
@@ -209,8 +200,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
 
     def test_scale(self):
         """Test scale file action."""
-        os.environ["width"] = "8.3"
-        os.environ["height"] = "11.7"
+        sys.argv = [None, None, "8.3", "11.7"]
         self.assertIsNone(scale(["./resources/mult_pages_1.pdf"]))
         reader = PdfReader("./resources/mult_pages_1 [scaled].pdf")
         self.assertEqual(len(reader.pages), 10)
