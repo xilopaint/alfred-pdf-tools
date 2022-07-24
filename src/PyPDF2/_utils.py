@@ -25,13 +25,11 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""
-Utility functions for PDF library.
-"""
+"""Utility functions for PDF library."""
 __author__ = "Mathieu Fenniak"
 __author_email__ = "biziqe@mathieu.fenniak.net"
 
-import os
+import logging
 import warnings
 from codecs import getencoder
 from io import (
@@ -41,7 +39,8 @@ from io import (
     BytesIO,
     FileIO,
 )
-from typing import Any, Dict, Optional, Tuple, Union, overload
+from os import SEEK_CUR
+from typing import Dict, Optional, Pattern, Tuple, Union, overload
 
 try:
     # Python 3.10+: https://www.python.org/dev/peps/pep-0484/
@@ -58,7 +57,6 @@ CompressedTransformationMatrix: TypeAlias = Tuple[
     float, float, float, float, float, float
 ]
 
-bytes_type = bytes  # Works the same in Python 2.X and 3.X
 StreamType = Union[BytesIO, BufferedReader, BufferedWriter, FileIO]
 StrByteType = Union[str, StreamType]
 
@@ -66,12 +64,32 @@ DEPR_MSG_NO_REPLACEMENT = "{} is deprecated and will be removed in PyPDF2 {}."
 DEPR_MSG = "{} is deprecated and will be removed in PyPDF2 3.0.0. Use {} instead."
 
 
+def _get_max_pdf_version_header(header1: bytes, header2: bytes) -> bytes:
+    versions = (
+        b"%PDF-1.3",
+        b"%PDF-1.4",
+        b"%PDF-1.5",
+        b"%PDF-1.6",
+        b"%PDF-1.7",
+        b"%PDF-2.0",
+    )
+    pdf_header_indices = []
+    if header1 in versions:
+        pdf_header_indices.append(versions.index(header1))
+    if header2 in versions:
+        pdf_header_indices.append(versions.index(header2))
+    if len(pdf_header_indices) == 0:
+        raise ValueError(f"neither {header1!r} nor {header2!r} are proper headers")
+    return versions[max(pdf_header_indices)]
+
+
 def read_until_whitespace(stream: StreamType, maxchars: Optional[int] = None) -> bytes:
     """
-    Reads non-whitespace characters and returns them.
+    Read non-whitespace characters and return them.
+
     Stops upon encountering whitespace or when maxchars is reached.
     """
-    txt = b_("")
+    txt = b""
     while True:
         tok = stream.read(1)
         if tok.isspace() or not tok:
@@ -83,10 +101,8 @@ def read_until_whitespace(stream: StreamType, maxchars: Optional[int] = None) ->
 
 
 def read_non_whitespace(stream: StreamType) -> bytes:
-    """
-    Finds and reads the next non-whitespace character (ignores whitespace).
-    """
-    tok = WHITESPACES[0]
+    """Find and read the next non-whitespace character (ignores whitespace)."""
+    tok = stream.read(1)
     while tok in WHITESPACES:
         tok = stream.read(1)
     return tok
@@ -94,7 +110,7 @@ def read_non_whitespace(stream: StreamType) -> bytes:
 
 def skip_over_whitespace(stream: StreamType) -> bool:
     """
-    Similar to readNonWhitespace, but returns a Boolean if more than
+    Similar to read_non_whitespace, but return a Boolean if more than
     one whitespace character was read.
     """
     tok = WHITESPACES[0]
@@ -108,27 +124,28 @@ def skip_over_whitespace(stream: StreamType) -> bool:
 def skip_over_comment(stream: StreamType) -> None:
     tok = stream.read(1)
     stream.seek(-1, 1)
-    if tok == b_("%"):
-        while tok not in (b_("\n"), b_("\r")):
+    if tok == b"%":
+        while tok not in (b"\n", b"\r"):
             tok = stream.read(1)
 
 
-def read_until_regex(stream: StreamType, regex: Any, ignore_eof: bool = False) -> bytes:
+def read_until_regex(
+    stream: StreamType, regex: Pattern, ignore_eof: bool = False
+) -> bytes:
     """
-    Reads until the regular expression pattern matched (ignore the match)
+    Read until the regular expression pattern matched (ignore the match).
+
     :raises PdfStreamError: on premature end-of-file
     :param bool ignore_eof: If true, ignore end-of-line and return immediately
     :param regex: re.Pattern
     """
-    name = b_("")
+    name = b""
     while True:
         tok = stream.read(16)
         if not tok:
-            # stream has truncated prematurely
             if ignore_eof:
                 return name
-            else:
-                raise PdfStreamError(STREAM_TRUNCATED_PREMATURELY)
+            raise PdfStreamError(STREAM_TRUNCATED_PREMATURELY)
         m = regex.search(tok)
         if m is not None:
             name += tok[: m.start()]
@@ -136,9 +153,6 @@ def read_until_regex(stream: StreamType, regex: Any, ignore_eof: bool = False) -
             break
         name += tok
     return name
-
-
-CRLF = b"\r\n"
 
 
 def read_block_backwards(stream: StreamType, to_read: int) -> bytes:
@@ -149,18 +163,20 @@ def read_block_backwards(stream: StreamType, to_read: int) -> bytes:
     if stream.tell() < to_read:
         raise PdfStreamError("Could not read malformed PDF file")
     # Seek to the start of the block we want to read.
-    stream.seek(-to_read, os.SEEK_CUR)
+    stream.seek(-to_read, SEEK_CUR)
     read = stream.read(to_read)
     # Seek to the start of the block we read after reading it.
-    stream.seek(-to_read, os.SEEK_CUR)
+    stream.seek(-to_read, SEEK_CUR)
     if len(read) != to_read:
         raise PdfStreamError(f"EOF: read {len(read)}, expected {to_read}?")
     return read
 
 
 def read_previous_line(stream: StreamType) -> bytes:
-    """Given a byte stream with current position X, return the previous
-    line - all characters between the first CR/LF byte found before X
+    """
+    Given a byte stream with current position X, return the previous line.
+
+    All characters between the first CR/LF byte found before X
     (or, the start of the file, if no such byte is found) and position X
     After this call, the stream will be positioned one byte after the
     first non-CRLF character found beyond the first CR/LF byte before X,
@@ -181,7 +197,7 @@ def read_previous_line(stream: StreamType) -> bytes:
         if not found_crlf:
             # We haven't found our first CR/LF yet.
             # Read off characters until we hit one.
-            while idx >= 0 and block[idx] not in CRLF:
+            while idx >= 0 and block[idx] not in b"\r\n":
                 idx -= 1
             if idx >= 0:
                 found_crlf = True
@@ -192,7 +208,7 @@ def read_previous_line(stream: StreamType) -> bytes:
             # plus any previously read blocks.
             line_content.append(block[idx + 1 :])
             # Continue to read off any more CRLF characters.
-            while idx >= 0 and block[idx] in CRLF:
+            while idx >= 0 and block[idx] in b"\r\n":
                 idx -= 1
         else:
             # Didn't find CR/LF yet - add this block to our
@@ -201,7 +217,7 @@ def read_previous_line(stream: StreamType) -> bytes:
         if idx >= 0:
             # We found the next non-CRLF character.
             # Set the stream position correctly, then break
-            stream.seek(idx + 1, os.SEEK_CUR)
+            stream.seek(idx + 1, SEEK_CUR)
             break
     # Join all the blocks in the line (which are in reverse order)
     return b"".join(line_content[::-1])
@@ -217,7 +233,7 @@ def matrix_multiply(
 
 
 def mark_location(stream: StreamType) -> None:
-    """Creates text file showing current location in context."""
+    """Create text file showing current location in context."""
     # Mainly for debugging
     radius = 5000
     stream.seek(-radius, 1)
@@ -237,17 +253,16 @@ def b_(s: Union[str, bytes]) -> bytes:
         return bc[s]
     if isinstance(s, bytes):
         return s
-    else:
-        try:
-            r = s.encode("latin-1")
-            if len(s) < 2:
-                bc[s] = r
-            return r
-        except Exception:
-            r = s.encode("utf-8")
-            if len(s) < 2:
-                bc[s] = r
-            return r
+    try:
+        r = s.encode("latin-1")
+        if len(s) < 2:
+            bc[s] = r
+        return r
+    except Exception:
+        r = s.encode("utf-8")
+        if len(s) < 2:
+            bc[s] = r
+        return r
 
 
 @overload
@@ -285,8 +300,7 @@ def ord_(b: int) -> int:
 def ord_(b: Union[int, str, bytes]) -> Union[int, bytes]:
     if isinstance(b, str):
         return ord(b)
-    else:
-        return b
+    return b
 
 
 def hexencode(b: bytes) -> bytes:
@@ -300,7 +314,7 @@ def hex_str(num: int) -> str:
     return hex(num).replace("L", "")
 
 
-WHITESPACES = [b_(x) for x in [" ", "\n", "\r", "\t", "\x00"]]
+WHITESPACES = (b" ", b"\n", b"\r", b"\t", b"\x00")
 
 
 def paeth_predictor(left: int, up: int, up_left: int) -> int:
@@ -329,3 +343,22 @@ def deprecate_with_replacement(
 
 def deprecate_no_replacement(name: str, removed_in: str = "3.0.0") -> None:
     deprecate(DEPR_MSG_NO_REPLACEMENT.format(name, removed_in), 4)
+
+
+def logger_warning(msg: str, src: str) -> None:
+    """
+    Use this instead of logger.warning directly.
+
+    That allows people to overwrite it more easily.
+
+    ## Exception, warnings.warn, logger_warning
+    - Exceptions should be used if the user should write code that deals with
+      an error case, e.g. the PDF being completely broken.
+    - warnings.warn should be used if the user needs to fix their code, e.g.
+      DeprecationWarnings
+    - logger_warning should be used if the user needs to know that an issue was
+      handled by PyPDF2, e.g. a non-compliant PDF being read in a way that
+      PyPDF2 could apply a robustness fix to still read it. This applies mainly
+      to strict=False mode.
+    """
+    logging.getLogger(src).warning(msg)

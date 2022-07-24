@@ -26,35 +26,50 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""
-Implementation of generic PDF objects (dictionary, number, string, and so on).
-"""
+"""Implementation of generic PDF objects (dictionary, number, string, ...)."""
 __author__ = "Mathieu Fenniak"
 __author_email__ = "biziqe@mathieu.fenniak.net"
 
 import codecs
 import decimal
+import hashlib
 import logging
 import re
 import warnings
+from enum import IntFlag
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)
 
+from ._codecs import (  # noqa: rev_encoding
+    _pdfdoc_encoding,
+    _pdfdoc_encoding_rev,
+    rev_encoding,
+)
 from ._utils import (
     WHITESPACES,
     StreamType,
     b_,
-    bytes_type,
     deprecate_no_replacement,
     deprecate_with_replacement,
     hex_str,
     hexencode,
-    ord_,
+    logger_warning,
     read_non_whitespace,
     read_until_regex,
     skip_over_comment,
     str_,
 )
+from .constants import CheckboxRadioButtonAttributes, FieldDictionaryAttributes
 from .constants import FilterTypes as FT
 from .constants import StreamAttributes as SA
 from .constants import TypArguments as TA
@@ -67,12 +82,27 @@ from .errors import (
 )
 
 logger = logging.getLogger(__name__)
-ObjectPrefix = b_("/<[tf(n%")
-NumberSigns = b_("+-")
-IndirectPattern = re.compile(b_(r"[+-]?(\d+)\s+(\d+)\s+R[^a-zA-Z]"))
+ObjectPrefix = b"/<[tf(n%"
+NumberSigns = b"+-"
+IndirectPattern = re.compile(rb"[+-]?(\d+)\s+(\d+)\s+R[^a-zA-Z]")
 
 
 class PdfObject:
+    # function for calculating a hash value
+    hash_func: Callable[..., "hashlib._Hash"] = hashlib.sha1
+
+    def hash_value_data(self) -> bytes:
+        return ("%s" % self).encode()
+
+    def hash_value(self) -> bytes:
+        return (
+            "%s:%s"
+            % (
+                self.__class__.__name__,
+                self.hash_func(self.hash_value_data()).hexdigest(),
+            )
+        ).encode()
+
     def get_object(self) -> Optional["PdfObject"]:
         """Resolve indirect references."""
         return self
@@ -91,12 +121,12 @@ class NullObject(PdfObject):
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:
-        stream.write(b_("null"))
+        stream.write(b"null")
 
     @staticmethod
     def read_from_stream(stream: StreamType) -> "NullObject":
         nulltxt = stream.read(4)
-        if nulltxt != b_("null"):
+        if nulltxt != b"null":
             raise PdfReadError("Could not read Null object")
         return NullObject()
 
@@ -105,6 +135,9 @@ class NullObject(PdfObject):
     ) -> None:  # pragma: no cover
         deprecate_with_replacement("writeToStream", "write_to_stream")
         self.write_to_stream(stream, encryption_key)
+
+    def __repr__(self) -> str:
+        return "NullObject"
 
     @staticmethod
     def readFromStream(stream: StreamType) -> "NullObject":  # pragma: no cover
@@ -131,9 +164,9 @@ class BooleanObject(PdfObject):
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:
         if self.value:
-            stream.write(b_("true"))
+            stream.write(b"true")
         else:
-            stream.write(b_("false"))
+            stream.write(b"false")
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -144,9 +177,9 @@ class BooleanObject(PdfObject):
     @staticmethod
     def read_from_stream(stream: StreamType) -> "BooleanObject":
         word = stream.read(4)
-        if word == b_("true"):
+        if word == b"true":
             return BooleanObject(True)
-        elif word == b_("fals"):
+        elif word == b"fals":
             stream.read(1)
             return BooleanObject(False)
         else:
@@ -159,14 +192,21 @@ class BooleanObject(PdfObject):
 
 
 class ArrayObject(list, PdfObject):
+    def items(self) -> Iterable:
+        """
+        Emulate DictionaryObject.items for a list
+        (index, object)
+        """
+        return enumerate(self)
+
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:
-        stream.write(b_("["))
+        stream.write(b"[")
         for data in self:
-            stream.write(b_(" "))
+            stream.write(b" ")
             data.write_to_stream(stream, encryption_key)
-        stream.write(b_(" ]"))
+        stream.write(b" ]")
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -182,7 +222,7 @@ class ArrayObject(list, PdfObject):
     ) -> "ArrayObject":  # PdfReader
         arr = ArrayObject()
         tmp = stream.read(1)
-        if tmp != b_("["):
+        if tmp != b"[":
             raise PdfReadError("Could not read array")
         while True:
             # skip leading whitespace
@@ -192,7 +232,7 @@ class ArrayObject(list, PdfObject):
             stream.seek(-1, 1)
             # check for array ending
             peekahead = stream.read(1)
-            if peekahead == b_("]"):
+            if peekahead == b"]":
                 break
             stream.seek(-1, 1)
             # read and append obj
@@ -214,10 +254,13 @@ class IndirectObject(PdfObject):
         self.pdf = pdf
 
     def get_object(self) -> Optional[PdfObject]:
-        return self.pdf.get_object(self).get_object()
+        obj = self.pdf.get_object(self)
+        if obj is None:
+            return None
+        return obj.get_object()
 
     def __repr__(self) -> str:
-        return f"IndirectObject({self.idnum!r}, {self.generation!r})"
+        return f"IndirectObject({self.idnum!r}, {self.generation!r}, {id(self.pdf)})"
 
     def __eq__(self, other: Any) -> bool:
         return (
@@ -244,7 +287,7 @@ class IndirectObject(PdfObject):
 
     @staticmethod
     def read_from_stream(stream: StreamType, pdf: Any) -> "IndirectObject":  # PdfReader
-        idnum = b_("")
+        idnum = b""
         while True:
             tok = stream.read(1)
             if not tok:
@@ -252,7 +295,7 @@ class IndirectObject(PdfObject):
             if tok.isspace():
                 break
             idnum += tok
-        generation = b_("")
+        generation = b""
         while True:
             tok = stream.read(1)
             if not tok:
@@ -263,10 +306,9 @@ class IndirectObject(PdfObject):
                 break
             generation += tok
         r = read_non_whitespace(stream)
-        if r != b_("R"):
+        if r != b"R":
             raise PdfReadError(
-                "Error reading indirect object reference at byte %s"
-                % hex_str(stream.tell())
+                f"Error reading indirect object reference at byte {hex_str(stream.tell())}"
             )
         return IndirectObject(int(idnum), int(generation), pdf)
 
@@ -290,7 +332,7 @@ class FloatObject(decimal.Decimal, PdfObject):
             except decimal.InvalidOperation:
                 # If this isn't a valid decimal (happens in malformed PDFs)
                 # fallback to 0
-                logger.warning(f"Invalid FloatObject {value}")
+                logger_warning(f"Invalid FloatObject {value}", __name__)
                 return decimal.Decimal.__new__(cls, "0")
 
     def __repr__(self) -> str:
@@ -298,19 +340,19 @@ class FloatObject(decimal.Decimal, PdfObject):
             return str(self.quantize(decimal.Decimal(1)))
         else:
             # Standard formatting adds useless extraneous zeros.
-            o = "%.5f" % self
+            o = f"{self:.5f}"
             # Remove the zeros.
             while o and o[-1] == "0":
                 o = o[:-1]
             return o
 
     def as_numeric(self) -> float:
-        return float(b_(repr(self)))
+        return float(repr(self).encode("utf8"))
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:
-        stream.write(b_(repr(self)))
+        stream.write(repr(self).encode("utf8"))
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -320,8 +362,7 @@ class FloatObject(decimal.Decimal, PdfObject):
 
 
 class NumberObject(int, PdfObject):
-    NumberPattern = re.compile(b_("[^+-.0-9]"))
-    ByteDot = b_(".")
+    NumberPattern = re.compile(b"[^+-.0-9]")
 
     def __new__(cls, value: Any) -> "NumberObject":
         val = int(value)
@@ -331,12 +372,12 @@ class NumberObject(int, PdfObject):
             return int.__new__(cls, 0)
 
     def as_numeric(self) -> int:
-        return int(b_(repr(self)))
+        return int(repr(self).encode("utf8"))
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:
-        stream.write(b_(repr(self)))
+        stream.write(repr(self).encode("utf8"))
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -347,10 +388,9 @@ class NumberObject(int, PdfObject):
     @staticmethod
     def read_from_stream(stream: StreamType) -> Union["NumberObject", FloatObject]:
         num = read_until_regex(stream, NumberObject.NumberPattern)
-        if num.find(NumberObject.ByteDot) != -1:
+        if num.find(b".") != -1:
             return FloatObject(num)
-        else:
-            return NumberObject(num)
+        return NumberObject(num)
 
     @staticmethod
     def readFromStream(
@@ -360,71 +400,89 @@ class NumberObject(int, PdfObject):
         return NumberObject.read_from_stream(stream)
 
 
-def readHexStringFromStream(  # TODO: PEP8
+def readHexStringFromStream(
+    stream: StreamType,
+) -> Union["TextStringObject", "ByteStringObject"]:  # pragma: no cover
+    deprecate_with_replacement(
+        "readHexStringFromStream", "read_hex_string_from_stream", "4.0.0"
+    )
+    return read_hex_string_from_stream(stream)
+
+
+def read_hex_string_from_stream(
     stream: StreamType,
     forced_encoding: Union[None, str, List[str], Dict[int, str]] = None,
 ) -> Union["TextStringObject", "ByteStringObject"]:
     stream.read(1)
     txt = ""
-    x = b_("")
+    x = b""
     while True:
         tok = read_non_whitespace(stream)
         if not tok:
             raise PdfStreamError(STREAM_TRUNCATED_PREMATURELY)
-        if tok == b_(">"):
+        if tok == b">":
             break
         x += tok
         if len(x) == 2:
             txt += chr(int(x, base=16))
-            x = b_("")
+            x = b""
     if len(x) == 1:
-        x += b_("0")
+        x += b"0"
     if len(x) == 2:
         txt += chr(int(x, base=16))
-    return createStringObject(b_(txt), forced_encoding)
+    return create_string_object(b_(txt), forced_encoding)
 
 
-def readStringFromStream(  # TODO: PEP8
+def readStringFromStream(
+    stream: StreamType,
+    forced_encoding: Union[None, str, List[str], Dict[int, str]] = None,
+) -> Union["TextStringObject", "ByteStringObject"]:  # pragma: no cover
+    deprecate_with_replacement(
+        "readStringFromStream", "read_string_from_stream", "4.0.0"
+    )
+    return read_string_from_stream(stream, forced_encoding)
+
+
+def read_string_from_stream(
     stream: StreamType,
     forced_encoding: Union[None, str, List[str], Dict[int, str]] = None,
 ) -> Union["TextStringObject", "ByteStringObject"]:
     tok = stream.read(1)
     parens = 1
-    txt = b_("")
+    txt = b""
     while True:
         tok = stream.read(1)
         if not tok:
             raise PdfStreamError(STREAM_TRUNCATED_PREMATURELY)
-        if tok == b_("("):
+        if tok == b"(":
             parens += 1
-        elif tok == b_(")"):
+        elif tok == b")":
             parens -= 1
             if parens == 0:
                 break
-        elif tok == b_("\\"):
+        elif tok == b"\\":
             tok = stream.read(1)
             escape_dict = {
-                b_("n"): b_("\n"),
-                b_("r"): b_("\r"),
-                b_("t"): b_("\t"),
-                b_("b"): b_("\b"),
-                b_("f"): b_("\f"),
-                b_("c"): b_(r"\c"),
-                b_("("): b_("("),
-                b_(")"): b_(")"),
-                b_("/"): b_("/"),
-                b_("\\"): b_("\\"),
-                b_(" "): b_(" "),
-                b_("/"): b_("/"),
-                b_("%"): b_("%"),
-                b_("<"): b_("<"),
-                b_(">"): b_(">"),
-                b_("["): b_("["),
-                b_("]"): b_("]"),
-                b_("#"): b_("#"),
-                b_("_"): b_("_"),
-                b_("&"): b_("&"),
-                b_("$"): b_("$"),
+                b"n": b"\n",
+                b"r": b"\r",
+                b"t": b"\t",
+                b"b": b"\b",
+                b"f": b"\f",
+                b"c": rb"\c",
+                b"(": b"(",
+                b")": b")",
+                b"/": b"/",
+                b"\\": b"\\",
+                b" ": b" ",
+                b"%": b"%",
+                b"<": b"<",
+                b">": b">",
+                b"[": b"[",
+                b"]": b"]",
+                b"#": b"#",
+                b"_": b"_",
+                b"&": b"&",
+                b"$": b"$",
             }
             try:
                 tok = escape_dict[tok]
@@ -442,25 +500,24 @@ def readStringFromStream(  # TODO: PEP8
                         else:
                             break
                     tok = b_(chr(int(tok, base=8)))
-                elif tok in b_("\n\r"):
+                elif tok in b"\n\r":
                     # This case is  hit when a backslash followed by a line
                     # break occurs.  If it's a multi-char EOL, consume the
                     # second character:
                     tok = stream.read(1)
-                    if tok not in b_("\n\r"):
+                    if tok not in b"\n\r":
                         stream.seek(-1, 1)
                     # Then don't add anything to the actual string, since this
                     # line break was escaped:
-                    tok = b_("")
+                    tok = b""
                 else:
-                    msg = r"Unexpected escaped string: {}".format(tok.decode("utf8"))
-                    # if.strict: PdfReadError(msg)
-                    logger.warning(msg)
+                    msg = rf"Unexpected escaped string: {tok.decode('utf8')}"
+                    logger_warning(msg, __name__)
         txt += tok
-    return createStringObject(txt, forced_encoding)
+    return create_string_object(txt, forced_encoding)
 
 
-class ByteStringObject(bytes_type, PdfObject):  # type: ignore
+class ByteStringObject(bytes, PdfObject):  # type: ignore
     """
     Represents a string object where the text encoding could not be determined.
     This occurs quite often, as the PDF spec doesn't provide an alternate way to
@@ -481,9 +538,9 @@ class ByteStringObject(bytes_type, PdfObject):  # type: ignore
             from ._security import RC4_encrypt
 
             bytearr = RC4_encrypt(encryption_key, bytearr)  # type: ignore
-        stream.write(b_("<"))
+        stream.write(b"<")
         stream.write(hexencode(bytearr))
-        stream.write(b_(">"))
+        stream.write(b">")
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -543,13 +600,17 @@ class TextStringObject(str, PdfObject):
             obj = ByteStringObject(bytearr)
             obj.write_to_stream(stream, None)
         else:
-            stream.write(b_("("))
+            stream.write(b"(")
             for c in bytearr:
-                if not chr(c).isalnum() and c != b_(" "):
-                    stream.write(b_("\\%03o" % ord_(c)))
+                if not chr(c).isalnum() and c != b" ":
+                    # This:
+                    #   stream.write(b_(rf"\{c:0>3o}"))
+                    # gives
+                    #   https://github.com/davidhalter/parso/issues/207
+                    stream.write(b_("\\%03o" % c))
                 else:
                     stream.write(b_(chr(c)))
-            stream.write(b_(")"))
+            stream.write(b")")
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -559,8 +620,8 @@ class TextStringObject(str, PdfObject):
 
 
 class NameObject(str, PdfObject):
-    delimiter_pattern = re.compile(b_(r"\s+|[\(\)<>\[\]{}/%]"))
-    surfix = b_("/")
+    delimiter_pattern = re.compile(rb"\s+|[\(\)<>\[\]{}/%]")
+    surfix = b"/"
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -589,7 +650,7 @@ class NameObject(str, PdfObject):
             # Name objects should represent irregular characters
             # with a '#' followed by the symbol's hex number
             if not pdf.strict:
-                warnings.warn("Illegal character in Name Object", PdfReadWarning)
+                logger_warning("Illegal character in Name Object", __name__)
                 return NameObject(name)
             else:
                 raise PdfReadError("Illegal character in Name Object") from e
@@ -670,13 +731,13 @@ class DictionaryObject(dict, PdfObject):
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:
-        stream.write(b_("<<\n"))
+        stream.write(b"<<\n")
         for key, value in list(self.items()):
             key.write_to_stream(stream, encryption_key)
-            stream.write(b_(" "))
+            stream.write(b" ")
             value.write_to_stream(stream, encryption_key)
-            stream.write(b_("\n"))
-        stream.write(b_(">>"))
+            stream.write(b"\n")
+        stream.write(b">>")
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -707,7 +768,7 @@ class DictionaryObject(dict, PdfObject):
             eon = get_next_obj_pos(stream.tell(), 2**32, list(pdf.xref), pdf) - 1
             curr = stream.tell()
             rw = stream.read(eon - stream.tell())
-            p = rw.find(b_("endstream"))
+            p = rw.find(b"endstream")
             if p < 0:
                 raise PdfReadError(
                     f"Unable to find 'endstream' marker for obj starting at {curr}."
@@ -716,24 +777,24 @@ class DictionaryObject(dict, PdfObject):
             return rw[: p - 1]
 
         tmp = stream.read(2)
-        if tmp != b_("<<"):
+        if tmp != b"<<":
             raise PdfReadError(
-                "Dictionary read error at byte %s: stream must begin with '<<'"
-                % hex_str(stream.tell())
+                f"Dictionary read error at byte {hex_str(stream.tell())}: "
+                "stream must begin with '<<'"
             )
         data: Dict[Any, Any] = {}
         while True:
             tok = read_non_whitespace(stream)
-            if tok == b_("\x00"):
+            if tok == b"\x00":
                 continue
-            elif tok == b_("%"):
+            elif tok == b"%":
                 stream.seek(-1, 1)
                 skip_over_comment(stream)
                 continue
             if not tok:
                 raise PdfStreamError(STREAM_TRUNCATED_PREMATURELY)
 
-            if tok == b_(">"):
+            if tok == b">":
                 stream.read(1)
                 break
             stream.seek(-1, 1)
@@ -743,32 +804,30 @@ class DictionaryObject(dict, PdfObject):
             value = read_object(stream, pdf, forced_encoding)
             if not data.get(key):
                 data[key] = value
-            elif pdf.strict:
-                # multiple definitions of key not permitted
-                raise PdfReadError(
-                    "Multiple definitions in dictionary at byte %s for key %s"
-                    % (hex_str(stream.tell()), key)
-                )
             else:
-                warnings.warn(
-                    "Multiple definitions in dictionary at byte %s for key %s"
-                    % (hex_str(stream.tell()), key),
-                    PdfReadWarning,
+                # multiple definitions of key not permitted
+                msg = (
+                    f"Multiple definitions in dictionary at byte "
+                    f"{hex_str(stream.tell())} for key {key}"
                 )
+                if pdf is not None and pdf.strict:
+                    raise PdfReadError(msg)
+                else:
+                    warnings.warn(msg, PdfReadWarning)
 
         pos = stream.tell()
         s = read_non_whitespace(stream)
-        if s == b_("s") and stream.read(5) == b_("tream"):
+        if s == b"s" and stream.read(5) == b"tream":
             eol = stream.read(1)
             # odd PDF file output has spaces after 'stream' keyword but before EOL.
             # patch provided by Danial Sandler
-            while eol == b_(" "):
+            while eol == b" ":
                 eol = stream.read(1)
-            if eol not in (b_("\n"), b_("\r")):
+            if eol not in (b"\n", b"\r"):
                 raise PdfStreamError("Stream data must be followed by a newline")
-            if eol == b_("\r"):
+            if eol == b"\r":
                 # read \n after
-                if stream.read(1) != b_("\n"):
+                if stream.read(1) != b"\n":
                     stream.seek(-1, 1)
             # this is a stream object, not a dictionary
             if SA.LENGTH not in data:
@@ -782,7 +841,7 @@ class DictionaryObject(dict, PdfObject):
             data["__streamdata__"] = stream.read(length)
             e = read_non_whitespace(stream)
             ndstream = stream.read(8)
-            if (e + ndstream) != b_("endstream"):
+            if (e + ndstream) != b"endstream":
                 # (sigh) - the odd PDF file has a length that is too long, so
                 # we need to read backwards to find the "endstream" ending.
                 # ReportLab (unknown version) generates files with this bug,
@@ -792,7 +851,7 @@ class DictionaryObject(dict, PdfObject):
                 pos = stream.tell()
                 stream.seek(-10, 1)
                 end = stream.read(9)
-                if end == b_("endstream"):
+                if end == b"endstream":
                     # we found it by looking back one character further.
                     data["__streamdata__"] = data["__streamdata__"][:-1]
                 elif not pdf.strict:
@@ -802,13 +861,13 @@ class DictionaryObject(dict, PdfObject):
                 else:
                     stream.seek(pos, 0)
                     raise PdfReadError(
-                        "Unable to find 'endstream' marker after stream at byte %s."
-                        % hex_str(stream.tell())
+                        "Unable to find 'endstream' marker after stream at byte "
+                        f"{hex_str(stream.tell())} (nd='{ndstream!r}', end='{end!r}')."
                     )
         else:
             stream.seek(pos, 0)
         if "__streamdata__" in data:
-            return StreamObject.initializeFromDictionary(data)
+            return StreamObject.initialize_from_dictionary(data)
         else:
             retval = DictionaryObject()
             retval.update(data)
@@ -826,14 +885,18 @@ class TreeObject(DictionaryObject):
     def __init__(self) -> None:
         DictionaryObject.__init__(self)
 
-    def hasChildren(self) -> bool:
+    def hasChildren(self) -> bool:  # pragma: no cover
+        deprecate_with_replacement("hasChildren", "has_children", "4.0.0")
+        return self.has_children()
+
+    def has_children(self) -> bool:
         return "/First" in self
 
     def __iter__(self) -> Any:
         return self.children()
 
     def children(self) -> Optional[Any]:
-        if not self.hasChildren():
+        if not self.has_children():
             return
 
         child = self["/First"]
@@ -852,12 +915,15 @@ class TreeObject(DictionaryObject):
         child = pdf.get_reference(child_obj)
         assert isinstance(child, IndirectObject)
 
+        prev: Optional[DictionaryObject]
         if "/First" not in self:
             self[NameObject("/First")] = child
             self[NameObject("/Count")] = NumberObject(0)
             prev = None
         else:
-            prev = self["/Last"]
+            prev = cast(
+                DictionaryObject, self["/Last"]
+            )  # TABLE 8.3 Entries in the outline dictionary
 
         self[NameObject("/Last")] = child
         self[NameObject("/Count")] = NumberObject(self[NameObject("/Count")] + 1)  # type: ignore
@@ -866,7 +932,7 @@ class TreeObject(DictionaryObject):
             prev_ref = pdf.get_reference(prev)
             assert isinstance(prev_ref, IndirectObject)
             child_obj[NameObject("/Prev")] = prev_ref
-            prev[NameObject("/Next")] = child  # type: ignore
+            prev[NameObject("/Next")] = child
 
         parent_ref = pdf.get_reference(self)
         assert isinstance(parent_ref, IndirectObject)
@@ -944,8 +1010,11 @@ class TreeObject(DictionaryObject):
         if NameObject("/Prev") in child_obj:
             del child_obj[NameObject("/Prev")]
 
-    def emptyTree(self) -> None:
-        # TODO: Missing rename
+    def emptyTree(self) -> None:  # pragma: no cover
+        deprecate_with_replacement("emptyTree", "empty_tree", "4.0.0")
+        self.empty_tree()
+
+    def empty_tree(self) -> None:
         for child in self:
             child_obj = child.get_object()
             del child_obj[NameObject("/Parent")]
@@ -966,6 +1035,11 @@ class StreamObject(DictionaryObject):
     def __init__(self) -> None:
         self.__data: Optional[str] = None
         self.decoded_self: Optional[DecodedStreamObject] = None
+
+    def hash_value_data(self) -> bytes:
+        data = super().hash_value_data()
+        data += b_(self._data)
+        return data
 
     @property
     def decodedSelf(self) -> Optional["DecodedStreamObject"]:  # pragma: no cover
@@ -991,17 +1065,23 @@ class StreamObject(DictionaryObject):
         self[NameObject(SA.LENGTH)] = NumberObject(len(self._data))
         DictionaryObject.write_to_stream(self, stream, encryption_key)
         del self[SA.LENGTH]
-        stream.write(b_("\nstream\n"))
+        stream.write(b"\nstream\n")
         data = self._data
         if encryption_key:
             from ._security import RC4_encrypt
 
             data = RC4_encrypt(encryption_key, data)
         stream.write(data)
-        stream.write(b_("\nendstream"))
+        stream.write(b"\nendstream")
 
     @staticmethod
     def initializeFromDictionary(
+        data: Dict[str, Any]
+    ) -> Union["EncodedStreamObject", "DecodedStreamObject"]:  # pragma: no cover
+        return StreamObject.initialize_from_dictionary(data)
+
+    @staticmethod
+    def initialize_from_dictionary(
         data: Dict[str, Any]
     ) -> Union["EncodedStreamObject", "DecodedStreamObject"]:
         retval: Union["EncodedStreamObject", "DecodedStreamObject"]
@@ -1070,7 +1150,7 @@ class EncodedStreamObject(StreamObject):
         self.decoded_self = value
 
     def get_data(self) -> Union[None, str, bytes]:
-        from .filters import decodeStreamData
+        from .filters import decode_stream_data
 
         if self.decoded_self is not None:
             # cached version of decoded object
@@ -1079,15 +1159,23 @@ class EncodedStreamObject(StreamObject):
             # create decoded object
             decoded = DecodedStreamObject()
 
-            decoded._data = decodeStreamData(self)
+            decoded._data = decode_stream_data(self)
             for key, value in list(self.items()):
                 if key not in (SA.LENGTH, SA.FILTER, SA.DECODE_PARMS):
                     decoded[key] = value
             self.decoded_self = decoded
             return decoded._data
 
+    def getData(self) -> Union[None, str, bytes]:  # pragma: no cover
+        deprecate_with_replacement("getData", "get_data")
+        return self.get_data()
+
     def set_data(self, data: Any) -> None:
         raise PdfReadError("Creating EncodedStreamObject is not currently supported")
+
+    def setData(self, data: Any) -> None:  # pragma: no cover
+        deprecate_with_replacement("setData", "set_data")
+        return self.set_data(data)
 
 
 class ContentStream(DecodedStreamObject):
@@ -1108,58 +1196,56 @@ class ContentStream(DecodedStreamObject):
         # multiple StreamObjects to be cat'd together.
         stream = stream.get_object()
         if isinstance(stream, ArrayObject):
-            data = b_("")
+            data = b""
             for s in stream:
                 data += b_(s.get_object().get_data())
-            stream_bytes = BytesIO(b_(data))
+            stream_bytes = BytesIO(data)
         else:
             stream_data = stream.get_data()
             assert stream_data is not None
             stream_data_bytes = b_(stream_data)
             stream_bytes = BytesIO(stream_data_bytes)
-        # self.savstream = stream
         self.forced_encoding = forced_encoding
-        self.__parseContentStream(stream_bytes)
+        self.__parse_content_stream(stream_bytes)
 
-    def __parseContentStream(self, stream: StreamType) -> None:
-        # file("f:\\tmp.txt", "w").write(stream.read())
+    def __parse_content_stream(self, stream: StreamType) -> None:
         stream.seek(0, 0)
         operands: List[Union[int, str, PdfObject]] = []
         while True:
             peek = read_non_whitespace(stream)
-            if peek == b_("") or ord_(peek) == 0:
+            if peek == b"" or peek == 0:
                 break
             stream.seek(-1, 1)
-            if peek.isalpha() or peek == b_("'") or peek == b_('"'):
+            if peek.isalpha() or peek in (b"'", b'"'):
                 operator = read_until_regex(stream, NameObject.delimiter_pattern, True)
-                if operator == b_("BI"):
+                if operator == b"BI":
                     # begin inline image - a completely different parsing
                     # mechanism is required, of course... thanks buddy...
                     assert operands == []
-                    ii = self._readInlineImage(stream)
-                    self.operations.append((ii, b_("INLINE IMAGE")))
+                    ii = self._read_inline_image(stream)
+                    self.operations.append((ii, b"INLINE IMAGE"))
                 else:
                     self.operations.append((operands, operator))
                     operands = []
-            elif peek == b_("%"):
+            elif peek == b"%":
                 # If we encounter a comment in the content stream, we have to
                 # handle it here.  Typically, read_object will handle
                 # encountering a comment -- but read_object assumes that
                 # following the comment must be the object we're trying to
                 # read.  In this case, it could be an operator instead.
-                while peek not in (b_("\r"), b_("\n")):
+                while peek not in (b"\r", b"\n"):
                     peek = stream.read(1)
             else:
                 operands.append(read_object(stream, None, self.forced_encoding))
 
-    def _readInlineImage(self, stream: StreamType) -> Dict[str, Any]:
+    def _read_inline_image(self, stream: StreamType) -> Dict[str, Any]:
         # begin reading just after the "BI" - begin image
         # first read the dictionary of settings.
         settings = DictionaryObject()
         while True:
             tok = read_non_whitespace(stream)
             stream.seek(-1, 1)
-            if tok == b_("I"):
+            if tok == b"I":
                 # "ID" - begin of image data
                 break
             key = read_object(stream, self.pdf)
@@ -1169,7 +1255,7 @@ class ContentStream(DecodedStreamObject):
             settings[key] = value
         # left at beginning of ID
         tmp = stream.read(3)
-        assert tmp[:2] == b_("ID")
+        assert tmp[:2] == b"ID"
         data = BytesIO()
         # Read the inline image, while checking for EI (End Image) operator.
         while True:
@@ -1178,7 +1264,7 @@ class ContentStream(DecodedStreamObject):
             # We have reached the end of the stream, but haven't found the EI operator.
             if not buf:
                 raise PdfReadError("Unexpected end of stream")
-            loc = buf.find(b_("E"))
+            loc = buf.find(b"E")
 
             if loc == -1:
                 data.write(buf)
@@ -1191,7 +1277,7 @@ class ContentStream(DecodedStreamObject):
                 tok = stream.read(1)
                 # Check for End Image
                 tok2 = stream.read(1)
-                if tok2 == b_("I"):
+                if tok2 == b"I":
                     # Data can contain EI, so check for the Q operator.
                     tok3 = stream.read(1)
                     info = tok + tok2
@@ -1201,7 +1287,7 @@ class ContentStream(DecodedStreamObject):
                         has_q_whitespace = True
                         info += tok3
                         tok3 = stream.read(1)
-                    if tok3 == b_("Q") and has_q_whitespace:
+                    if tok3 == b"Q" and has_q_whitespace:
                         stream.seek(-1, 1)
                         break
                     else:
@@ -1216,25 +1302,25 @@ class ContentStream(DecodedStreamObject):
     def _data(self) -> bytes:
         newdata = BytesIO()
         for operands, operator in self.operations:
-            if operator == b_("INLINE IMAGE"):
-                newdata.write(b_("BI"))
+            if operator == b"INLINE IMAGE":
+                newdata.write(b"BI")
                 dicttext = BytesIO()
                 operands["settings"].write_to_stream(dicttext, None)
                 newdata.write(dicttext.getvalue()[2:-2])
-                newdata.write(b_("ID "))
+                newdata.write(b"ID ")
                 newdata.write(operands["data"])
-                newdata.write(b_("EI"))
+                newdata.write(b"EI")
             else:
                 for op in operands:
                     op.write_to_stream(newdata, None)
-                    newdata.write(b_(" "))
+                    newdata.write(b" ")
                 newdata.write(b_(operator))
-            newdata.write(b_("\n"))
+            newdata.write(b"\n")
         return newdata.getvalue()
 
     @_data.setter
     def _data(self, value: Union[str, bytes]) -> None:
-        self.__parseContentStream(BytesIO(b_(value)))
+        self.__parse_content_stream(BytesIO(b_(value)))
 
 
 def read_object(
@@ -1252,21 +1338,21 @@ def read_object(
         peek = stream.read(2)
         stream.seek(-2, 1)  # reset to start
 
-        if peek == b_("<<"):
+        if peek == b"<<":
             return DictionaryObject.read_from_stream(stream, pdf, forced_encoding)
         else:
-            return readHexStringFromStream(stream, forced_encoding)
+            return read_hex_string_from_stream(stream, forced_encoding)
     elif idx == 2:
         return ArrayObject.read_from_stream(stream, pdf, forced_encoding)
     elif idx == 3 or idx == 4:
         return BooleanObject.read_from_stream(stream)
     elif idx == 5:
-        return readStringFromStream(stream, forced_encoding)
+        return read_string_from_stream(stream, forced_encoding)
     elif idx == 6:
         return NullObject.read_from_stream(stream)
     elif idx == 7:
         # comment
-        while tok not in (b_("\r"), b_("\n")):
+        while tok not in (b"\r", b"\n"):
             tok = stream.read(1)
             # Prevents an infinite loop by raising an error if the stream is at
             # the EOF
@@ -1306,6 +1392,16 @@ class RectangleObject(ArrayObject):
             value = FloatObject(value)
         return value
 
+    def scale(self, sx: float, sy: float) -> "RectangleObject":
+        return RectangleObject(
+            (
+                float(self.left) * sx,
+                float(self.bottom) * sy,
+                float(self.right) * sx,
+                float(self.top) * sy,
+            )
+        )
+
     def ensureIsNumber(
         self, value: Any
     ) -> Union[FloatObject, NumberObject]:  # pragma: no cover
@@ -1313,7 +1409,7 @@ class RectangleObject(ArrayObject):
         return self._ensure_is_number(value)
 
     def __repr__(self) -> str:
-        return "RectangleObject(%s)" % repr(list(self))
+        return f"RectangleObject({repr(list(self))})"
 
     @property
     def left(self) -> FloatObject:
@@ -1518,25 +1614,19 @@ class RectangleObject(ArrayObject):
 
 class Field(TreeObject):
     """
-    A class representing a field dictionary. This class is accessed through
+    A class representing a field dictionary.
+
+    This class is accessed through
     :meth:`get_fields()<PyPDF2.PdfReader.get_fields>`
     """
 
     def __init__(self, data: Dict[str, Any]) -> None:
         DictionaryObject.__init__(self)
-        attributes = (
-            "/FT",
-            "/Parent",
-            "/Kids",
-            "/T",
-            "/TU",
-            "/TM",
-            "/Ff",
-            "/V",
-            "/DV",
-            "/AA",
+        field_attributes = (
+            FieldDictionaryAttributes.attributes()
+            + CheckboxRadioButtonAttributes.attributes()
         )
-        for attr in attributes:
+        for attr in field_attributes:
             try:
                 self[NameObject(attr)] = data[attr]
             except KeyError:
@@ -1546,7 +1636,7 @@ class Field(TreeObject):
     @property
     def field_type(self) -> Optional[NameObject]:
         """Read-only property accessing the type of this field."""
-        return self.get("/FT")
+        return self.get(FieldDictionaryAttributes.FT)
 
     @property
     def fieldType(self) -> Optional[NameObject]:  # pragma: no cover
@@ -1561,22 +1651,22 @@ class Field(TreeObject):
     @property
     def parent(self) -> Optional[DictionaryObject]:
         """Read-only property accessing the parent of this field."""
-        return self.get("/Parent")
+        return self.get(FieldDictionaryAttributes.Parent)
 
     @property
     def kids(self) -> Optional[ArrayObject]:
         """Read-only property accessing the kids of this field."""
-        return self.get("/Kids")
+        return self.get(FieldDictionaryAttributes.Kids)
 
     @property
     def name(self) -> Optional[str]:
         """Read-only property accessing the name of this field."""
-        return self.get("/T")
+        return self.get(FieldDictionaryAttributes.T)
 
     @property
     def alternate_name(self) -> Optional[str]:
         """Read-only property accessing the alternate name of this field."""
-        return self.get("/TU")
+        return self.get(FieldDictionaryAttributes.TU)
 
     @property
     def altName(self) -> Optional[str]:  # pragma: no cover
@@ -1595,7 +1685,7 @@ class Field(TreeObject):
         name is used by PyPDF2 as a key in the dictionary returned by
         :meth:`get_fields()<PyPDF2.PdfReader.get_fields>`
         """
-        return self.get("/TM")
+        return self.get(FieldDictionaryAttributes.TM)
 
     @property
     def mappingName(self) -> Optional[str]:  # pragma: no cover
@@ -1613,7 +1703,7 @@ class Field(TreeObject):
         Read-only property accessing the field flags, specifying various
         characteristics of the field (see Table 8.70 of the PDF 1.7 reference).
         """
-        return self.get("/Ff")
+        return self.get(FieldDictionaryAttributes.Ff)
 
     @property
     def value(self) -> Optional[Any]:
@@ -1621,12 +1711,12 @@ class Field(TreeObject):
         Read-only property accessing the value of this field. Format
         varies based on field type.
         """
-        return self.get("/V")
+        return self.get(FieldDictionaryAttributes.V)
 
     @property
     def default_value(self) -> Optional[Any]:
         """Read-only property accessing the default value of this field."""
-        return self.get("/DV")
+        return self.get(FieldDictionaryAttributes.DV)
 
     @property
     def defaultValue(self) -> Optional[Any]:  # pragma: no cover
@@ -1645,7 +1735,7 @@ class Field(TreeObject):
         This dictionary defines the field's behavior in response to trigger events.
         See Section 8.5.2 of the PDF 1.7 reference.
         """
-        return self.get("/AA")
+        return self.get(FieldDictionaryAttributes.AA)
 
     @property
     def additionalActions(self) -> Optional[DictionaryObject]:  # pragma: no cover
@@ -1656,6 +1746,15 @@ class Field(TreeObject):
         """
         deprecate_with_replacement("additionalActions", "additional_actions")
         return self.additional_actions
+
+
+class OutlineFontFlag(IntFlag):
+    """
+    A class used as an enumerable flag for formatting an outline font
+    """
+
+    italic = 1
+    bold = 2
 
 
 class Destination(TreeObject):
@@ -1718,13 +1817,19 @@ class Destination(TreeObject):
                 self[NameObject(TA.TOP)],
             ) = args
         elif typ in [TF.FIT_H, TF.FIT_BH]:
-            (self[NameObject(TA.TOP)],) = args
+            try:  # Prefered to be more robust not only to null parameters
+                (self[NameObject(TA.TOP)],) = args
+            except Exception:
+                (self[NameObject(TA.TOP)],) = (NullObject(),)
         elif typ in [TF.FIT_V, TF.FIT_BV]:
-            (self[NameObject(TA.LEFT)],) = args
+            try:  # Prefered to be more robust not only to null parameters
+                (self[NameObject(TA.LEFT)],) = args
+            except Exception:
+                (self[NameObject(TA.LEFT)],) = (NullObject(),)
         elif typ in [TF.FIT, TF.FIT_B]:
             pass
         else:
-            raise PdfReadError("Unknown Destination Type: %r" % typ)
+            raise PdfReadError(f"Unknown Destination Type: {typ!r}")
 
     @property
     def dest_array(self) -> ArrayObject:
@@ -1749,126 +1854,123 @@ class Destination(TreeObject):
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:
-        stream.write(b_("<<\n"))
+        stream.write(b"<<\n")
         key = NameObject("/D")
         key.write_to_stream(stream, encryption_key)
-        stream.write(b_(" "))
+        stream.write(b" ")
         value = self.dest_array
         value.write_to_stream(stream, encryption_key)
 
         key = NameObject("/S")
         key.write_to_stream(stream, encryption_key)
-        stream.write(b_(" "))
+        stream.write(b" ")
         value_s = NameObject("/GoTo")
         value_s.write_to_stream(stream, encryption_key)
 
-        stream.write(b_("\n"))
-        stream.write(b_(">>"))
+        stream.write(b"\n")
+        stream.write(b">>")
 
     @property
     def title(self) -> Optional[str]:
-        """
-        Read-only property accessing the destination title.
-
-        :rtype: str
-        """
+        """Read-only property accessing the destination title."""
         return self.get("/Title")
 
     @property
     def page(self) -> Optional[int]:
-        """
-        Read-only property accessing the destination page number.
-
-        :rtype: int
-        """
+        """Read-only property accessing the destination page number."""
         return self.get("/Page")
 
     @property
     def typ(self) -> Optional[str]:
-        """
-        Read-only property accessing the destination type.
-
-        :rtype: str
-        """
+        """Read-only property accessing the destination type."""
         return self.get("/Type")
 
     @property
     def zoom(self) -> Optional[int]:
-        """
-        Read-only property accessing the zoom factor.
-
-        :rtype: int, or ``None`` if not available.
-        """
+        """Read-only property accessing the zoom factor."""
         return self.get("/Zoom", None)
 
     @property
     def left(self) -> Optional[FloatObject]:
-        """
-        Read-only property accessing the left horizontal coordinate.
-
-        :rtype: float, or ``None`` if not available.
-        """
+        """Read-only property accessing the left horizontal coordinate."""
         return self.get("/Left", None)
 
     @property
     def right(self) -> Optional[FloatObject]:
-        """
-        Read-only property accessing the right horizontal coordinate.
-
-        :rtype: float, or ``None`` if not available.
-        """
+        """Read-only property accessing the right horizontal coordinate."""
         return self.get("/Right", None)
 
     @property
     def top(self) -> Optional[FloatObject]:
-        """
-        Read-only property accessing the top vertical coordinate.
-
-        :rtype: float, or ``None`` if not available.
-        """
+        """Read-only property accessing the top vertical coordinate."""
         return self.get("/Top", None)
 
     @property
     def bottom(self) -> Optional[FloatObject]:
-        """
-        Read-only property accessing the bottom vertical coordinate.
-
-        :rtype: float, or ``None`` if not available.
-        """
+        """Read-only property accessing the bottom vertical coordinate."""
         return self.get("/Bottom", None)
+
+    @property
+    def color(self) -> Optional[ArrayObject]:
+        """Read-only property accessing the color in (R, G, B) with values 0.0-1.0"""
+        return self.get(
+            "/C", ArrayObject([FloatObject(0), FloatObject(0), FloatObject(0)])
+        )
+
+    @property
+    def font_format(self) -> Optional[OutlineFontFlag]:
+        """Read-only property accessing the font type. 1=italic, 2=bold, 3=both"""
+        return self.get("/F", 0)
+
+    @property
+    def outline_count(self) -> Optional[int]:
+        """
+        Read-only property accessing the outline count.
+        positive = expanded
+        negative = collapsed
+        absolute value = number of visible descendents at all levels
+        """
+        return self.get("/Count", None)
 
 
 class Bookmark(Destination):
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:
-        stream.write(b_("<<\n"))
+        stream.write(b"<<\n")
         for key in [
             NameObject(x)
             for x in ["/Title", "/Parent", "/First", "/Last", "/Next", "/Prev"]
             if x in self
         ]:
             key.write_to_stream(stream, encryption_key)
-            stream.write(b_(" "))
+            stream.write(b" ")
             value = self.raw_get(key)
             value.write_to_stream(stream, encryption_key)
-            stream.write(b_("\n"))
+            stream.write(b"\n")
         key = NameObject("/Dest")
         key.write_to_stream(stream, encryption_key)
-        stream.write(b_(" "))
+        stream.write(b" ")
         value = self.dest_array
         value.write_to_stream(stream, encryption_key)
-        stream.write(b_("\n"))
-        stream.write(b_(">>"))
+        stream.write(b"\n")
+        stream.write(b">>")
 
 
 def createStringObject(
     string: Union[str, bytes],
     forced_encoding: Union[None, str, List[str], Dict[int, str]] = None,
+) -> Union[TextStringObject, ByteStringObject]:  # pragma: no cover
+    deprecate_with_replacement("createStringObject", "create_string_object", "4.0.0")
+    return create_string_object(string, forced_encoding)
+
+
+def create_string_object(
+    string: Union[str, bytes],
+    forced_encoding: Union[None, str, List[str], Dict[int, str]] = None,
 ) -> Union[TextStringObject, ByteStringObject]:
     """
-    Given a string, create a ByteStringObject or a TextStringObject to
-    represent the string.
+    Create a ByteStringObject or a TextStringObject from a string to represent the string.
 
     :param string: A string
 
@@ -1876,7 +1978,7 @@ def createStringObject(
     """
     if isinstance(string, str):
         return TextStringObject(string)
-    elif isinstance(string, bytes_type):
+    elif isinstance(string, bytes):
         if isinstance(forced_encoding, (list, dict)):
             out = ""
             for x in string:
@@ -1888,8 +1990,7 @@ def createStringObject(
         elif isinstance(forced_encoding, str):
             if forced_encoding == "bytes":
                 return ByteStringObject(string)
-            else:
-                return TextStringObject(string.decode(forced_encoding))
+            return TextStringObject(string.decode(forced_encoding))
         else:
             try:
                 if string.startswith(codecs.BOM_UTF16_BE):
@@ -1907,11 +2008,42 @@ def createStringObject(
             except UnicodeDecodeError:
                 return ByteStringObject(string)
     else:
-        raise TypeError("createStringObject should have str or unicode arg")
+        raise TypeError("create_string_object should have str or unicode arg")
+
+
+def _create_bookmark(
+    action_ref: IndirectObject,
+    title: str,
+    color: Optional[Tuple[float, float, float]],
+    italic: bool,
+    bold: bool,
+) -> TreeObject:
+    bookmark = TreeObject()
+
+    bookmark.update(
+        {
+            NameObject("/A"): action_ref,
+            NameObject("/Title"): create_string_object(title),
+        }
+    )
+
+    if color is not None:
+        bookmark.update(
+            {NameObject("/C"): ArrayObject([FloatObject(c) for c in color])}
+        )
+
+    format_flag = 0
+    if italic:
+        format_flag += 1
+    if bold:
+        format_flag += 2
+    if format_flag:
+        bookmark.update({NameObject("/F"): NumberObject(format_flag)})
+    return bookmark
 
 
 def encode_pdfdocencoding(unicode_string: str) -> bytes:
-    retval = b_("")
+    retval = b""
     for c in unicode_string:
         try:
             retval += b_(chr(_pdfdoc_encoding_rev[c]))
@@ -1925,7 +2057,7 @@ def encode_pdfdocencoding(unicode_string: str) -> bytes:
 def decode_pdfdocencoding(byte_array: bytes) -> str:
     retval = ""
     for b in byte_array:
-        c = _pdfdoc_encoding[ord_(b)]
+        c = _pdfdoc_encoding[b]
         if c == "\u0000":
             raise UnicodeDecodeError(
                 "pdfdocencoding",
@@ -1938,1090 +2070,102 @@ def decode_pdfdocencoding(byte_array: bytes) -> str:
     return retval
 
 
-# PDFDocEncoding Character Set: Table D.2 of PDF Reference 1.7
-# C.1 Predefined encodings sorted by character name of another PDF reference
-# Some indices have '\u0000' although they should have something else:
-# 22: should be '\u0017'
-_pdfdoc_encoding = [
-    "\u0000",
-    "\u0001",
-    "\u0002",
-    "\u0003",
-    "\u0004",
-    "\u0005",
-    "\u0006",
-    "\u0007",  # 0 -  7
-    "\u0008",
-    "\u0009",
-    "\u000a",
-    "\u000b",
-    "\u000c",
-    "\u000d",
-    "\u000e",
-    "\u000f",  # 8 - 15
-    "\u0010",
-    "\u0011",
-    "\u0012",
-    "\u0013",
-    "\u0014",
-    "\u0015",
-    "\u0000",
-    "\u0017",  # 16 - 23
-    "\u02d8",
-    "\u02c7",
-    "\u02c6",
-    "\u02d9",
-    "\u02dd",
-    "\u02db",
-    "\u02da",
-    "\u02dc",  # 24 - 31
-    "\u0020",
-    "\u0021",
-    "\u0022",
-    "\u0023",
-    "\u0024",
-    "\u0025",
-    "\u0026",
-    "\u0027",  # 32 - 39
-    "\u0028",
-    "\u0029",
-    "\u002a",
-    "\u002b",
-    "\u002c",
-    "\u002d",
-    "\u002e",
-    "\u002f",  # 40 - 47
-    "\u0030",
-    "\u0031",
-    "\u0032",
-    "\u0033",
-    "\u0034",
-    "\u0035",
-    "\u0036",
-    "\u0037",  # 48 - 55
-    "\u0038",
-    "\u0039",
-    "\u003a",
-    "\u003b",
-    "\u003c",
-    "\u003d",
-    "\u003e",
-    "\u003f",  # 56 - 63
-    "\u0040",
-    "\u0041",
-    "\u0042",
-    "\u0043",
-    "\u0044",
-    "\u0045",
-    "\u0046",
-    "\u0047",  # 64 - 71
-    "\u0048",
-    "\u0049",
-    "\u004a",
-    "\u004b",
-    "\u004c",
-    "\u004d",
-    "\u004e",
-    "\u004f",  # 72 - 79
-    "\u0050",
-    "\u0051",
-    "\u0052",
-    "\u0053",
-    "\u0054",
-    "\u0055",
-    "\u0056",
-    "\u0057",  # 80 - 87
-    "\u0058",
-    "\u0059",
-    "\u005a",
-    "\u005b",
-    "\u005c",
-    "\u005d",
-    "\u005e",
-    "\u005f",  # 88 - 95
-    "\u0060",
-    "\u0061",
-    "\u0062",
-    "\u0063",
-    "\u0064",
-    "\u0065",
-    "\u0066",
-    "\u0067",  # 96 - 103
-    "\u0068",
-    "\u0069",
-    "\u006a",
-    "\u006b",
-    "\u006c",
-    "\u006d",
-    "\u006e",
-    "\u006f",  # 104 - 111
-    "\u0070",
-    "\u0071",
-    "\u0072",
-    "\u0073",
-    "\u0074",
-    "\u0075",
-    "\u0076",
-    "\u0077",  # 112 - 119
-    "\u0078",
-    "\u0079",
-    "\u007a",
-    "\u007b",
-    "\u007c",
-    "\u007d",
-    "\u007e",
-    "\u0000",  # 120 - 127
-    "\u2022",
-    "\u2020",
-    "\u2021",
-    "\u2026",
-    "\u2014",
-    "\u2013",
-    "\u0192",
-    "\u2044",  # 128 - 135
-    "\u2039",
-    "\u203a",
-    "\u2212",
-    "\u2030",
-    "\u201e",
-    "\u201c",
-    "\u201d",
-    "\u2018",  # 136 - 143
-    "\u2019",
-    "\u201a",
-    "\u2122",
-    "\ufb01",
-    "\ufb02",
-    "\u0141",
-    "\u0152",
-    "\u0160",  # 144 - 151
-    "\u0178",
-    "\u017d",
-    "\u0131",
-    "\u0142",
-    "\u0153",
-    "\u0161",
-    "\u017e",
-    "\u0000",  # 152 - 159
-    "\u20ac",
-    "\u00a1",
-    "\u00a2",
-    "\u00a3",
-    "\u00a4",
-    "\u00a5",
-    "\u00a6",
-    "\u00a7",  # 160 - 167
-    "\u00a8",
-    "\u00a9",
-    "\u00aa",
-    "\u00ab",
-    "\u00ac",
-    "\u0000",
-    "\u00ae",
-    "\u00af",  # 168 - 175
-    "\u00b0",
-    "\u00b1",
-    "\u00b2",
-    "\u00b3",
-    "\u00b4",
-    "\u00b5",
-    "\u00b6",
-    "\u00b7",  # 176 - 183
-    "\u00b8",
-    "\u00b9",
-    "\u00ba",
-    "\u00bb",
-    "\u00bc",
-    "\u00bd",
-    "\u00be",
-    "\u00bf",  # 184 - 191
-    "\u00c0",
-    "\u00c1",
-    "\u00c2",
-    "\u00c3",
-    "\u00c4",
-    "\u00c5",
-    "\u00c6",
-    "\u00c7",  # 192 - 199
-    "\u00c8",
-    "\u00c9",
-    "\u00ca",
-    "\u00cb",
-    "\u00cc",
-    "\u00cd",
-    "\u00ce",
-    "\u00cf",  # 200 - 207
-    "\u00d0",
-    "\u00d1",
-    "\u00d2",
-    "\u00d3",
-    "\u00d4",
-    "\u00d5",
-    "\u00d6",
-    "\u00d7",  # 208 - 215
-    "\u00d8",
-    "\u00d9",
-    "\u00da",
-    "\u00db",
-    "\u00dc",
-    "\u00dd",
-    "\u00de",
-    "\u00df",  # 216 - 223
-    "\u00e0",
-    "\u00e1",
-    "\u00e2",
-    "\u00e3",
-    "\u00e4",
-    "\u00e5",
-    "\u00e6",
-    "\u00e7",  # 224 - 231
-    "\u00e8",
-    "\u00e9",
-    "\u00ea",
-    "\u00eb",
-    "\u00ec",
-    "\u00ed",
-    "\u00ee",
-    "\u00ef",  # 232 - 239
-    "\u00f0",
-    "\u00f1",
-    "\u00f2",
-    "\u00f3",
-    "\u00f4",
-    "\u00f5",
-    "\u00f6",
-    "\u00f7",  # 240 - 247
-    "\u00f8",
-    "\u00f9",
-    "\u00fa",
-    "\u00fb",
-    "\u00fc",
-    "\u00fd",
-    "\u00fe",
-    "\u00ff",  # 248 - 255
-]
-
-assert len(_pdfdoc_encoding) == 256
-
-# manually generated from https://www.unicode.org/Public/MAPPINGS/VENDORS/ADOBE/symbol.txt
-_symbol_encoding = [
-    "\u0000",
-    "\u0001",
-    "\u0002",
-    "\u0003",
-    "\u0004",
-    "\u0005",
-    "\u0006",
-    "\u0007",
-    "\u0008",
-    "\u0009",
-    "\u000A",
-    "\u000B",
-    "\u000C",
-    "\u000D",
-    "\u000E",
-    "\u000F",
-    "\u0010",
-    "\u0011",
-    "\u0012",
-    "\u0013",
-    "\u0014",
-    "\u0015",
-    "\u0016",
-    "\u0017",
-    "\u0018",
-    "\u0019",
-    "\u001A",
-    "\u001B",
-    "\u001C",
-    "\u001D",
-    "\u001E",
-    "\u001F",
-    "\u0020",
-    "\u0021",
-    "\u2200",
-    "\u0023",
-    "\u2203",
-    "\u0025",
-    "\u0026",
-    "\u220B",
-    "\u0028",
-    "\u0029",
-    "\u2217",
-    "\u002B",
-    "\u002C",
-    "\u2212",
-    "\u002E",
-    "\u002F",
-    "\u0030",
-    "\u0031",
-    "\u0032",
-    "\u0033",
-    "\u0034",
-    "\u0035",
-    "\u0036",
-    "\u0037",
-    "\u0038",
-    "\u0039",
-    "\u003A",
-    "\u003B",
-    "\u003C",
-    "\u003D",
-    "\u003E",
-    "\u003F",
-    "\u2245",
-    "\u0391",
-    "\u0392",
-    "\u03A7",
-    "\u0394",
-    "\u0395",
-    "\u03A6",
-    "\u0393",
-    "\u0397",
-    "\u0399",
-    "\u03D1",
-    "\u039A",
-    "\u039B",
-    "\u039C",
-    "\u039D",
-    "\u039F",
-    "\u03A0",
-    "\u0398",
-    "\u03A1",
-    "\u03A3",
-    "\u03A4",
-    "\u03A5",
-    "\u03C2",
-    "\u03A9",
-    "\u039E",
-    "\u03A8",
-    "\u0396",
-    "\u005B",
-    "\u2234",
-    "\u005D",
-    "\u22A5",
-    "\u005F",
-    "\uF8E5",
-    "\u03B1",
-    "\u03B2",
-    "\u03C7",
-    "\u03B4",
-    "\u03B5",
-    "\u03C6",
-    "\u03B3",
-    "\u03B7",
-    "\u03B9",
-    "\u03D5",
-    "\u03BA",
-    "\u03BB",
-    "\u00B5",
-    "\u03BD",
-    "\u03BF",
-    "\u03C0",
-    "\u03B8",
-    "\u03C1",
-    "\u03C3",
-    "\u03C4",
-    "\u03C5",
-    "\u03D6",
-    "\u03C9",
-    "\u03BE",
-    "\u03C8",
-    "\u03B6",
-    "\u007B",
-    "\u007C",
-    "\u007D",
-    "\u223C",
-    "\u007F",
-    "\u0080",
-    "\u0081",
-    "\u0082",
-    "\u0083",
-    "\u0084",
-    "\u0085",
-    "\u0086",
-    "\u0087",
-    "\u0088",
-    "\u0089",
-    "\u008A",
-    "\u008B",
-    "\u008C",
-    "\u008D",
-    "\u008E",
-    "\u008F",
-    "\u0090",
-    "\u0091",
-    "\u0092",
-    "\u0093",
-    "\u0094",
-    "\u0095",
-    "\u0096",
-    "\u0097",
-    "\u0098",
-    "\u0099",
-    "\u009A",
-    "\u009B",
-    "\u009C",
-    "\u009D",
-    "\u009E",
-    "\u009F",
-    "\u20AC",
-    "\u03D2",
-    "\u2032",
-    "\u2264",
-    "\u2044",
-    "\u221E",
-    "\u0192",
-    "\u2663",
-    "\u2666",
-    "\u2665",
-    "\u2660",
-    "\u2194",
-    "\u2190",
-    "\u2191",
-    "\u2192",
-    "\u2193",
-    "\u00B0",
-    "\u00B1",
-    "\u2033",
-    "\u2265",
-    "\u00D7",
-    "\u221D",
-    "\u2202",
-    "\u2022",
-    "\u00F7",
-    "\u2260",
-    "\u2261",
-    "\u2248",
-    "\u2026",
-    "\uF8E6",
-    "\uF8E7",
-    "\u21B5",
-    "\u2135",
-    "\u2111",
-    "\u211C",
-    "\u2118",
-    "\u2297",
-    "\u2295",
-    "\u2205",
-    "\u2229",
-    "\u222A",
-    "\u2283",
-    "\u2287",
-    "\u2284",
-    "\u2282",
-    "\u2286",
-    "\u2208",
-    "\u2209",
-    "\u2220",
-    "\u2207",
-    "\uF6DA",
-    "\uF6D9",
-    "\uF6DB",
-    "\u220F",
-    "\u221A",
-    "\u22C5",
-    "\u00AC",
-    "\u2227",
-    "\u2228",
-    "\u21D4",
-    "\u21D0",
-    "\u21D1",
-    "\u21D2",
-    "\u21D3",
-    "\u25CA",
-    "\u2329",
-    "\uF8E8",
-    "\uF8E9",
-    "\uF8EA",
-    "\u2211",
-    "\uF8EB",
-    "\uF8EC",
-    "\uF8ED",
-    "\uF8EE",
-    "\uF8EF",
-    "\uF8F0",
-    "\uF8F1",
-    "\uF8F2",
-    "\uF8F3",
-    "\uF8F4",
-    "\u00F0",
-    "\u232A",
-    "\u222B",
-    "\u2320",
-    "\uF8F5",
-    "\u2321",
-    "\uF8F6",
-    "\uF8F7",
-    "\uF8F8",
-    "\uF8F9",
-    "\uF8FA",
-    "\uF8FB",
-    "\uF8FC",
-    "\uF8FD",
-    "\uF8FE",
-    "\u00FF",
-]
-assert len(_symbol_encoding) == 256
-
-#  manually generated from https://www.unicode.org/Public/MAPPINGS/VENDORS/ADOBE/zdingbat.txt
-_zapfding_encoding = [
-    "\u0000",
-    "\u0001",
-    "\u0002",
-    "\u0003",
-    "\u0004",
-    "\u0005",
-    "\u0006",
-    "\u0007",
-    "\u0008",
-    "\u0009",
-    "\u000A",
-    "\u000B",
-    "\u000C",
-    "\u000D",
-    "\u000E",
-    "\u000F",
-    "\u0010",
-    "\u0011",
-    "\u0012",
-    "\u0013",
-    "\u0014",
-    "\u0015",
-    "\u0016",
-    "\u0017",
-    "\u0018",
-    "\u0019",
-    "\u001A",
-    "\u001B",
-    "\u001C",
-    "\u001D",
-    "\u001E",
-    "\u001F",
-    "\u0020",
-    "\u2701",
-    "\u2702",
-    "\u2703",
-    "\u2704",
-    "\u260E",
-    "\u2706",
-    "\u2707",
-    "\u2708",
-    "\u2709",
-    "\u261B",
-    "\u261E",
-    "\u270C",
-    "\u270D",
-    "\u270E",
-    "\u270F",
-    "\u2710",
-    "\u2711",
-    "\u2712",
-    "\u2713",
-    "\u2714",
-    "\u2715",
-    "\u2716",
-    "\u2717",
-    "\u2718",
-    "\u2719",
-    "\u271A",
-    "\u271B",
-    "\u271C",
-    "\u271D",
-    "\u271E",
-    "\u271F",
-    "\u2720",
-    "\u2721",
-    "\u2722",
-    "\u2723",
-    "\u2724",
-    "\u2725",
-    "\u2726",
-    "\u2727",
-    "\u2605",
-    "\u2729",
-    "\u272A",
-    "\u272B",
-    "\u272C",
-    "\u272D",
-    "\u272E",
-    "\u272F",
-    "\u2730",
-    "\u2731",
-    "\u2732",
-    "\u2733",
-    "\u2734",
-    "\u2735",
-    "\u2736",
-    "\u2737",
-    "\u2738",
-    "\u2739",
-    "\u273A",
-    "\u273B",
-    "\u273C",
-    "\u273D",
-    "\u273E",
-    "\u273F",
-    "\u2740",
-    "\u2741",
-    "\u2742",
-    "\u2743",
-    "\u2744",
-    "\u2745",
-    "\u2746",
-    "\u2747",
-    "\u2748",
-    "\u2749",
-    "\u274A",
-    "\u274B",
-    "\u25CF",
-    "\u274D",
-    "\u25A0",
-    "\u274F",
-    "\u2750",
-    "\u2751",
-    "\u2752",
-    "\u25B2",
-    "\u25BC",
-    "\u25C6",
-    "\u2756",
-    "\u25D7",
-    "\u2758",
-    "\u2759",
-    "\u275A",
-    "\u275B",
-    "\u275C",
-    "\u275D",
-    "\u275E",
-    "\u007F",
-    "\uF8D7",
-    "\uF8D8",
-    "\uF8D9",
-    "\uF8DA",
-    "\uF8DB",
-    "\uF8DC",
-    "\uF8DD",
-    "\uF8DE",
-    "\uF8DF",
-    "\uF8E0",
-    "\uF8E1",
-    "\uF8E2",
-    "\uF8E3",
-    "\uF8E4",
-    "\u008E",
-    "\u008F",
-    "\u0090",
-    "\u0091",
-    "\u0092",
-    "\u0093",
-    "\u0094",
-    "\u0095",
-    "\u0096",
-    "\u0097",
-    "\u0098",
-    "\u0099",
-    "\u009A",
-    "\u009B",
-    "\u009C",
-    "\u009D",
-    "\u009E",
-    "\u009F",
-    "\u00A0",
-    "\u2761",
-    "\u2762",
-    "\u2763",
-    "\u2764",
-    "\u2765",
-    "\u2766",
-    "\u2767",
-    "\u2663",
-    "\u2666",
-    "\u2665",
-    "\u2660",
-    "\u2460",
-    "\u2461",
-    "\u2462",
-    "\u2463",
-    "\u2464",
-    "\u2465",
-    "\u2466",
-    "\u2467",
-    "\u2468",
-    "\u2469",
-    "\u2776",
-    "\u2777",
-    "\u2778",
-    "\u2779",
-    "\u277A",
-    "\u277B",
-    "\u277C",
-    "\u277D",
-    "\u277E",
-    "\u277F",
-    "\u2780",
-    "\u2781",
-    "\u2782",
-    "\u2783",
-    "\u2784",
-    "\u2785",
-    "\u2786",
-    "\u2787",
-    "\u2788",
-    "\u2789",
-    "\u278A",
-    "\u278B",
-    "\u278C",
-    "\u278D",
-    "\u278E",
-    "\u278F",
-    "\u2790",
-    "\u2791",
-    "\u2792",
-    "\u2793",
-    "\u2794",
-    "\u2192",
-    "\u2194",
-    "\u2195",
-    "\u2798",
-    "\u2799",
-    "\u279A",
-    "\u279B",
-    "\u279C",
-    "\u279D",
-    "\u279E",
-    "\u279F",
-    "\u27A0",
-    "\u27A1",
-    "\u27A2",
-    "\u27A3",
-    "\u27A4",
-    "\u27A5",
-    "\u27A6",
-    "\u27A7",
-    "\u27A8",
-    "\u27A9",
-    "\u27AA",
-    "\u27AB",
-    "\u27AC",
-    "\u27AD",
-    "\u27AE",
-    "\u27AF",
-    "\u00F0",
-    "\u27B1",
-    "\u27B2",
-    "\u27B3",
-    "\u27B4",
-    "\u27B5",
-    "\u27B6",
-    "\u27B7",
-    "\u27B8",
-    "\u27B9",
-    "\u27BA",
-    "\u27BB",
-    "\u27BC",
-    "\u27BD",
-    "\u27BE",
-    "\u00FF",
-]
-assert len(_zapfding_encoding) == 256
+def hex_to_rgb(value: str) -> Tuple[float, float, float]:
+    return tuple(int(value[i : i + 2], 16) / 255.0 for i in (0, 2, 4))  # type: ignore
 
 
-def fill_from_encoding(enc: str) -> List[str]:
-    lst: List[str] = []
-    for x in range(256):
-        try:
-            lst += (bytes((x,)).decode(enc),)
-        except Exception:
-            lst += (chr(x),)
-    return lst
+class AnnotationBuilder:
+    @staticmethod
+    def free_text(
+        text: str,
+        rect: Tuple[float, float, float, float],
+        font: str = "Helvetica",
+        bold: bool = False,
+        italic: bool = False,
+        font_size: str = "14pt",
+        font_color: str = "000000",
+        border_color: str = "000000",
+        background_color: str = "ffffff",
+    ) -> DictionaryObject:
+        """Add text in a rectangle to a page."""
+        font_str = "font: "
+        if bold is True:
+            font_str = font_str + "bold "
+        if italic is True:
+            font_str = font_str + "italic "
+        font_str = font_str + font + " " + font_size
+        font_str = font_str + ";text-align:left;color:#" + font_color
 
+        bg_color_str = ""
+        for st in hex_to_rgb(border_color):
+            bg_color_str = bg_color_str + str(st) + " "
+        bg_color_str = bg_color_str + "rg"
 
-_win_encoding = fill_from_encoding("cp1252")
-_mac_encoding = fill_from_encoding("mac_roman")
-_std_encoding = [
-    "\x00",
-    "\x01",
-    "\x02",
-    "\x03",
-    "\x04",
-    "\x05",
-    "\x06",
-    "\x07",
-    "\x08",
-    "\t",
-    "\n",
-    "\x0b",
-    "\x0c",
-    "\r",
-    "\x0e",
-    "\x0f",
-    "\x10",
-    "\x11",
-    "\x12",
-    "\x13",
-    "\x14",
-    "\x15",
-    "\x16",
-    "\x17",
-    "\x18",
-    "\x19",
-    "\x1a",
-    "\x1b",
-    "\x1c",
-    "\x1d",
-    "\x1e",
-    "\x1f",
-    " ",
-    "!",
-    '"',
-    "#",
-    "$",
-    "%",
-    "&",
-    "’",
-    "(",
-    ")",
-    "*",
-    "+",
-    ",",
-    "-",
-    ".",
-    "/",
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    ":",
-    ";",
-    "<",
-    "=",
-    ">",
-    "?",
-    "@",
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-    "[",
-    "\\",
-    "]",
-    "^",
-    "_",
-    "‘",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "x",
-    "y",
-    "z",
-    "{",
-    "|",
-    "}",
-    "~",
-    "\x7f",
-    "\x80",
-    "\x81",
-    "\x82",
-    "\x83",
-    "\x84",
-    "\x85",
-    "\x86",
-    "\x87",
-    "\x88",
-    "\x89",
-    "\x8a",
-    "\x8b",
-    "\x8c",
-    "\x8d",
-    "\x8e",
-    "\x8f",
-    "\x90",
-    "\x91",
-    "\x92",
-    "\x93",
-    "\x94",
-    "\x95",
-    "\x96",
-    "\x97",
-    "\x98",
-    "\x99",
-    "\x9a",
-    "\x9b",
-    "\x9c",
-    "\x9d",
-    "\x9e",
-    "\x9f",
-    "\xa0",
-    "¡",
-    "¢",
-    "£",
-    "⁄",
-    "¥",
-    "ƒ",
-    "§",
-    "¤",
-    "'",
-    "“",
-    "«",
-    "‹",
-    "›",
-    "ﬁ",
-    "ﬂ",
-    "°",
-    "–",
-    "†",
-    "‡",
-    "·",
-    "µ",
-    "¶",
-    "•",
-    "‚",
-    "„",
-    "”",
-    "»",
-    "…",
-    "‰",
-    "¾",
-    "¿",
-    "À",
-    "`",
-    "´",
-    "ˆ",
-    "˜",
-    "¯",
-    "˘",
-    "˙",
-    "¨",
-    "É",
-    "˚",
-    "¸",
-    "Ì",
-    "˝",
-    "˛",
-    "ˇ",
-    "—",
-    "Ñ",
-    "Ò",
-    "Ó",
-    "Ô",
-    "Õ",
-    "Ö",
-    "×",
-    "Ø",
-    "Ù",
-    "Ú",
-    "Û",
-    "Ü",
-    "Ý",
-    "Þ",
-    "ß",
-    "à",
-    "Æ",
-    "â",
-    "ª",
-    "ä",
-    "å",
-    "æ",
-    "ç",
-    "Ł",
-    "Ø",
-    "Œ",
-    "º",
-    "ì",
-    "í",
-    "î",
-    "ï",
-    "ð",
-    "æ",
-    "ò",
-    "ó",
-    "ô",
-    "ı",
-    "ö",
-    "÷",
-    "ł",
-    "ø",
-    "œ",
-    "ß",
-    "ü",
-    "ý",
-    "þ",
-    "ÿ",
-]
-
-
-def rev_encoding(enc: List[str]) -> Dict[str, int]:
-    rev: Dict[str, int] = {}
-    for i in range(256):
-        char = enc[i]
-        if char == "\u0000":
-            continue
-        assert char not in rev, (
-            str(char) + " at " + str(i) + " already at " + str(rev[char])
+        free_text = DictionaryObject()
+        free_text.update(
+            {
+                NameObject("/Type"): NameObject("/Annot"),
+                NameObject("/Subtype"): NameObject("/FreeText"),
+                NameObject("/Rect"): RectangleObject(rect),
+                NameObject("/Contents"): TextStringObject(text),
+                # font size color
+                NameObject("/DS"): TextStringObject(font_str),
+                # border color
+                NameObject("/DA"): TextStringObject(bg_color_str),
+                # background color
+                NameObject("/C"): ArrayObject(
+                    [FloatObject(n) for n in hex_to_rgb(background_color)]
+                ),
+            }
         )
-        rev[char] = i
-    return rev
+        return free_text
 
+    @staticmethod
+    def line(
+        p1: Tuple[float, float],
+        p2: Tuple[float, float],
+        rect: Tuple[float, float, float, float],
+        text: str = "",
+        title_bar: str = "",
+    ) -> DictionaryObject:
+        """
+        Draw a line on the PDF.
 
-_pdfdoc_encoding_rev: Dict[str, int] = rev_encoding(_pdfdoc_encoding)
-_win_encoding_rev: Dict[str, int] = rev_encoding(_win_encoding)
-_mac_encoding_rev: Dict[str, int] = rev_encoding(_mac_encoding)
-_symbol_encoding_rev: Dict[str, int] = rev_encoding(_symbol_encoding)
-_zapfding_encoding_rev: Dict[str, int] = rev_encoding(_zapfding_encoding)
-
-charset_encoding: Dict[str, List[str]] = {
-    "/StandardCoding": _std_encoding,
-    "/WinAnsiEncoding": _win_encoding,
-    "/MacRomanEncoding": _mac_encoding,
-    "/PDFDocEncoding": _pdfdoc_encoding,
-    "/Symbol": _symbol_encoding,
-    "/ZapfDingbats": _zapfding_encoding,
-}
+        :param p1: First point
+        :param p2: Second point
+        :param rect: Rectangle
+        :param text: Text to be displayed as the line annotation
+        :param title_bar: Text to be displayed in the title bar of the
+            annotation; by convention this is the name of the author
+        """
+        line_obj = DictionaryObject(
+            {
+                NameObject("/Type"): NameObject("/Annot"),
+                NameObject("/Subtype"): NameObject("/Line"),
+                NameObject("/Rect"): RectangleObject(rect),
+                NameObject("/T"): TextStringObject(title_bar),
+                NameObject("/L"): ArrayObject(
+                    [
+                        FloatObject(p1[0]),
+                        FloatObject(p1[1]),
+                        FloatObject(p2[0]),
+                        FloatObject(p2[1]),
+                    ]
+                ),
+                NameObject("/LE"): ArrayObject(
+                    [
+                        NameObject(None),
+                        NameObject(None),
+                    ]
+                ),
+                NameObject("/IC"): ArrayObject(
+                    [
+                        FloatObject(0.5),
+                        FloatObject(0.5),
+                        FloatObject(0.5),
+                    ]
+                ),
+                NameObject("/Contents"): TextStringObject(text),
+            }
+        )
+        return line_obj
