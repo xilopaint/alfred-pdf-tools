@@ -1466,19 +1466,14 @@ class Workflow:
         if self.alfred_env.get("workflow_cache"):
             dirpath = self.alfred_env.get("workflow_cache")
         else:
-            dirpath = self._default_cachedir
+            dirpath = os.path.join(
+                os.path.expanduser(
+                    "~/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/"
+                ),
+                self.bundleid,
+            )
 
         return self._create(dirpath)
-
-    @property
-    def _default_cachedir(self):
-        """Alfred's default cache directory."""
-        return os.path.join(
-            os.path.expanduser(
-                "~/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/"
-            ),
-            self.bundleid,
-        )
 
     @property
     def datadir(self):
