@@ -59,8 +59,7 @@ pull request][4].
 ## Credits
 
 This workflow relies on [PyPDF2][5] library by Martin Thoma, [docopt][6] by
-Vladimir Keleshev, [K2pdfopt][7] by Johannes Buchnerand and [Send2Trash][8] by
-Virgil Dupras.
+Vladimir Keleshev and [K2pdfopt][7] by Johannes Buchnerand.
 
 [1]:http://www.alfredapp.com/
 [2]:https://www.alfredapp.com/blog/tips-and-tricks/file-actions-from-alfred-or-finder/
@@ -69,4 +68,3 @@ Virgil Dupras.
 [5]:https://github.com/py-pdf/PyPDF2
 [6]:https://github.com/docopt/docopt
 [7]:http://www.willus.com/k2pdfopt/
-[8]:https://github.com/hsoft/send2trash
