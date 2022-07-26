@@ -2111,12 +2111,28 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 			<key>variable</key>
 			<string>suffix</string>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>_merged</string>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<true/>
+				<key>trim</key>
+				<false/>
+			</dict>
+			<key>description</key>
+			<string>When merging and not providing a new filename, this suffix will be added.</string>
+			<key>label</key>
+			<string>Default suffix when merging</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>merge_suffix</string>
+		</dict>
 	</array>
-	<key>variables</key>
-	<dict>
-		<key>default_merge_suffix</key>
-		<string>_merged</string>
-	</dict>
 	<key>version</key>
 	<string>4.1.1</string>
 	<key>webaddress</key>

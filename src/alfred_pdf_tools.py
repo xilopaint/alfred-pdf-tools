@@ -281,12 +281,17 @@ def decrypt(pwd, pdf_paths):
 
 
 @handle_exceptions
-def merge(out_filename, pdf_paths):
+def merge(out_filename, pdf_paths, should_trash=False):
     """Merge PDF files.
 
     Args:
         out_filename (str): Filename of the output PDF file without extension.
         pdf_paths (list): Paths to selected PDF files.
+        should_trash (bool): Whether to trash the input files. This does not
+        actually delete the files, since moving files to the bin is done via
+        an alfred 5 action. Hence, when `should_trash=False` we do not
+        print the filename of the input (and output) file, so that it does
+        not get passed to the delete action.
     """
     parent_paths = [Path(pdf_path).parent for pdf_path in pdf_paths]
 
@@ -301,6 +306,18 @@ def merge(out_filename, pdf_paths):
     for pdf_path in pdf_paths:
         reader = PdfReader(pdf_path)
         merger.append(reader)
+
+    if out_filename == "":
+        out_filename = Path(pdf_paths[0]).with_suffix('').parts[-1]
+        if should_trash:
+            # do not print the first input file, since it is the output file
+            pdf_paths = pdf_paths[1:]
+        if not should_trash:
+            # with alfred 5 we can set user-configurable environment variables
+            try:
+                out_filename += os.environ["merge_suffix"]
+            except:
+                out_filename += "_merged"
 
     merger.write(f"{parent_paths[0]}/{out_filename}.pdf")
 
@@ -585,10 +602,10 @@ def main(wf):  # pylint: disable=redefined-outer-name  # pragma: no cover
         encrypt(query, pdf_paths)
     elif args["--decrypt"] is not None:
         decrypt(query, pdf_paths)
-    elif args["--mrg"]:
-        merge(query, pdf_paths)
-    elif args["--mrg-trash"]:
-        merge(query, pdf_paths)
+    elif args["--mrg"] is not None:
+        merge(query, pdf_paths, should_trash=False)
+    elif args["--mrg-trash"] is not None:
+        merge(query, pdf_paths, should_trash=True)
     elif args["--split-count"]:
         split_count(query, abs_path, suffix)
     elif args["--split-size"]:
