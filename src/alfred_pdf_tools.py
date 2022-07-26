@@ -281,17 +281,12 @@ def decrypt(pwd, pdf_paths):
 
 
 @handle_exceptions
-def merge(out_filename, pdf_paths, should_trash=False):
+def merge(out_filename, pdf_paths):
     """Merge PDF files.
 
     Args:
         out_filename (str): Filename of the output PDF file without extension.
         pdf_paths (list): Paths to selected PDF files.
-        should_trash (bool): Whether to trash the input files. This does not
-            actually delete the files, since moving files to the bin is done via
-            an alfred 5 action. Hence, when `should_trash=False` we do not
-            print the filename of the input (and output) file, so that it does
-            not get passed to the delete action.
     """
     parent_paths = [Path(pdf_path).parent for pdf_path in pdf_paths]
 
@@ -306,19 +301,6 @@ def merge(out_filename, pdf_paths, should_trash=False):
     for pdf_path in pdf_paths:
         reader = PdfReader(pdf_path)
         merger.append(reader)
-
-    if out_filename == "":
-        out_filename = Path(pdf_paths[0]).with_suffix('').parts[-1]
-        if should_trash:
-            # do not print the first input file, since it is the output file
-            pdf_paths = pdf_paths[1:]
-        if not should_trash:
-            # with alfred 5 we can set user-configurable environment variables
-            try:
-                suffix = os.getenv("default_merge_suffix")
-            except:
-                suffix = "_merged"
-            out_filename += suffix
 
     merger.write(f"{parent_paths[0]}/{out_filename}.pdf")
 
@@ -593,31 +575,31 @@ def main(wf):  # pylint: disable=redefined-outer-name  # pragma: no cover
     pdf_paths = abs_path.split("\t")
     suffix = os.environ["suffix"]
 
-    if args.get("--optimize"):
+    if args["--optimize"]:
         optimize(query, pdf_paths)
-    elif args.get("--deskew"):
+    elif args["--deskew"]:
         deskew(pdf_paths)
-    elif args.get("--progress"):
+    elif args["--progress"]:
         get_progress()
-    elif args.get("--encrypt"):
+    elif args["--encrypt"]:
         encrypt(query, pdf_paths)
-    elif args.get("--decrypt"):
+    elif args["--decrypt"] is not None:
         decrypt(query, pdf_paths)
-    elif args.get("--mrg") is not None:
-        merge(query, pdf_paths, should_trash=False)
-    elif args.get("--mrg-trash") is not None:
-        merge(query, pdf_paths, should_trash=True)
-    elif args.get("--split-count"):
+    elif args["--mrg"]:
+        merge(query, pdf_paths)
+    elif args["--mrg-trash"]:
+        merge(query, pdf_paths)
+    elif args["--split-count"]:
         split_count(query, abs_path, suffix)
-    elif args.get("--split-size"):
+    elif args["--split-size"]:
         split_size(query, abs_path, suffix)
-    elif args.get("--slice-multi"):
+    elif args["--slice-multi"]:
         slice_(query, abs_path, False, suffix)
-    elif args.get("--slice-single"):
+    elif args["--slice-single"]:
         slice_(query, abs_path, True, suffix)
-    elif args.get("--crop"):
+    elif args["--crop"]:
         crop(pdf_paths)
-    elif args.get("--scale"):
+    elif args["--scale"]:
         scale(pdf_paths)
 
     if wf.update_available:
