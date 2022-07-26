@@ -8,9 +8,12 @@ PDF Reference, third edition, Version 1.4, 2001. ISBN 0-201-75839-3.
 PDF Reference, sixth edition, Version 1.7, 2006.
 """
 
+from enum import IntFlag
+from typing import Dict, Tuple
+
 
 class Core:
-    """Keywords that don't quite belong anywhere else"""
+    """Keywords that don't quite belong anywhere else."""
 
     OUTLINES = "/Outlines"
     PAGE = "/Page"
@@ -33,7 +36,7 @@ class CatalogAttributes:
 
 class EncryptionDictAttributes:
     """
-    Additional encryption dictionary entries for the standard security handler
+    Additional encryption dictionary entries for the standard security handler.
 
     TABLE 3.19, Page 122
     """
@@ -45,8 +48,45 @@ class EncryptionDictAttributes:
     ENCRYPT_METADATA = "/EncryptMetadata"  # boolean flag, optional
 
 
+class UserAccessPermissions(IntFlag):
+    """TABLE 3.20 User access permissions"""
+
+    R1 = 1
+    R2 = 2
+    PRINT = 4
+    MODIFY = 8
+    EXTRACT = 16
+    ADD_OR_MODIFY = 32
+    R7 = 64
+    R8 = 128
+    FILL_FORM_FIELDS = 256
+    EXTRACT_TEXT_AND_GRAPHICS = 512
+    ASSEMBLE_DOC = 1024
+    PRINT_TO_REPRESENTATION = 2048
+    R13 = 2**12
+    R14 = 2**13
+    R15 = 2**14
+    R16 = 2**15
+    R17 = 2**16
+    R18 = 2**17
+    R19 = 2**18
+    R20 = 2**19
+    R21 = 2**20
+    R22 = 2**21
+    R23 = 2**22
+    R24 = 2**23
+    R25 = 2**24
+    R26 = 2**25
+    R27 = 2**26
+    R28 = 2**27
+    R29 = 2**28
+    R30 = 2**29
+    R31 = 2**30
+    R32 = 2**31
+
+
 class Ressources:
-    """TABLE 3.30 Entries in a resource dictionary"""
+    """TABLE 3.30 Entries in a resource dictionary."""
 
     EXT_G_STATE = "/ExtGState"  # dictionary, optional
     COLOR_SPACE = "/ColorSpace"  # dictionary, optional
@@ -59,7 +99,7 @@ class Ressources:
 
 
 class PagesAttributes:
-    """Page Attributes, Table 6.2, Page 52"""
+    """Page Attributes, Table 6.2, Page 52."""
 
     TYPE = "/Type"  # name, required; must be /Pages
     KIDS = "/Kids"  # array, required; List of indirect references
@@ -68,7 +108,7 @@ class PagesAttributes:
 
 
 class PageAttributes:
-    """TABLE 3.27 Entries in a page object"""
+    """TABLE 3.27 Entries in a page object."""
 
     TYPE = "/Type"  # name, required; must be /Page
     PARENT = "/Parent"  # dictionary, required; a pages object
@@ -103,8 +143,17 @@ class PageAttributes:
     VP = "/VP"  # dictionary, optional
 
 
+class FileSpecificationDictionaryEntries:
+    """TABLE 3.41 Entries in a file specification dictionary"""
+
+    Type = "/Type"
+    FS = "/FS"  # The name of the file system to be used to interpret this file specification
+    F = "/F"  # A file specification string of the form described in Section 3.10.1
+    EF = "/EF"  # dictionary, containing a subset of the keys F , UF , DOS , Mac , and Unix
+
+
 class StreamAttributes:
-    """Table 4.2"""
+    """Table 4.2."""
 
     LENGTH = "/Length"  # integer, required
     FILTER = "/Filter"  # name or array of names, optional
@@ -113,7 +162,7 @@ class StreamAttributes:
 
 class FilterTypes:
     """
-    Table 4.3 of the 1.4 Manual
+    Table 4.3 of the 1.4 Manual.
 
     Page 354 of the 1.7 Manual
     """
@@ -128,7 +177,7 @@ class FilterTypes:
 
 
 class FilterTypeAbbreviations:
-    """Table 4.44 of the 1.7 Manual (page 353ff)"""
+    """Table 4.44 of the 1.7 Manual (page 353ff)."""
 
     AHx = "/AHx"
     A85 = "/A85"
@@ -140,7 +189,7 @@ class FilterTypeAbbreviations:
 
 
 class LzwFilterParameters:
-    """Table 4.4"""
+    """Table 4.4."""
 
     PREDICTOR = "/Predictor"  # integer
     COLUMNS = "/Columns"  # integer
@@ -150,7 +199,7 @@ class LzwFilterParameters:
 
 
 class CcittFaxDecodeParameters:
-    """Table 4.5"""
+    """Table 4.5."""
 
     K = "/K"  # integer
     END_OF_LINE = "/EndOfLine"  # boolean
@@ -184,7 +233,7 @@ class ColorSpaces:
 
 
 class TypArguments:
-    """Table 8.2 of the PDF 1.7 reference"""
+    """Table 8.2 of the PDF 1.7 reference."""
 
     LEFT = "/Left"
     RIGHT = "/Right"
@@ -193,7 +242,7 @@ class TypArguments:
 
 
 class TypFitArguments:
-    """Table 8.2 of the PDF 1.7 reference"""
+    """Table 8.2 of the PDF 1.7 reference."""
 
     FIT = "/Fit"
     FIT_V = "/FitV"
@@ -202,10 +251,46 @@ class TypFitArguments:
     FIT_H = "/FitH"
     FIT_BH = "/FitBH"
     FIT_R = "/FitR"
+    XYZ = "/XYZ"
 
 
-class FieldDistionaryAttributes:
-    """TABLE 8.69 Entries common to all field dictionaries (PDF 1.7 reference)"""
+class GoToActionArguments:
+    S = "/S"  # name, required: type of action
+    D = "/D"  # name / byte string /array, required: Destination to jump to
+
+
+class AnnotationDictionaryAttributes:
+    """TABLE 8.15 Entries common to all annotation dictionaries"""
+
+    Type = "/Type"
+    Subtype = "/Subtype"
+    Rect = "/Rect"
+    Contents = "/Contents"
+    P = "/P"
+    NM = "/NM"
+    M = "/M"
+    F = "/F"
+    AP = "/AP"
+    AS = "/AS"
+    Border = "/Border"
+    C = "/C"
+    StructParent = "/StructParent"
+    OC = "/OC"
+
+
+class InteractiveFormDictEntries:
+    Fields = "/Fields"
+    NeedAppearances = "/NeedAppearances"
+    SigFlags = "/SigFlags"
+    CO = "/CO"
+    DR = "/DR"
+    DA = "/DA"
+    Q = "/Q"
+    XFA = "/XFA"
+
+
+class FieldDictionaryAttributes:
+    """TABLE 8.69 Entries common to all field dictionaries (PDF 1.7 reference)."""
 
     FT = "/FT"  # name, required for terminal fields
     Parent = "/Parent"  # dictionary, required for children
@@ -218,9 +303,61 @@ class FieldDistionaryAttributes:
     DV = "/DV"  # text string, optional
     AA = "/AA"  # dictionary, optional
 
+    @classmethod
+    def attributes(cls) -> Tuple[str, ...]:
+        return (
+            cls.TM,
+            cls.T,
+            cls.FT,
+            cls.Parent,
+            cls.TU,
+            cls.Ff,
+            cls.V,
+            cls.DV,
+            cls.Kids,
+            cls.AA,
+        )
+
+    @classmethod
+    def attributes_dict(cls) -> Dict[str, str]:
+        return {
+            cls.FT: "Field Type",
+            cls.Parent: "Parent",
+            cls.T: "Field Name",
+            cls.TU: "Alternate Field Name",
+            cls.TM: "Mapping Name",
+            cls.Ff: "Field Flags",
+            cls.V: "Value",
+            cls.DV: "Default Value",
+        }
+
+
+class CheckboxRadioButtonAttributes:
+    """TABLE 8.76 Field flags common to all field types"""
+
+    Opt = "/Opt"  # Options, Optional
+
+    @classmethod
+    def attributes(cls) -> Tuple[str, ...]:
+        return (cls.Opt,)
+
+    @classmethod
+    def attributes_dict(cls) -> Dict[str, str]:
+        return {
+            cls.Opt: "Options",
+        }
+
+
+class FieldFlag(IntFlag):
+    """TABLE 8.70 Field flags common to all field types"""
+
+    READ_ONLY = 1
+    REQUIRED = 2
+    NO_EXPORT = 4
+
 
 class DocumentInformationAttributes:
-    """TABLE 10.2 Entries in the document information dictionary"""
+    """TABLE 10.2 Entries in the document information dictionary."""
 
     TITLE = "/Title"  # text string, optional
     AUTHOR = "/Author"  # text string, optional
@@ -234,7 +371,7 @@ class DocumentInformationAttributes:
 
 
 class PageLayouts:
-    """Page 84, PDF 1.4 reference"""
+    """Page 84, PDF 1.4 reference."""
 
     SINGLE_PAGE = "/SinglePage"
     ONE_COLUMN = "/OneColumn"
@@ -243,7 +380,7 @@ class PageLayouts:
 
 
 class GraphicsStateParameters:
-    """Table 4.8 of the 1.7 reference"""
+    """Table 4.8 of the 1.7 reference."""
 
     TYPE = "/Type"  # name, optional
     LW = "/LW"  # number, optional
@@ -253,7 +390,7 @@ class GraphicsStateParameters:
 
 
 class CatalogDictionary:
-    """Table 3.25 in the 1.7 reference"""
+    """Table 3.25 in the 1.7 reference."""
 
     TYPE = "/Type"  # name, required; must be /Catalog
     VERSION = "/Version"  # name
@@ -286,20 +423,29 @@ class CatalogDictionary:
 
 
 PDF_KEYS = (
-    PagesAttributes,
-    PageAttributes,
-    Ressources,
+    AnnotationDictionaryAttributes,
+    CatalogAttributes,
+    CatalogDictionary,
+    CcittFaxDecodeParameters,
+    CheckboxRadioButtonAttributes,
+    ColorSpaces,
+    Core,
+    DocumentInformationAttributes,
     EncryptionDictAttributes,
-    ImageAttributes,
-    StreamAttributes,
+    FieldDictionaryAttributes,
+    FilterTypeAbbreviations,
     FilterTypes,
+    GoToActionArguments,
+    GraphicsStateParameters,
+    ImageAttributes,
+    FileSpecificationDictionaryEntries,
     LzwFilterParameters,
+    PageAttributes,
+    PageLayouts,
+    PagesAttributes,
+    Ressources,
+    StreamAttributes,
+    TrailerKeys,
     TypArguments,
     TypFitArguments,
-    PageLayouts,
-    GraphicsStateParameters,
-    CatalogDictionary,
-    Core,
-    TrailerKeys,
-    CatalogAttributes,
 )
