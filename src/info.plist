@@ -1022,9 +1022,9 @@ python3 alfred_pdf_tools.py --progress</string>
 			<key>config</key>
 			<dict>
 				<key>argumenttype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>subtext</key>
-				<string></string>
+				<string>Leave blank to use the name of the first file.</string>
 				<key>text</key>
 				<string>Enter the output filename without extension.</string>
 				<key>withspace</key>
@@ -2112,6 +2112,11 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 			<string>suffix</string>
 		</dict>
 	</array>
+	<key>variables</key>
+	<dict>
+		<key>default_merge_suffix</key>
+		<string>_merged</string>
+	</dict>
 	<key>version</key>
 	<string>4.1</string>
 	<key>webaddress</key>
