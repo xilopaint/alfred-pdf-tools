@@ -575,31 +575,31 @@ def main(wf):  # pylint: disable=redefined-outer-name  # pragma: no cover
     pdf_paths = abs_path.split("\t")
     suffix = os.environ["suffix"]
 
-    if args.get("--optimize"):
+    if args["--optimize"]:
         optimize(query, pdf_paths)
-    elif args.get("--deskew"):
+    elif args["--deskew"]:
         deskew(pdf_paths)
-    elif args.get("--progress"):
+    elif args["--progress"]:
         get_progress()
-    elif args.get("--encrypt"):
+    elif args["--encrypt"]:
         encrypt(query, pdf_paths)
-    elif args.get("--decrypt"):
+    elif args["--decrypt"] is not None:
         decrypt(query, pdf_paths)
-    elif args.get("--mrg"):
+    elif args["--mrg"]:
         merge(query, pdf_paths)
-    elif args.get("--mrg-trash"):
+    elif args["--mrg-trash"]:
         merge(query, pdf_paths)
-    elif args.get("--split-count"):
+    elif args["--split-count"]:
         split_count(query, abs_path, suffix)
-    elif args.get("--split-size"):
+    elif args["--split-size"]:
         split_size(query, abs_path, suffix)
-    elif args.get("--slice-multi"):
+    elif args["--slice-multi"]:
         slice_(query, abs_path, False, suffix)
-    elif args.get("--slice-single"):
+    elif args["--slice-single"]:
         slice_(query, abs_path, True, suffix)
-    elif args.get("--crop"):
+    elif args["--crop"]:
         crop(pdf_paths)
-    elif args.get("--scale"):
+    elif args["--scale"]:
         scale(pdf_paths)
 
     if wf.update_available:
