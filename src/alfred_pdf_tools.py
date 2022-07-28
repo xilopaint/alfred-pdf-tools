@@ -281,19 +281,18 @@ def decrypt(pwd, pdf_paths):
 
 
 @handle_exceptions
-def merge(out_filename, pdf_paths, should_trash=False):
+def merge(out_filename, pdf_paths):
     """Merge PDF files.
+
+    Depending on os.environ["should_trash"], prints the pdf_paths that can be deleted
+    without losing the merged file.
 
     Args:
         out_filename (str): Filename of the output PDF file without extension.
         pdf_paths (list): Paths to selected PDF files.
-        should_trash (bool): Whether to trash the input files. This does not
-        actually delete the files, since moving files to the bin is done via
-        an alfred 5 action. Hence, when `should_trash=False` we do not
-        print the filename of the input (and output) file, so that it does
-        not get passed to the delete action.
     """
     parent_paths = [Path(pdf_path).parent for pdf_path in pdf_paths]
+    should_trash = os.getenv("should_trash", 'False').lower() in ('true', '1', 't')
 
     if len(pdf_paths) < 2:
         raise SelectionError  # pragma: no cover
@@ -307,22 +306,21 @@ def merge(out_filename, pdf_paths, should_trash=False):
         reader = PdfReader(pdf_path)
         merger.append(reader)
 
+    # if no output filename is given, use the first PDF file name
     if out_filename == "":
         out_filename = Path(pdf_paths[0]).with_suffix('').parts[-1]
-        if should_trash:
-            # do not print the first input file, since it is the output file
-            pdf_paths = pdf_paths[1:]
+        # if we want to keep the original files, add a suffix to avoid overwriting
+        # the input files
         if not should_trash:
-            # with alfred 5 we can set user-configurable environment variables
-            try:
-                out_filename += os.environ["merge_suffix"]
-            except:
-                out_filename += "_merged"
+            out_filename += os.environ["merge_suffix"]
 
-    merger.write(f"{parent_paths[0]}/{out_filename}.pdf")
+    out_filepath = f"{parent_paths[0]}/{out_filename}.pdf"
+    merger.write(out_filepath)
 
-    v = Variables(pdf_paths)
-    print(json.dumps(v.obj))
+    if should_trash:
+        # only remove paths that are not the output file
+        v = Variables([p for p in pdf_paths if p != out_filepath])
+        print(json.dumps(v.obj))
 
 
 @handle_exceptions
@@ -603,9 +601,7 @@ def main(wf):  # pylint: disable=redefined-outer-name  # pragma: no cover
     elif args["--decrypt"] is not None:
         decrypt(query, pdf_paths)
     elif args["--mrg"] is not None:
-        merge(query, pdf_paths, should_trash=False)
-    elif args["--mrg-trash"] is not None:
-        merge(query, pdf_paths, should_trash=True)
+        merge(query, pdf_paths)
     elif args["--split-count"]:
         split_count(query, abs_path, suffix)
     elif args["--split-size"]:
