@@ -18,11 +18,8 @@ uploaded to help with debugging.
 **Debugger information**
 Add the workflow debugger output.
 
+**Troubleshooting Information:**
+Add the `!diagnostic` keyword output.
+
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
-
-**Provide the version number of:**
-
-- macOS
-- Alfred
-- workflow
