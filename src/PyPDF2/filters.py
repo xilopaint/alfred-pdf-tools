@@ -89,6 +89,8 @@ class FlateDecode:
         :param decode_parms: a dictionary of values, understanding the
             "/Predictor":<int> key only
         :return: the flate-decoded data.
+
+        :raises PdfReadError:
         """
         if "decodeParms" in kwargs:  # pragma: no cover
             deprecate_with_replacement("decodeParms", "parameters", "4.0.0")
@@ -205,6 +207,8 @@ class ASCIIHexDecode:
         :param decode_parms:
         :return: a string conversion in base-7 ASCII, where each of its values
             v is such that 0 <= ord(v) <= 127.
+
+        :raises PdfStreamError:
         """
         if "decodeParms" in kwargs:  # pragma: no cover
             deprecate_with_replacement("decodeParms", "parameters", "4.0.0")
@@ -279,6 +283,8 @@ class LZWDecode:
             algorithm derived from:
             http://www.rasip.fer.hr/research/compress/algorithms/fund/lz/lzw.html
             and the PDFReference
+
+            :raises PdfReadError: If the stop code is missing
             """
             cW = self.CLEARDICT
             baos = ""
@@ -573,7 +579,7 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes]:
     extension = None
     if SA.FILTER in x_object_obj:
         if x_object_obj[SA.FILTER] == FT.FLATE_DECODE:
-            extension = ".png"
+            extension = ".png"  # mime_type = "image/png"
             color_space = None
             if "/ColorSpace" in x_object_obj:
                 color_space = x_object_obj["/ColorSpace"].get_object()
@@ -587,7 +593,12 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes]:
 
             img = Image.frombytes(mode, size, data)
             if color_space == "/Indexed":
-                img.putpalette(lookup.get_data())
+                from .generic import ByteStringObject
+
+                if isinstance(lookup, ByteStringObject):
+                    img.putpalette(lookup)
+                else:
+                    img.putpalette(lookup.get_data())
                 img = img.convert("RGB")
             if G.S_MASK in x_object_obj:  # add alpha channel
                 alpha = Image.frombytes("L", size, x_object_obj[G.S_MASK].get_data())
@@ -600,16 +611,22 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes]:
             [FT.ASCII_85_DECODE],
             [FT.CCITT_FAX_DECODE],
         ):
-            extension = ".png"
+            # I'm not sure if the following logic is correct.
+            # There might not be any relationship between the filters and the
+            # extension
+            if x_object_obj[SA.FILTER] in [[FT.LZW_DECODE], [FT.CCITT_FAX_DECODE]]:
+                extension = ".tiff"  # mime_type = "image/tiff"
+            else:
+                extension = ".png"  # mime_type = "image/png"
             data = b_(data)
         elif x_object_obj[SA.FILTER] == FT.DCT_DECODE:
-            extension = ".jpg"
+            extension = ".jpg"  # mime_type = "image/jpeg"
         elif x_object_obj[SA.FILTER] == "/JPXDecode":
-            extension = ".jp2"
+            extension = ".jp2"  # mime_type = "image/x-jp2"
         elif x_object_obj[SA.FILTER] == FT.CCITT_FAX_DECODE:
-            extension = ".tiff"
+            extension = ".tiff"  # mime_type = "image/tiff"
     else:
-        extension = ".png"
+        extension = ".png"  # mime_type = "image/png"
         img = Image.frombytes(mode, size, data)
         img_byte_arr = BytesIO()
         img.save(img_byte_arr, format="PNG")

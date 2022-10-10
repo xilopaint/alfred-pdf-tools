@@ -31,6 +31,7 @@ import os
 import re
 import struct
 import zlib
+from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from typing import (
@@ -61,7 +62,6 @@ from ._utils import (
     skip_over_whitespace,
 )
 from .constants import CatalogAttributes as CA
-from .constants import CatalogDictionary
 from .constants import CatalogDictionary as CD
 from .constants import CheckboxRadioButtonAttributes
 from .constants import Core as CO
@@ -231,6 +231,48 @@ class DocumentInformation(DictionaryObject):
         """The "raw" version of producer; can return a ``ByteStringObject``."""
         return self.get(DI.PRODUCER)
 
+    @property
+    def creation_date(self) -> Optional[datetime]:
+        """
+        Read-only property accessing the document's **creation date**.
+        """
+        text = self._get_text(DI.CREATION_DATE)
+        if text is None:
+            return None
+        return datetime.strptime(text.replace("'", ""), "D:%Y%m%d%H%M%S%z")
+
+    @property
+    def creation_date_raw(self) -> Optional[str]:
+        """
+        The "raw" version of creation date; can return a ``ByteStringObject``.
+
+        Typically in the format D:YYYYMMDDhhmmss[+-]hh'mm where the suffix is the
+        offset from UTC.
+        """
+        return self.get(DI.CREATION_DATE)
+
+    @property
+    def modification_date(self) -> Optional[datetime]:
+        """
+        Read-only property accessing the document's **modification date**.
+
+        The date and time the document was most recently modified.
+        """
+        text = self._get_text(DI.MOD_DATE)
+        if text is None:
+            return None
+        return datetime.strptime(text.replace("'", ""), "D:%Y%m%d%H%M%S%z")
+
+    @property
+    def modification_date_raw(self) -> Optional[str]:
+        """
+        The "raw" version of modification date; can return a ``ByteStringObject``.
+
+        Typically in the format D:YYYYMMDDhhmmss[+-]hh'mm where the suffix is the
+        offset from UTC.
+        """
+        return self.get(DI.MOD_DATE)
+
 
 class PdfReader:
     """
@@ -326,6 +368,10 @@ class PdfReader:
             return None
         obj = self.trailer[TK.INFO]
         retval = DocumentInformation()
+        if isinstance(obj, type(None)):
+            raise PdfReadError(
+                "trailer not found or does not point to document information directory"
+            )
         retval.update(obj)  # type: ignore
         return retval
 
@@ -490,8 +536,8 @@ class PdfReader:
             retval = {}
             catalog = cast(DictionaryObject, self.trailer[TK.ROOT])
             # get the AcroForm tree
-            if CatalogDictionary.ACRO_FORM in catalog:
-                tree = cast(Optional[TreeObject], catalog[CatalogDictionary.ACRO_FORM])
+            if CD.ACRO_FORM in catalog:
+                tree = cast(Optional[TreeObject], catalog[CD.ACRO_FORM])
             else:
                 return None
         if tree is None:
@@ -693,7 +739,7 @@ class PdfReader:
         return self._get_outline()
 
     @property
-    def outlines(self) -> OutlineType:
+    def outlines(self) -> OutlineType:  # pragma: no cover
         """
         .. deprecated:: 2.9.0
 
@@ -711,13 +757,7 @@ class PdfReader:
 
             # get the outline dictionary and named destinations
             if CO.OUTLINES in catalog:
-                try:
-                    lines = cast(DictionaryObject, catalog[CO.OUTLINES])
-                except PdfReadError:
-                    # this occurs if the /Outlines object reference is incorrect
-                    # for an example of such a file, see https://unglueit-files.s3.amazonaws.com/ebf/7552c42e9280b4476e59e77acc0bc812.pdf
-                    # so continue to load the file without the Outlines
-                    return outline
+                lines = cast(DictionaryObject, catalog[CO.OUTLINES])
 
                 if isinstance(lines, NullObject):
                     return outline
@@ -823,7 +863,9 @@ class PdfReader:
     def _build_destination(
         self,
         title: str,
-        array: List[Union[NumberObject, IndirectObject, NullObject, DictionaryObject]],
+        array: List[
+            Union[NumberObject, IndirectObject, None, NullObject, DictionaryObject]
+        ],
     ) -> Destination:
         page, typ = None, None
         # handle outline items with missing or invalid destination
@@ -878,7 +920,7 @@ class PdfReader:
                 dest = dest["/D"]
 
         if isinstance(dest, ArrayObject):
-            outline_item = self._build_destination(title, dest)  # type: ignore
+            outline_item = self._build_destination(title, dest)
         elif isinstance(dest, str):
             # named destination, addresses NameObject Issue #193
             try:
@@ -888,13 +930,18 @@ class PdfReader:
             except KeyError:
                 # named destination not found in Name Dict
                 outline_item = self._build_destination(title, None)
-        elif isinstance(dest, type(None)):
+        elif dest is None:
             # outline item not required to have destination or action
             # PDFv1.7 Table 153
-            outline_item = self._build_destination(title, dest)  # type: ignore
+            outline_item = self._build_destination(title, dest)
         else:
             if self.strict:
                 raise PdfReadError(f"Unexpected destination {dest!r}")
+            else:
+                logger_warning(
+                    f"Removed unexpected destination {dest!r} from destination",
+                    __name__,
+                )
             outline_item = self._build_destination(title, None)  # type: ignore
 
         # if outline item created, add color, format, and child count if present
@@ -910,13 +957,13 @@ class PdfReader:
                 # absolute value = num. visible children
                 # positive = open/unfolded, negative = closed/folded
                 outline_item[NameObject("/Count")] = node["/Count"]
-
+        outline_item.node = node
         return outline_item
 
     @property
-    def pages(self) -> _VirtualList:
+    def pages(self) -> List[PageObject]:
         """Read-only property that emulates a list of :py:class:`Page<PyPDF2._page.Page>` objects."""
-        return _VirtualList(self._get_num_pages, self._get_page)
+        return _VirtualList(self._get_num_pages, self._get_page)  # type: ignore
 
     @property
     def page_layout(self) -> Optional[str]:
@@ -1135,7 +1182,32 @@ class PdfReader:
                 return NullObject()
             start = self.xref[indirect_reference.generation][indirect_reference.idnum]
             self.stream.seek(start, 0)
-            idnum, generation = self.read_object_header(self.stream)
+            try:
+                idnum, generation = self.read_object_header(self.stream)
+            except Exception:
+                if hasattr(self.stream, "getbuffer"):
+                    buf = bytes(self.stream.getbuffer())  # type: ignore
+                else:
+                    p = self.stream.tell()
+                    self.stream.seek(0, 0)
+                    buf = self.stream.read(-1)
+                    self.stream.seek(p, 0)
+                m = re.search(
+                    rf"\s{indirect_reference.idnum}\s+{indirect_reference.generation}\s+obj".encode(),
+                    buf,
+                )
+                if m is not None:
+                    logger_warning(
+                        f"Object ID {indirect_reference.idnum},{indirect_reference.generation} ref repaired",
+                        __name__,
+                    )
+                    self.xref[indirect_reference.generation][
+                        indirect_reference.idnum
+                    ] = (m.start(0) + 1)
+                    self.stream.seek(m.start(0) + 1)
+                    idnum, generation = self.read_object_header(self.stream)
+                else:
+                    idnum = -1  # exception will be raised below
             if idnum != indirect_reference.idnum and self.xref_index:
                 # Xref table probably had bad indexes due to not being zero-indexed
                 if self.strict:
@@ -1167,13 +1239,49 @@ class PdfReader:
                     retval, indirect_reference.idnum, indirect_reference.generation
                 )
         else:
-            logger_warning(
-                f"Object {indirect_reference.idnum} {indirect_reference.generation} "
-                "not defined.",
-                __name__,
+            if hasattr(self.stream, "getbuffer"):
+                buf = bytes(self.stream.getbuffer())  # type: ignore
+            else:
+                p = self.stream.tell()
+                self.stream.seek(0, 0)
+                buf = self.stream.read(-1)
+                self.stream.seek(p, 0)
+            m = re.search(
+                rf"\s{indirect_reference.idnum}\s+{indirect_reference.generation}\s+obj".encode(),
+                buf,
             )
-            if self.strict:
-                raise PdfReadError("Could not find object.")
+            if m is not None:
+                logger_warning(
+                    f"Object {indirect_reference.idnum} {indirect_reference.generation} found",
+                    __name__,
+                )
+                if indirect_reference.generation not in self.xref:
+                    self.xref[indirect_reference.generation] = {}
+                self.xref[indirect_reference.generation][indirect_reference.idnum] = (
+                    m.start(0) + 1
+                )
+                self.stream.seek(m.end(0) + 1)
+                skip_over_whitespace(self.stream)
+                self.stream.seek(-1, 1)
+                retval = read_object(self.stream, self)  # type: ignore
+
+                # override encryption is used for the /Encrypt dictionary
+                if not self._override_encryption and self._encryption is not None:
+                    # if we don't have the encryption key:
+                    if not self._encryption.is_decrypted():
+                        raise FileNotDecryptedError("File has not been decrypted")
+                    # otherwise, decrypt here...
+                    retval = cast(PdfObject, retval)
+                    retval = self._encryption.decrypt_object(
+                        retval, indirect_reference.idnum, indirect_reference.generation
+                    )
+            else:
+                logger_warning(
+                    f"Object {indirect_reference.idnum} {indirect_reference.generation} not defined.",
+                    __name__,
+                )
+                if self.strict:
+                    raise PdfReadError("Could not find object.")
         self.cache_indirect_object(
             indirect_reference.generation, indirect_reference.idnum, retval
         )
@@ -1256,6 +1364,8 @@ class PdfReader:
                 raise PdfReadError(msg)
             logger_warning(msg, __name__)
         self.resolved_objects[(generation, idnum)] = obj
+        if obj is not None:
+            obj.indirect_ref = IndirectObject(idnum, generation, self)
         return obj
 
     def cacheIndirectObject(
@@ -1290,15 +1400,19 @@ class PdfReader:
             for gen, xref_entry in self.xref.items():
                 if gen == 65535:
                     continue
-                for id in xref_entry:
+                xref_k = sorted(
+                    xref_entry.keys()
+                )  # must ensure ascendant to prevent damange
+                for id in xref_k:
                     stream.seek(xref_entry[id], 0)
                     try:
                         pid, _pgen = self.read_object_header(stream)
                     except ValueError:
                         break
                     if pid == id - self.xref_index:
-                        self._zero_xref(gen)
-                        break
+                        # fixing index item per item is required for revised PDF.
+                        self.xref[gen][pid] = self.xref[gen][id]
+                        del self.xref[gen][id]
                     # if not, then either it's just plain wrong, or the
                     # non-zero-index is actually correct
             stream.seek(loc, 0)  # return to where it was
@@ -1391,10 +1505,37 @@ class PdfReader:
                 if line[-1] in b"0123456789t":
                     stream.seek(-1, 1)
 
-                offset_b, generation_b = line[:16].split(b" ")
-                entry_type_b = line[17:18]
+                try:
+                    offset_b, generation_b = line[:16].split(b" ")
+                    entry_type_b = line[17:18]
 
-                offset, generation = int(offset_b), int(generation_b)
+                    offset, generation = int(offset_b), int(generation_b)
+                except Exception:
+                    # if something wrong occured
+                    if hasattr(stream, "getbuffer"):
+                        buf = bytes(stream.getbuffer())  # type: ignore
+                    else:
+                        p = stream.tell()
+                        stream.seek(0, 0)
+                        buf = stream.read(-1)
+                        stream.seek(p)
+
+                    f = re.search(f"{num}\\s+(\\d+)\\s+obj".encode(), buf)
+                    if f is None:
+                        logger_warning(
+                            f"entry {num} in Xref table invalid; object not found",
+                            __name__,
+                        )
+                        generation = 65535
+                        offset = -1
+                    else:
+                        logger_warning(
+                            f"entry {num} in Xref table invalid but object found",
+                            __name__,
+                        )
+                        generation = int(f.group(1))
+                        offset = f.start()
+
                 if generation not in self.xref:
                     self.xref[generation] = {}
                     self.xref_free_entry[generation] = {}
@@ -1406,7 +1547,14 @@ class PdfReader:
                     pass
                 else:
                     self.xref[generation][num] = offset
-                    self.xref_free_entry[generation][num] = entry_type_b == b"f"
+                    try:
+                        self.xref_free_entry[generation][num] = entry_type_b == b"f"
+                    except Exception:
+                        pass
+                    try:
+                        self.xref_free_entry[65535][num] = entry_type_b == b"f"
+                    except Exception:
+                        pass
                 cnt += 1
                 num += 1
             read_non_whitespace(stream)
@@ -1429,6 +1577,8 @@ class PdfReader:
             # load the xref table
             stream.seek(startxref, 0)
             x = stream.read(1)
+            if x in b"\r\n":
+                x = stream.read(1)
             if x == b"x":
                 startxref = self._read_xref(stream)
             elif xref_issue_nr:
@@ -1438,12 +1588,26 @@ class PdfReader:
                 except Exception:
                     xref_issue_nr = 0
             elif x.isdigit():
-                xrefstream = self._read_pdf15_xref_stream(stream)
-
+                try:
+                    xrefstream = self._read_pdf15_xref_stream(stream)
+                except Exception as e:
+                    if TK.ROOT in self.trailer:
+                        logger_warning(
+                            f"Previous trailer can not be read {e.args}",
+                            __name__,
+                        )
+                        break
+                    else:
+                        raise PdfReadError(f"trailer can not be read {e.args}")
                 trailer_keys = TK.ROOT, TK.ENCRYPT, TK.INFO, TK.ID
                 for key in trailer_keys:
                     if key in xrefstream and key not in self.trailer:
                         self.trailer[NameObject(key)] = xrefstream.raw_get(key)
+                if "/XRefStm" in xrefstream:
+                    p = stream.tell()
+                    stream.seek(cast(int, xrefstream["/XRefStm"]) + 1, 0)
+                    self._read_pdf15_xref_stream(stream)
+                    stream.seek(p, 0)
                 if "/Prev" in xrefstream:
                     startxref = cast(int, xrefstream["/Prev"])
                 else:
@@ -1459,6 +1623,17 @@ class PdfReader:
         for key, value in new_trailer.items():
             if key not in self.trailer:
                 self.trailer[key] = value
+        if "/XRefStm" in new_trailer:
+            p = stream.tell()
+            stream.seek(cast(int, new_trailer["/XRefStm"]) + 1, 0)
+            try:
+                self._read_pdf15_xref_stream(stream)
+            except Exception:
+                logger_warning(
+                    f"XRef object at {new_trailer['/XRefStm']} can not be read, some object may be missing",
+                    __name__,
+                )
+            stream.seek(p, 0)
         if "/Prev" in new_trailer:
             startxref = new_trailer["/Prev"]
             return startxref
@@ -1490,15 +1665,11 @@ class PdfReader:
             return startxref
         # No explicit xref table, try finding a cross-reference stream.
         stream.seek(startxref, 0)
-        found = False
         for look in range(5):
             if stream.read(1).isdigit():
                 # This is not a standard PDF, consider adding a warning
                 startxref += look
-                found = True
-                break
-        if found:
-            return startxref
+                return startxref
         # no xref table found at specified location
         if "/Root" in self.trailer and not self.strict:
             # if Root has been already found, just raise warning
@@ -1508,7 +1679,6 @@ class PdfReader:
                 return None
             except Exception:
                 raise PdfReadError("can not rebuild xref")
-            return None
         raise PdfReadError("Could not find xref table at specified location")
 
     def _read_pdf15_xref_stream(
@@ -1631,11 +1801,6 @@ class PdfReader:
                         self.xref_objStm[num] = (objstr_num, obstr_idx)
                 elif self.strict:
                     raise PdfReadError(f"Unknown xref type: {xref_type}")
-
-    def _zero_xref(self, generation: int) -> None:
-        self.xref[generation] = {
-            k - self.xref_index: v for (k, v) in list(self.xref[generation].items())
-        }
 
     def _pairs(self, array: List[int]) -> Iterable[Tuple[int, int]]:
         i = 0
@@ -1771,6 +1936,13 @@ class PdfReader:
                         es = zlib.decompress(field._data)
                         retval[tag] = es
         return retval
+
+    def _get_indirect_object(self, num: int, gen: int) -> Optional[PdfObject]:
+        """
+        used to ease development
+        equivalent to generic.IndirectObject(num,gen,self).get_object()
+        """
+        return IndirectObject(num, gen, self).get_object()
 
 
 class PdfFileReader(PdfReader):  # pragma: no cover

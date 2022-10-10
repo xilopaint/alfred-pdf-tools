@@ -33,6 +33,7 @@ import functools
 import logging
 import warnings
 from codecs import getencoder
+from dataclasses import dataclass
 from io import (
     DEFAULT_BUFFER_SIZE,
     BufferedReader,
@@ -166,9 +167,11 @@ def read_until_regex(
 
 
 def read_block_backwards(stream: StreamType, to_read: int) -> bytes:
-    """Given a stream at position X, read a block of size
-    to_read ending at position X.
-    The stream's position should be unchanged.
+    """
+    Given a stream at position X, read a block of size to_read ending at position X.
+
+    This changes the stream's position to the beginning of where the block was
+    read.
     """
     if stream.tell() < to_read:
         raise PdfStreamError("Could not read malformed PDF file")
@@ -177,8 +180,6 @@ def read_block_backwards(stream: StreamType, to_read: int) -> bytes:
     read = stream.read(to_read)
     # Seek to the start of the block we read after reading it.
     stream.seek(-to_read, SEEK_CUR)
-    if len(read) != to_read:
-        raise PdfStreamError(f"EOF: read {len(read)}, expected {to_read}?")
     return read
 
 
@@ -404,7 +405,7 @@ def rename_kwargs(  # type: ignore
         if old_term in kwargs:
             if new_term in kwargs:
                 raise TypeError(
-                    f"{func_name} received both {old_term} and {new_term} as an argument."
+                    f"{func_name} received both {old_term} and {new_term} as an argument. "
                     f"{old_term} is deprecated. Use {new_term} instead."
                 )
             kwargs[new_term] = kwargs.pop(old_term)
@@ -413,3 +414,26 @@ def rename_kwargs(  # type: ignore
                     f"{old_term} is deprecated as an argument. Use {new_term} instead"
                 )
             )
+
+
+def _human_readable_bytes(bytes: int) -> str:
+    if bytes < 10**3:
+        return f"{bytes} Byte"
+    elif bytes < 10**6:
+        return f"{bytes / 10**3:.1f} kB"
+    elif bytes < 10**9:
+        return f"{bytes / 10**6:.1f} MB"
+    else:
+        return f"{bytes / 10**9:.1f} GB"
+
+
+@dataclass
+class File:
+    name: str
+    data: bytes
+
+    def __str__(self) -> str:
+        return f"File(name={self.name}, data: {_human_readable_bytes(len(self.data))})"
+
+    def __repr__(self) -> str:
+        return f"File(name={self.name}, data: {_human_readable_bytes(len(self.data))}, hash: {hash(self.data)})"

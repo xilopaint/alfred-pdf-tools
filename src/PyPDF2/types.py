@@ -1,12 +1,12 @@
 """Helpers for working with PDF types."""
 
-from typing import List, Union
+from typing import Any, Dict, List, Optional, Union
 
 try:
     # Python 3.8+: https://peps.python.org/pep-0586
-    from typing import Literal  # type: ignore[attr-defined]
+    from typing import Literal, Protocol  # type: ignore[attr-defined]
 except ImportError:
-    from typing_extensions import Literal  # type: ignore[misc]
+    from typing_extensions import Literal, Protocol  # type: ignore[misc]
 
 try:
     # Python 3.10+: https://www.python.org/dev/peps/pep-0484/
@@ -14,14 +14,9 @@ try:
 except ImportError:
     from typing_extensions import TypeAlias
 
-from .generic import (
-    ArrayObject,
-    Destination,
-    NameObject,
-    NullObject,
-    NumberObject,
-    OutlineItem,
-)
+from .generic._base import NameObject, NullObject, NumberObject
+from .generic._data_structures import ArrayObject, Destination
+from .generic._outline import OutlineItem
 
 BorderArrayType: TypeAlias = List[Union[NameObject, NumberObject, ArrayObject]]
 OutlineItemType: TypeAlias = Union[OutlineItem, Destination]
@@ -59,3 +54,24 @@ PagemodeType: TypeAlias = Literal[
     "/UseOC",
     "/UseAttachments",
 ]
+
+
+class PdfReaderProtocol(Protocol):  # pragma: no cover
+    @property
+    def pdf_header(self) -> str:
+        ...
+
+    @property
+    def strict(self) -> bool:
+        ...
+
+    @property
+    def xref(self) -> Dict[int, Dict[int, Any]]:
+        ...
+
+    @property
+    def pages(self) -> List[Any]:
+        ...
+
+    def get_object(self, indirect_reference: Any) -> Optional[Any]:
+        ...
