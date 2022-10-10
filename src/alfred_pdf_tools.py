@@ -45,7 +45,7 @@ from math import floor
 from pathlib import Path
 
 from docopt import docopt
-from PyPDF2 import PdfReader, PdfWriter, PdfMerger, PageRange, PageObject, errors
+from PyPDF2 import PdfReader, PdfWriter, PageRange, PageObject, errors
 
 from workflow import Workflow, Variables, notify, ICON_ERROR
 
@@ -296,13 +296,13 @@ def merge(out_filename, pdf_paths):
     if not parent_paths[1:] == parent_paths[:-1]:
         raise MultiplePathsError  # pragma: no cover
 
-    merger = PdfMerger()
+    writer = PdfWriter()
 
     for pdf_path in pdf_paths:
         reader = PdfReader(pdf_path)
-        merger.append(reader)
+        writer.append(reader)
 
-    merger.write(f"{parent_paths[0]}/{out_filename}.pdf")
+    writer.write(f"{parent_paths[0]}/{out_filename}.pdf")
 
     v = Variables(pdf_paths)
     print(json.dumps(v.obj))
@@ -327,9 +327,9 @@ def split_count(max_pages, abs_path, suffix):
     page_ranges = [PageRange(slice(n, n + pg_cnt)) for n in range(0, num_pages, pg_cnt)]
 
     for n, page_range in enumerate(page_ranges, 1):
-        merger = PdfMerger()
-        merger.append(reader, pages=page_range)
-        merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {n}].pdf")
+        writer = PdfWriter()
+        writer.append(reader, pages=page_range)
+        writer.write(f"{Path(abs_path).with_suffix('')} [{suffix} {n}].pdf")
 
 
 @handle_exceptions
@@ -382,9 +382,9 @@ def split_size(max_size, abs_path, suffix):
         slices = [PageRange(slice(n[0][0], n[-1][0] + 1)) for n in pg_chunks]
 
         for n, slice__ in enumerate(slices, 1):
-            merger = PdfMerger()
-            merger.append(reader, pages=slice__)
-            merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {n}].pdf")
+            writer = PdfWriter()
+            writer.append(reader, pages=slice__)
+            writer.write(f"{Path(abs_path).with_suffix('')} [{suffix} {n}].pdf")
     else:
         while not stop > pg_cnt:
             out_file_name = (
@@ -398,23 +398,23 @@ def split_size(max_size, abs_path, suffix):
                 if stop != pg_cnt:
                     stop += 1
                 else:
-                    merger = PdfMerger()
-                    merger.append(reader, pages=(start, stop))
-                    merger.write(out_file_name)
+                    writer = PdfWriter()
+                    writer.append(reader, pages=(start, stop))
+                    writer.write(out_file_name)
                     break
             else:
                 if chunk_pg_cnt == 1:
-                    merger = PdfMerger()
-                    merger.append(reader, pages=(start, stop))
-                    merger.write(out_file_name)
+                    writer = PdfWriter()
+                    writer.append(reader, pages=(start, stop))
+                    writer.write(out_file_name)
                     start = stop
                     stop += 1
                     pg_num += 1
                 else:
                     stop -= 1
-                    merger = PdfMerger()
-                    merger.append(reader, pages=(start, stop))
-                    merger.write(out_file_name)
+                    writer = PdfWriter()
+                    writer.append(reader, pages=(start, stop))
+                    writer.write(out_file_name)
                     chunk_size = os.path.getsize(out_file_name)
                     next_page = pg_sizes[stop : stop + 1][0]
 
@@ -470,16 +470,16 @@ def slice_(query, abs_path, is_single, suffix):
     ]
 
     if is_single:
-        merger = PdfMerger()
+        writer = PdfWriter()
 
         for slice__ in slices:
-            merger.append(reader, pages=slice__)
-        merger.write(f"{Path(abs_path).with_suffix('')} [sliced].pdf")
+            writer.append(reader, pages=slice__)
+        writer.write(f"{Path(abs_path).with_suffix('')} [sliced].pdf")
     else:
         for part_num, slice__ in enumerate(slices, 1):
-            merger = PdfMerger()
-            merger.append(reader, pages=slice__)
-            merger.write(f"{Path(abs_path).with_suffix('')} [{suffix} {part_num}].pdf")
+            writer = PdfWriter()
+            writer.append(reader, pages=slice__)
+            writer.write(f"{Path(abs_path).with_suffix('')} [{suffix} {part_num}].pdf")
 
 
 @handle_exceptions
