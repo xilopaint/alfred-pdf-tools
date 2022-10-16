@@ -567,8 +567,8 @@ if __name__ == "__main__":  # pragma: nocover
         show_help(1)
 
     action = argv[1]
-    repo = argv[2]
-    version = argv[3]
+    repo = argv[2]  # pylint: disable=invalid-name
+    version = argv[3]  # pylint: disable=invalid-name
 
     try:
         if action == "check":
