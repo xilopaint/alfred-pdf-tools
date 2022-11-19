@@ -35,19 +35,18 @@ Options:
 """
 import json
 import os
-import sys
-import tempfile
 import re
 import shlex
 import subprocess
+import sys
+import tempfile
 from copy import copy
 from math import floor
 from pathlib import Path
 
 from docopt import docopt
-from PyPDF2 import PdfReader, PdfWriter, PageRange, PageObject, errors
-
-from workflow import Workflow, Variables, notify, ICON_ERROR
+from PyPDF2 import PageObject, PageRange, PdfReader, PdfWriter, errors
+from workflow import ICON_ERROR, Variables, Workflow, notify
 
 UPDATE_SETTINGS = {"github_slug": "xilopaint/alfred-pdf-tools"}
 HELP_URL = "https://github.com/xilopaint/alfred-pdf-tools"

@@ -16,7 +16,6 @@ from collections import namedtuple
 from contextlib import contextmanager
 from threading import Event
 
-
 # JXA scripts to call Alfred's API via the Scripting Bridge
 # {app} is automatically replaced with "Alfred 3" or
 # "com.runningwithcrayons.Alfred" depending on version.
@@ -429,8 +428,9 @@ class LockFile:
                 continue
 
             # Create in append mode so we don't lose any contents
+            # pylint: disable=consider-using-with
             if self._lockfile is None:
-                self._lockfile = open(self.lockfile, "a", encoding="utf-8")  # pylint: disable=consider-using-with
+                self._lockfile = open(self.lockfile, "a", encoding="utf-8")
 
             # Try to acquire the lock
             try:

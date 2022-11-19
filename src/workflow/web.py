@@ -9,9 +9,9 @@ import secrets
 import socket
 import string
 import unicodedata
-import urllib.request
-import urllib.parse
 import urllib.error
+import urllib.parse
+import urllib.request
 import zlib
 
 # pylint: disable=consider-using-with

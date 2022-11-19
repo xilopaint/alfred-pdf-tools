@@ -30,8 +30,7 @@ from copy import deepcopy
 from typing import Optional
 from uuid import uuid4
 
-from .util import atomic_writer, LockFile, uninterruptible, set_config
-
+from .util import LockFile, atomic_writer, set_config, uninterruptible
 
 #: Sentinel for properties that haven't been set yet (that might
 #: correctly have the value ``None``)

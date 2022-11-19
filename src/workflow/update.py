@@ -22,7 +22,6 @@ from itertools import zip_longest
 
 from . import Workflow, web
 
-
 RELEASES_BASE = "https://api.github.com/repos/{}/releases"
 match_workflow = re.compile(r"\.alfred(\d+)?workflow$").search
 

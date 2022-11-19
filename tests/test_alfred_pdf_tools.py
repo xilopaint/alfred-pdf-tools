@@ -8,20 +8,19 @@ from unittest.mock import patch
 
 sys.path.append("./src")
 
-from PyPDF2 import PdfReader
-
 from alfred_pdf_tools import (
-    optimize,
+    crop,
+    decrypt,
     deskew,
     encrypt,
-    decrypt,
     merge,
+    optimize,
+    scale,
+    slice_,
     split_count,
     split_size,
-    slice_,
-    crop,
-    scale,
 )
+from PyPDF2 import PdfReader
 
 
 class AlfredPdfToolsTests(unittest.TestCase):
