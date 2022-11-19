@@ -983,7 +983,7 @@ python3 alfred_pdf_tools.py --progress</string>
 						<key>matchmode</key>
 						<integer>4</integer>
 						<key>matchstring</key>
-						<string>pip install pycryptodome.*</string>
+						<string>pip3 install pycryptodome.*</string>
 						<key>outputlabel</key>
 						<string></string>
 						<key>uid</key>
@@ -2232,6 +2232,8 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 			<string>suffix</string>
 		</dict>
 	</array>
+	<key>variablesdontexport</key>
+	<array/>
 	<key>version</key>
 	<string>4.2</string>
 	<key>webaddress</key>

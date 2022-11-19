@@ -265,16 +265,14 @@ def decrypt(pwd, pdf_paths):
         except errors.PdfReadError:
             notify.notify("Alfred PDF Tools", "The entered password is not valid.")
             sys.exit(1)
+        except errors.DependencyError:  # pragma: no cover
+            print(f"pip3 install pycryptodome -t '{Path(__file__).parent}'", end="")
+            sys.exit(1)
 
         out_file = f"{Path(pdf_path).with_suffix('')} [decrypted].pdf"
 
-        try:
-            with open(out_file, "wb") as f:
-                writer.write(f)
-        except errors.DependencyError:  # pragma: no cover
-            Path(out_file).unlink(missing_ok=True)
-            print(f"pip install pycryptodome -t '{Path(__file__).parent}'", end="")
-            sys.exit(1)
+        with open(out_file, "wb") as f:
+            writer.write(f)
 
         notify.notify("Alfred PDF Tools", "Decryption successfully completed.")
 
