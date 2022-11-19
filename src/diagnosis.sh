@@ -21,6 +21,14 @@ else
 fi
 
 echo
+echo '### Rosetta installation status'
+if [[ $(/usr/bin/pgrep oahd) ]]; then
+    printf "Installed\n"
+else
+    printf "Not Installed\n"
+fi
+
+echo
 echo '### macOS version'
 /usr/bin/sw_vers -productVersion
 
