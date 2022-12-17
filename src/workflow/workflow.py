@@ -1761,52 +1761,6 @@ class Workflow:
 
         self._data_serializer = serializer_name
 
-    def stored_data(self, name):
-        """Retrieve data from data directory.
-
-        Returns ``None`` if there are no data stored under ``name``.
-
-        :param name: name of datastore
-
-        """
-        metadata_path = self.datafile(f".{name}.alfred-workflow")
-
-        if not os.path.exists(metadata_path):
-            self.logger.debug("no data stored for `%s`", name)
-            return None
-
-        with open(metadata_path, "r", encoding="utf-8") as file_obj:
-            serializer_name = file_obj.read().strip()
-
-        serializer = manager.serializer(serializer_name)
-
-        if serializer is None:
-            raise ValueError(
-                f"Unknown serializer `{serializer_name}`. "
-                "Register a corresponding serializer with `manager.register()`"
-                " to load this data."
-            )
-
-        self.logger.debug("data `%s` stored as `%s`", name, serializer_name)
-
-        filename = f"{name}.{serializer_name}"
-        data_path = self.datafile(filename)
-
-        if not os.path.exists(data_path):
-            self.logger.debug("no data stored: %s", name)
-
-            if os.path.exists(metadata_path):
-                os.unlink(metadata_path)
-
-            return None
-
-        with open(data_path, "rb") as file_obj:
-            data = serializer.load(file_obj)
-
-        self.logger.debug("stored data loaded: %s", data_path)
-
-        return data
-
     def store_data(self, name, data, serializer=None):
         """Save data to data directory.
 
@@ -1877,22 +1831,138 @@ class Workflow:
 
         self.logger.debug("saved data: %s", data_path)
 
-    def cached_data(self, name, data_func=None, max_age=60):
+    def stored_data(self, name):
+        """Retrieve data from data directory.
+
+        Returns ``None`` if there are no data stored under ``name``.
+
+        :param name: name of datastore
+
+        """
+        metadata_path = self.datafile(f".{name}.alfred-workflow")
+
+        if not os.path.exists(metadata_path):
+            self.logger.debug("no data stored for `%s`", name)
+            return None
+
+        with open(metadata_path, "r", encoding="utf-8") as file_obj:
+            serializer_name = file_obj.read().strip()
+
+        serializer = manager.serializer(serializer_name)
+
+        if serializer is None:
+            raise ValueError(
+                f"Unknown serializer `{serializer_name}`. "
+                "Register a corresponding serializer with `manager.register()`"
+                " to load this data."
+            )
+
+        self.logger.debug("data `%s` stored as `%s`", name, serializer_name)
+
+        filename = f"{name}.{serializer_name}"
+        data_path = self.datafile(filename)
+
+        if not os.path.exists(data_path):
+            self.logger.debug("no data stored: %s", name)
+
+            if os.path.exists(metadata_path):
+                os.unlink(metadata_path)
+
+            return None
+
+        with open(data_path, "rb") as file_obj:
+            data = serializer.load(file_obj)
+
+        self.logger.debug("stored data loaded: %s", data_path)
+
+        return data
+
+    @property
+    def _session_prefix(self):
+        """Filename prefix for current session."""
+        return f"_wfsess-{self.session_id}-"
+
+    def _mk_session_name(self, name):
+        """New cache name/key based on session ID."""
+        return self._session_prefix + name
+
+    def clear_session_cache(self, current=False):
+        """Remove session data from the cache.
+        .. versionadded:: 1.25
+        .. versionchanged:: 1.27
+        By default, data belonging to the current session won't be
+        deleted. Set ``current=True`` to also clear current session.
+        Args:
+            current (bool, optional): If ``True``, also remove data for
+                current session.
+        """
+
+        def _is_session_file(filename):
+            if current:
+                return filename.startswith("_wfsess-")
+            return filename.startswith("_wfsess-") and not filename.startswith(
+                self._session_prefix
+            )
+
+        self.clear_cache(_is_session_file)
+
+    def cache_data(self, name, data, session=False):
+        """Save ``data`` to cache under ``name``.
+
+        If ``data`` is ``None``, the corresponding cache file will be
+        deleted.
+
+        If ``session`` is ``True``, then ``name`` is prefixed
+        with :attr:`session_id`.
+
+        :param name: name of datastore
+        :param data: data to store. This may be any object supported by
+                the cache serializer
+        :param session: Whether to scope the cache to the current session.
+
+        """
+        if session:
+            name = self._mk_session_name(name)
+
+        serializer = manager.serializer(self.cache_serializer)
+
+        cache_path = self.cachefile(f"{name}.{self.cache_serializer}")
+
+        if data is None:
+            if os.path.exists(cache_path):
+                os.unlink(cache_path)
+                self.logger.debug("deleted cache file: %s", cache_path)
+
+            return
+
+        with serializer.atomic_writer(cache_path, "w") as file_obj:
+            serializer.dump(data, file_obj)
+
+        self.logger.debug("cached data: %s", cache_path)
+
+    def cached_data(self, name, data_func=None, max_age=60, session=False):
         """Return cached data if younger than ``max_age`` seconds.
 
         Retrieve data from cache or re-generate and re-cache data if
         stale/non-existant. If ``max_age`` is 0, return cached data no
         matter how old.
 
+        If ``session`` is ``True``, then ``name`` is prefixed
+        with :attr:`session_id`.
+
         :param name: name of datastore
         :param data_func: function to (re-)generate data.
         :type data_func: ``callable``
         :param max_age: maximum age of cached data in seconds
         :type max_age: ``int``
+
         :returns: cached data, return value of ``data_func`` or ``None``
             if ``data_func`` is not set
 
         """
+        if session:
+            name = self._mk_session_name(name)
+
         serializer = manager.serializer(self.cache_serializer)
 
         cache_path = self.cachefile(f"{name}.{self.cache_serializer}")
@@ -1910,33 +1980,6 @@ class Workflow:
         self.cache_data(name, data)
 
         return data
-
-    def cache_data(self, name, data):
-        """Save ``data`` to cache under ``name``.
-
-        If ``data`` is ``None``, the corresponding cache file will be
-        deleted.
-
-        :param name: name of datastore
-        :param data: data to store. This may be any object supported by
-                the cache serializer
-
-        """
-        serializer = manager.serializer(self.cache_serializer)
-
-        cache_path = self.cachefile(f"{name}.{self.cache_serializer}")
-
-        if data is None:
-            if os.path.exists(cache_path):
-                os.unlink(cache_path)
-                self.logger.debug("deleted cache file: %s", cache_path)
-
-            return
-
-        with serializer.atomic_writer(cache_path, "w") as file_obj:
-            serializer.dump(data, file_obj)
-
-        self.logger.debug("cached data: %s", cache_path)
 
     def cached_data_fresh(self, name, max_age):
         """Whether cache `name` is less than `max_age` seconds old.
