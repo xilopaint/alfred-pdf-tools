@@ -26,8 +26,7 @@ ignore=CVS
 # regex matches against paths and can be in Posix or Windows format.
 ignore-paths=.*typing_extensions.py,
              .*docopt.py,
-             .*src/PyPDF2,
-             .*src/send2trash
+             .*src/pypdf
 
 # Files or directories matching the regex patterns are skipped. The regex
 # matches against base names, not paths. The default value ignores emacs file
