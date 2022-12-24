@@ -45,7 +45,7 @@ from math import floor
 from pathlib import Path
 
 from docopt import docopt
-from PyPDF2 import PageObject, PageRange, PdfReader, PdfWriter, errors
+from pypdf import PageObject, PageRange, PdfReader, PdfWriter, errors
 from workflow import ICON_ERROR, Variables, Workflow, notify
 
 HELP_URL = "https://github.com/xilopaint/alfred-pdf-tools"

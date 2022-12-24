@@ -30,13 +30,14 @@ import decimal
 import hashlib
 import re
 from binascii import unhexlify
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union, cast
 
 from .._codecs import _pdfdoc_encoding_rev
+from .._protocols import PdfObjectProtocol, PdfWriterProtocol
 from .._utils import (
     StreamType,
     b_,
-    deprecate_with_replacement,
+    deprecation_with_replacement,
     hex_str,
     hexencode,
     logger_warning,
@@ -50,9 +51,10 @@ __author__ = "Mathieu Fenniak"
 __author_email__ = "biziqe@mathieu.fenniak.net"
 
 
-class PdfObject:
+class PdfObject(PdfObjectProtocol):
     # function for calculating a hash value
     hash_func: Callable[..., "hashlib._Hash"] = hashlib.sha1
+    indirect_reference: Optional["IndirectObject"]
 
     def hash_value_data(self) -> bytes:
         return ("%s" % self).encode()
@@ -68,32 +70,48 @@ class PdfObject:
 
     def clone(
         self,
-        pdf_dest: Any,
+        pdf_dest: PdfWriterProtocol,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
     ) -> "PdfObject":
-        """clone object into pdf_dest"""
+        """
+        clone object into pdf_dest (PdfWriterProtocol which is an interface for PdfWriter)
+        force_duplicate: in standard if the object has been already cloned and reference,
+                         the copy is returned; when force_duplicate == True, a new copy is always performed
+        ignore_fields : list/tuple of Fields names (for dictionaries that will be ignored during cloning (apply also to childs duplication)
+        in standard, clone function call _reference_clone (see _reference)
+        """
         raise Exception("clone PdfObject")
 
-    def _reference_clone(self, clone: Any, pdf_dest: Any) -> "PdfObject":
+    def _reference_clone(
+        self, clone: Any, pdf_dest: PdfWriterProtocol
+    ) -> PdfObjectProtocol:
+        """
+        reference the object within the _objects of pdf_dest only if
+        indirect_reference attribute exists (which means the objects
+        was already identified in xref/xobjstm)
+        if object has been already referenced do nothing
+        """
         try:
-            if clone.indirect_ref.pdf == pdf_dest:
+            if clone.indirect_reference.pdf == pdf_dest:
                 return clone
         except Exception:
             pass
-        if hasattr(self, "indirect_ref"):
-            ind = self.indirect_ref
+        if hasattr(self, "indirect_reference"):
+            ind = self.indirect_reference
             i = len(pdf_dest._objects) + 1
             if ind is not None:
                 if id(ind.pdf) not in pdf_dest._id_translated:
                     pdf_dest._id_translated[id(ind.pdf)] = {}
                 if ind.idnum in pdf_dest._id_translated[id(ind.pdf)]:
-                    return pdf_dest.get_object(
+                    obj = pdf_dest.get_object(
                         pdf_dest._id_translated[id(ind.pdf)][ind.idnum]
                     )
+                    assert obj is not None
+                    return obj
                 pdf_dest._id_translated[id(ind.pdf)][ind.idnum] = i
             pdf_dest._objects.append(clone)
-            clone.indirect_ref = IndirectObject(i, 0, pdf_dest)
+            clone.indirect_reference = IndirectObject(i, 0, pdf_dest)
         return clone
 
     def get_object(self) -> Optional["PdfObject"]:
@@ -101,7 +119,7 @@ class PdfObject:
         return self
 
     def getObject(self) -> Optional["PdfObject"]:  # pragma: no cover
-        deprecate_with_replacement("getObject", "get_object")
+        deprecation_with_replacement("getObject", "get_object", "3.0.0")
         return self.get_object()
 
     def write_to_stream(
@@ -113,14 +131,12 @@ class PdfObject:
 class NullObject(PdfObject):
     def clone(
         self,
-        pdf_dest: Any,
+        pdf_dest: PdfWriterProtocol,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
     ) -> "NullObject":
         """clone object into pdf_dest"""
-        return self._reference_clone(NullObject(), pdf_dest)
-
-        return self._reference_clone(NullObject(), pdf_dest)
+        return cast("NullObject", self._reference_clone(NullObject(), pdf_dest))
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -137,7 +153,7 @@ class NullObject(PdfObject):
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # pragma: no cover
-        deprecate_with_replacement("writeToStream", "write_to_stream")
+        deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
         self.write_to_stream(stream, encryption_key)
 
     def __repr__(self) -> str:
@@ -145,7 +161,7 @@ class NullObject(PdfObject):
 
     @staticmethod
     def readFromStream(stream: StreamType) -> "NullObject":  # pragma: no cover
-        deprecate_with_replacement("readFromStream", "read_from_stream")
+        deprecation_with_replacement("readFromStream", "read_from_stream", "3.0.0")
         return NullObject.read_from_stream(stream)
 
 
@@ -155,12 +171,14 @@ class BooleanObject(PdfObject):
 
     def clone(
         self,
-        pdf_dest: Any,
+        pdf_dest: PdfWriterProtocol,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
     ) -> "BooleanObject":
         """clone object into pdf_dest"""
-        return self._reference_clone(BooleanObject(self.value), pdf_dest)
+        return cast(
+            "BooleanObject", self._reference_clone(BooleanObject(self.value), pdf_dest)
+        )
 
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, BooleanObject):
@@ -184,7 +202,7 @@ class BooleanObject(PdfObject):
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # pragma: no cover
-        deprecate_with_replacement("writeToStream", "write_to_stream")
+        deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
         self.write_to_stream(stream, encryption_key)
 
     @staticmethod
@@ -200,7 +218,7 @@ class BooleanObject(PdfObject):
 
     @staticmethod
     def readFromStream(stream: StreamType) -> "BooleanObject":  # pragma: no cover
-        deprecate_with_replacement("readFromStream", "read_from_stream")
+        deprecation_with_replacement("readFromStream", "read_from_stream", "3.0.0")
         return BooleanObject.read_from_stream(stream)
 
 
@@ -212,10 +230,10 @@ class IndirectObject(PdfObject):
 
     def clone(
         self,
-        pdf_dest: Any,
+        pdf_dest: PdfWriterProtocol,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
-    ) -> "IndirectObject":  # PPzz
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+    ) -> "IndirectObject":
         """clone object into pdf_dest"""
         if self.pdf == pdf_dest and not force_duplicate:
             # Already duplicated and no extra duplication required
@@ -226,11 +244,15 @@ class IndirectObject(PdfObject):
         if not force_duplicate and self.idnum in pdf_dest._id_translated[id(self.pdf)]:
             dup = pdf_dest.get_object(pdf_dest._id_translated[id(self.pdf)][self.idnum])
         else:
-            dup = self.get_object().clone(pdf_dest, force_duplicate, ignore_fields)
-        return dup.indirect_ref
+            obj = self.get_object()
+            assert obj is not None
+            dup = obj.clone(pdf_dest, force_duplicate, ignore_fields)
+        assert dup is not None
+        assert dup.indirect_reference is not None
+        return dup.indirect_reference
 
     @property
-    def indirect_ref(self):
+    def indirect_reference(self) -> "IndirectObject":  # type: ignore[override]
         return self
 
     def get_object(self) -> Optional["PdfObject"]:
@@ -262,7 +284,7 @@ class IndirectObject(PdfObject):
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # pragma: no cover
-        deprecate_with_replacement("writeToStream", "write_to_stream")
+        deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
         self.write_to_stream(stream, encryption_key)
 
     @staticmethod
@@ -296,7 +318,7 @@ class IndirectObject(PdfObject):
     def readFromStream(
         stream: StreamType, pdf: Any  # PdfReader
     ) -> "IndirectObject":  # pragma: no cover
-        deprecate_with_replacement("readFromStream", "read_from_stream")
+        deprecation_with_replacement("readFromStream", "read_from_stream", "3.0.0")
         return IndirectObject.read_from_stream(stream, pdf)
 
 
@@ -316,10 +338,10 @@ class FloatObject(decimal.Decimal, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
     ) -> "FloatObject":
         """clone object into pdf_dest"""
-        return self._reference_clone(FloatObject(self), pdf_dest)
+        return cast("FloatObject", self._reference_clone(FloatObject(self), pdf_dest))
 
     def __repr__(self) -> str:
         if self == self.to_integral():
@@ -341,7 +363,7 @@ class FloatObject(decimal.Decimal, PdfObject):
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # pragma: no cover
-        deprecate_with_replacement("writeToStream", "write_to_stream")
+        deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
         self.write_to_stream(stream, encryption_key)
 
 
@@ -359,10 +381,10 @@ class NumberObject(int, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
-    ) -> "FloatObject":
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+    ) -> "NumberObject":
         """clone object into pdf_dest"""
-        return self._reference_clone(NumberObject(self), pdf_dest)
+        return cast("NumberObject", self._reference_clone(NumberObject(self), pdf_dest))
 
     def as_numeric(self) -> int:
         return int(repr(self).encode("utf8"))
@@ -375,7 +397,7 @@ class NumberObject(int, PdfObject):
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # pragma: no cover
-        deprecate_with_replacement("writeToStream", "write_to_stream")
+        deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
         self.write_to_stream(stream, encryption_key)
 
     @staticmethod
@@ -389,7 +411,7 @@ class NumberObject(int, PdfObject):
     def readFromStream(
         stream: StreamType,
     ) -> Union["NumberObject", "FloatObject"]:  # pragma: no cover
-        deprecate_with_replacement("readFromStream", "read_from_stream")
+        deprecation_with_replacement("readFromStream", "read_from_stream", "3.0.0")
         return NumberObject.read_from_stream(stream)
 
 
@@ -405,10 +427,13 @@ class ByteStringObject(bytes, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
     ) -> "ByteStringObject":
         """clone object into pdf_dest"""
-        return self._reference_clone(ByteStringObject(bytes(self)), pdf_dest)
+        return cast(
+            "ByteStringObject",
+            self._reference_clone(ByteStringObject(bytes(self)), pdf_dest),
+        )
 
     @property
     def original_bytes(self) -> bytes:
@@ -430,7 +455,7 @@ class ByteStringObject(bytes, PdfObject):
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # pragma: no cover
-        deprecate_with_replacement("writeToStream", "write_to_stream")
+        deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
         self.write_to_stream(stream, encryption_key)
 
 
@@ -446,13 +471,13 @@ class TextStringObject(str, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
-    ) -> ByteStringObject:
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+    ) -> "TextStringObject":
         """clone object into pdf_dest"""
         obj = TextStringObject(self)
         obj.autodetect_pdfdocencoding = self.autodetect_pdfdocencoding
         obj.autodetect_utf16 = self.autodetect_utf16
-        return self._reference_clone(obj, pdf_dest)
+        return cast("TextStringObject", self._reference_clone(obj, pdf_dest))
 
     autodetect_pdfdocencoding = False
     autodetect_utf16 = False
@@ -512,7 +537,7 @@ class TextStringObject(str, PdfObject):
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # pragma: no cover
-        deprecate_with_replacement("writeToStream", "write_to_stream")
+        deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
         self.write_to_stream(stream, encryption_key)
 
 
@@ -531,10 +556,10 @@ class NameObject(str, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str], List[str], None] = None,
+        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
     ) -> "NameObject":
         """clone object into pdf_dest"""
-        return self._reference_clone(NameObject(self), pdf_dest)
+        return cast("NameObject", self._reference_clone(NameObject(self), pdf_dest))
 
     def write_to_stream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
@@ -544,7 +569,7 @@ class NameObject(str, PdfObject):
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # pragma: no cover
-        deprecate_with_replacement("writeToStream", "write_to_stream")
+        deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
         self.write_to_stream(stream, encryption_key)
 
     def renumber(self) -> bytes:
@@ -607,7 +632,7 @@ class NameObject(str, PdfObject):
     def readFromStream(
         stream: StreamType, pdf: Any  # PdfReader
     ) -> "NameObject":  # pragma: no cover
-        deprecate_with_replacement("readFromStream", "read_from_stream")
+        deprecation_with_replacement("readFromStream", "read_from_stream", "3.0.0")
         return NameObject.read_from_stream(stream, pdf)
 
 

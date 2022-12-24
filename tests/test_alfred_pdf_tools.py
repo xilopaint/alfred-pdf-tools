@@ -20,7 +20,7 @@ from alfred_pdf_tools import (
     split_count,
     split_size,
 )
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 
 
 class AlfredPdfToolsTests(unittest.TestCase):
