@@ -857,7 +857,6 @@ class Variables(dict):
 
     def __init__(self, arg=None, **variables):
         """Create a new `Variables` object."""
-        # print("foo")
         self.arg = arg
         self.config = {}
         super().__init__(**variables)
@@ -882,6 +881,21 @@ class Variables(dict):
             obj_["arg"] = self.arg
 
         return {"alfredworkflow": obj_}
+
+    def __str__(self):
+        """Convert to ``alfredworkflow`` JSON object.
+
+        Returns:
+            unicode: ``alfredworkflow`` JSON object
+
+        """
+        if not self and not self.config:
+            if not self.arg:
+                return ""
+            if isinstance(self.arg, str):
+                return self.arg
+
+        return json.dumps(self.obj)
 
 
 class Modifier:
@@ -2170,7 +2184,7 @@ class Workflow:
                 )
 
         # sort on keys, then discard the keys
-        results.sort(reverse=ascending)
+        results.sort(key=lambda x: x[0], reverse=ascending)
         results = [result[1] for result in results]
 
         if min_score:
