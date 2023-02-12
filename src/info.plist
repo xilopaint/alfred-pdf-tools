@@ -361,18 +361,7 @@
 			</dict>
 		</array>
 		<key>AA6B54AF-4B81-4DA1-85D2-C766121A6094</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>F6DE372D-1629-4B02-8C1F-4051F5FAE462</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
+		<array/>
 		<key>AC5203DA-AD43-4637-BCAC-3301CBB679D1</key>
 		<array>
 			<dict>
@@ -508,21 +497,6 @@
 				<false/>
 			</dict>
 		</array>
-		<key>E8DDF600-7C9D-4081-91E3-4AA86C2FA79C</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>8A4C6DD3-706E-4FA2-8AD7-B3E8C67B6F88</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>sourceoutputuid</key>
-				<string>_button1</string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>F2F788C0-6F9B-4AD0-A281-1B07D497BEAA</key>
 		<array>
 			<dict>
@@ -532,21 +506,6 @@
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>F6DE372D-1629-4B02-8C1F-4051F5FAE462</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>E8DDF600-7C9D-4081-91E3-4AA86C2FA79C</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>sourceoutputuid</key>
-				<string>D0113E33-C9FD-4031-AF30-E48FDF9D2600</string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
@@ -879,21 +838,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>escaping</key>
-				<integer>0</integer>
-				<key>script</key>
-				<string>{query}</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.terminalcommand</string>
-			<key>uid</key>
-			<string>8A4C6DD3-706E-4FA2-8AD7-B3E8C67B6F88</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>acceptsmulti</key>
 				<integer>1</integer>
 				<key>filetypes</key>
@@ -932,27 +876,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>button1</key>
-				<string>Install</string>
-				<key>button2</key>
-				<string>Cancel</string>
-				<key>button3</key>
-				<string></string>
-				<key>description</key>
-				<string>Alfred PDF Tools requires additional components to support AES decryption. The installation will take place in the workflow folder and your system will not be affected.</string>
-				<key>title</key>
-				<string>Install additional required components?</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.dialog</string>
-			<key>uid</key>
-			<string>E8DDF600-7C9D-4081-91E3-4AA86C2FA79C</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>passthroughargument</key>
@@ -967,38 +890,6 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>06552DE1-94A4-4A71-8CB8-BDE51B933214</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>conditions</key>
-				<array>
-					<dict>
-						<key>inputstring</key>
-						<string></string>
-						<key>matchcasesensitive</key>
-						<true/>
-						<key>matchmode</key>
-						<integer>4</integer>
-						<key>matchstring</key>
-						<string>pip3 install pycryptodome.*</string>
-						<key>outputlabel</key>
-						<string></string>
-						<key>uid</key>
-						<string>D0113E33-C9FD-4031-AF30-E48FDF9D2600</string>
-					</dict>
-				</array>
-				<key>elselabel</key>
-				<string>else</string>
-				<key>hideelse</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.conditional</string>
-			<key>uid</key>
-			<string>F6DE372D-1629-4B02-8C1F-4051F5FAE462</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1955,15 +1846,6 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 			<key>ypos</key>
 			<real>1540</real>
 		</dict>
-		<key>8A4C6DD3-706E-4FA2-8AD7-B3E8C67B6F88</key>
-		<dict>
-			<key>note</key>
-			<string>Install PyCryptodome</string>
-			<key>xpos</key>
-			<real>770</real>
-			<key>ypos</key>
-			<real>550</real>
-		</dict>
 		<key>8AF0A682-F978-4C78-B309-50EB5813CDC2</key>
 		<dict>
 			<key>colorindex</key>
@@ -2179,26 +2061,12 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 			<key>ypos</key>
 			<real>550</real>
 		</dict>
-		<key>E8DDF600-7C9D-4081-91E3-4AA86C2FA79C</key>
-		<dict>
-			<key>xpos</key>
-			<real>675</real>
-			<key>ypos</key>
-			<real>570</real>
-		</dict>
 		<key>F2F788C0-6F9B-4AD0-A281-1B07D497BEAA</key>
 		<dict>
 			<key>xpos</key>
 			<real>395</real>
 			<key>ypos</key>
 			<real>1710</real>
-		</dict>
-		<key>F6DE372D-1629-4B02-8C1F-4051F5FAE462</key>
-		<dict>
-			<key>xpos</key>
-			<real>610</real>
-			<key>ypos</key>
-			<real>580</real>
 		</dict>
 		<key>FF741E87-BD73-4D61-A342-32DF0B7CBDEC</key>
 		<dict>

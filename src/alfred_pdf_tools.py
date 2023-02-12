@@ -265,7 +265,10 @@ def decrypt(pwd, pdf_paths):
             notify.notify("Alfred PDF Tools", "The entered password is not valid.")
             sys.exit(1)
         except errors.DependencyError:  # pragma: no cover
-            print(f"pip3 install pycryptodome -t '{Path(__file__).parent}'", end="")
+            notify.notify(
+                "Alfred PDF Tools",
+                "The input PDF file is protected by an unsupported encryption method and cannot be decrypted.",
+            )
             sys.exit(1)
 
         out_file = f"{Path(pdf_path).with_suffix('')} [decrypted].pdf"
