@@ -147,12 +147,12 @@ class Download:
     @property
     def dict(self):
         """Convert `Download` to `dict`."""
-        return dict(
-            url=self.url,
-            filename=self.filename,
-            version=str(self.version),
-            prerelease=self.prerelease,
-        )
+        return {
+            "url": self.url,
+            "filename": self.filename,
+            "version": str(self.version),
+            "prerelease": self.prerelease,
+        }
 
     def __str__(self):
         """Format `Download` for printing."""
@@ -565,7 +565,7 @@ if __name__ == "__main__":  # pragma: nocover
     if len(argv) != 4:
         show_help(1)
 
-    action = argv[1]
+    action = argv[1]  # pylint: disable=invalid-name
     repo = argv[2]  # pylint: disable=invalid-name
     version = argv[3]  # pylint: disable=invalid-name
 
