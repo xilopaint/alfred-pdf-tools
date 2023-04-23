@@ -18,9 +18,8 @@ from typing import (
     Union,
     cast,
 )
-from xml.dom.minidom import Document
+from xml.dom.minidom import Document, parseString
 from xml.dom.minidom import Element as XmlElement
-from xml.dom.minidom import parseString
 from xml.parsers.expat import ExpatError
 
 from ._utils import (
@@ -219,7 +218,7 @@ class XmpInformation(PdfObject):
         self.stream = stream
         try:
             data = self.stream.get_data()
-            doc_root: Document = parseString(data)
+            doc_root: Document = parseString(data)  # noqa: S318
         except ExpatError as e:
             raise PdfReadError(f"XML in XmpInformation was invalid: {e}")
         self.rdf_root: XmlElement = doc_root.getElementsByTagNameNS(

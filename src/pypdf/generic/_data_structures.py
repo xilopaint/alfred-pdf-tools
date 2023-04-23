@@ -50,9 +50,9 @@ from .._utils import (
 from ..constants import (
     CheckboxRadioButtonAttributes,
     FieldDictionaryAttributes,
+    OutlineFontFlag,
 )
 from ..constants import FilterTypes as FT
-from ..constants import OutlineFontFlag
 from ..constants import StreamAttributes as SA
 from ..constants import TypArguments as TA
 from ..constants import TypFitArguments as TF
@@ -88,11 +88,16 @@ class ArrayObject(list, PdfObject):
                 return self
         except Exception:
             pass
-        arr = cast("ArrayObject", self._reference_clone(ArrayObject(), pdf_dest))
+        arr = cast(
+            "ArrayObject",
+            self._reference_clone(ArrayObject(), pdf_dest, force_duplicate),
+        )
         for data in self:
             if isinstance(data, StreamObject):
                 dup = data._reference_clone(
-                    data.clone(pdf_dest, force_duplicate, ignore_fields), pdf_dest
+                    data.clone(pdf_dest, force_duplicate, ignore_fields),
+                    pdf_dest,
+                    force_duplicate,
                 )
                 arr.append(dup.indirect_reference)
             elif hasattr(data, "clone"):
@@ -137,8 +142,8 @@ class ArrayObject(list, PdfObject):
                 tok = stream.read(1)
             stream.seek(-1, 1)
             # check for array ending
-            peekahead = stream.read(1)
-            if peekahead == b"]":
+            peek_ahead = stream.read(1)
+            if peek_ahead == b"]":
                 break
             stream.seek(-1, 1)
             # read and append obj
@@ -168,7 +173,8 @@ class DictionaryObject(dict, PdfObject):
             pass
 
         d__ = cast(
-            "DictionaryObject", self._reference_clone(self.__class__(), pdf_dest)
+            "DictionaryObject",
+            self._reference_clone(self.__class__(), pdf_dest, force_duplicate),
         )
         if ignore_fields is None:
             ignore_fields = []
@@ -193,12 +199,18 @@ class DictionaryObject(dict, PdfObject):
             ignore_fields:
         """
         #  First check if this is a chain list, we need to loop to prevent recur
-        if (
-            ("/Next" not in ignore_fields and "/Next" in src)
-            or ("/Prev" not in ignore_fields and "/Prev" in src)
-        ) or (
-            ("/N" not in ignore_fields and "/N" in src)
-            or ("/V" not in ignore_fields and "/V" in src)
+        if any(
+            field not in ignore_fields
+            and field in src
+            and isinstance(src.raw_get(field), IndirectObject)
+            and isinstance(src[field], DictionaryObject)
+            and (
+                src.get("/Type", None) is None
+                or cast(DictionaryObject, src[field]).get("/Type", None) is None
+                or src.get("/Type", None)
+                == cast(DictionaryObject, src[field]).get("/Type", None)
+            )
+            for field in ["/Next", "/Prev", "/N", "/V"]
         ):
             ignore_fields = list(ignore_fields)
             for lst in (("/Next", "/Prev"), ("/N", "/V")):
@@ -208,6 +220,15 @@ class DictionaryObject(dict, PdfObject):
                         k in src
                         and k not in self
                         and isinstance(src.raw_get(k), IndirectObject)
+                        and isinstance(src[k], DictionaryObject)
+                        # IF need to go further the idea is to check
+                        # that the types are the same:
+                        and (
+                            src.get("/Type", None) is None
+                            or cast(DictionaryObject, src[k]).get("/Type", None) is None
+                            or src.get("/Type", None)
+                            == cast(DictionaryObject, src[k]).get("/Type", None)
+                        )
                     ):
                         cur_obj: Optional["DictionaryObject"] = cast(
                             "DictionaryObject", src[k]
@@ -216,7 +237,9 @@ class DictionaryObject(dict, PdfObject):
                         while cur_obj is not None:
                             clon = cast(
                                 "DictionaryObject",
-                                cur_obj._reference_clone(cur_obj.__class__(), pdf_dest),
+                                cur_obj._reference_clone(
+                                    cur_obj.__class__(), pdf_dest, force_duplicate
+                                ),
                             )
                             objs.append((cur_obj, clon))
                             assert prev_obj is not None
@@ -229,8 +252,8 @@ class DictionaryObject(dict, PdfObject):
                                     cur_obj = cast("DictionaryObject", cur_obj[k])
                             except Exception:
                                 cur_obj = None
-                        for (s, c) in objs:
-                            c._clone(s, pdf_dest, force_duplicate, ignore_fields + [k])
+                        for s, c in objs:
+                            c._clone(s, pdf_dest, force_duplicate, ignore_fields)
 
         for k, v in src.items():
             if k not in ignore_fields:
@@ -240,13 +263,12 @@ class DictionaryObject(dict, PdfObject):
                     vv = v.clone(pdf_dest, force_duplicate, ignore_fields)
                     assert vv.indirect_reference is not None
                     self[k.clone(pdf_dest)] = vv.indirect_reference  # type: ignore[attr-defined]
-                else:
-                    if k not in self:
-                        self[NameObject(k)] = (
-                            v.clone(pdf_dest, force_duplicate, ignore_fields)
-                            if hasattr(v, "clone")
-                            else v
-                        )
+                elif k not in self:
+                    self[NameObject(k)] = (
+                        v.clone(pdf_dest, force_duplicate, ignore_fields)
+                        if hasattr(v, "clone")
+                        else v
+                    )
 
     def raw_get(self, key: Any) -> Any:
         return dict.__getitem__(self, key)
@@ -275,6 +297,7 @@ class DictionaryObject(dict, PdfObject):
         object, if available.
 
         Stability: Added in v1.12, will exist for all future v1.x releases.
+        See Table 315 – Additional entries in a metadata stream dictionary
 
         Returns:
           Returns a {@link #xmp.XmpInformation XmlInformation} instance
@@ -421,13 +444,17 @@ class DictionaryObject(dict, PdfObject):
                 eol = stream.read(1)
             if eol not in (b"\n", b"\r"):
                 raise PdfStreamError("Stream data must be followed by a newline")
-            if eol == b"\r":
-                # read \n after
-                if stream.read(1) != b"\n":
-                    stream.seek(-1, 1)
+            if eol == b"\r" and stream.read(1) != b"\n":
+                stream.seek(-1, 1)
             # this is a stream object, not a dictionary
             if SA.LENGTH not in data:
-                raise PdfStreamError("Stream length not defined")
+                if pdf is not None and pdf.strict:
+                    raise PdfStreamError("Stream length not defined")
+                else:
+                    logger_warning(
+                        f"Stream length not defined @pos={stream.tell()}", __name__
+                    )
+                data[NameObject(SA.LENGTH)] = NumberObject(-1)
             length = data[SA.LENGTH]
             if isinstance(length, IndirectObject):
                 t = stream.tell()
@@ -435,7 +462,12 @@ class DictionaryObject(dict, PdfObject):
                 length = pdf.get_object(length)
                 stream.seek(t, 0)
             pstart = stream.tell()
-            data["__streamdata__"] = stream.read(length)
+            if length > 0:
+                data["__streamdata__"] = stream.read(length)
+            else:
+                data["__streamdata__"] = read_until_regex(
+                    stream, re.compile(b"endstream")
+                )
             e = read_non_whitespace(stream)
             ndstream = stream.read(8)
             if (e + ndstream) != b"endstream":
@@ -719,11 +751,13 @@ class StreamObject(DictionaryObject):
             if decoded_self is None:
                 self.decoded_self = None
             else:
-                self.decoded_self = decoded_self.clone(pdf_dest, True, ignore_fields)  # type: ignore[assignment]
+                self.decoded_self = cast(
+                    "DecodedStreamObject",
+                    decoded_self.clone(pdf_dest, force_duplicate, ignore_fields),
+                )
         except Exception:
             pass
         super()._clone(src, pdf_dest, force_duplicate, ignore_fields)
-        return
 
     def hash_value_data(self) -> bytes:
         data = super().hash_value_data()
@@ -924,7 +958,10 @@ class ContentStream(DecodedStreamObject):
             pass
 
         d__ = cast(
-            "ContentStream", self._reference_clone(self.__class__(None, None), pdf_dest)
+            "ContentStream",
+            self._reference_clone(
+                self.__class__(None, None), pdf_dest, force_duplicate
+            ),
         )
         if ignore_fields is None:
             ignore_fields = []
@@ -952,9 +989,9 @@ class ContentStream(DecodedStreamObject):
         self.forced_encoding = cast("ContentStream", src).forced_encoding
         # no need to call DictionaryObjection or anything
         # like super(DictionaryObject,self)._clone(src, pdf_dest, force_duplicate, ignore_fields)
-        return
 
     def __parse_content_stream(self, stream: StreamType) -> None:
+        # 7.8.2 Content Streams
         stream.seek(0, 0)
         operands: List[Union[int, str, PdfObject]] = []
         while True:
@@ -1064,23 +1101,23 @@ class ContentStream(DecodedStreamObject):
 
     @property
     def _data(self) -> bytes:
-        newdata = BytesIO()
+        new_data = BytesIO()
         for operands, operator in self.operations:
             if operator == b"INLINE IMAGE":
-                newdata.write(b"BI")
-                dicttext = BytesIO()
-                operands["settings"].write_to_stream(dicttext, None)
-                newdata.write(dicttext.getvalue()[2:-2])
-                newdata.write(b"ID ")
-                newdata.write(operands["data"])
-                newdata.write(b"EI")
+                new_data.write(b"BI")
+                dict_text = BytesIO()
+                operands["settings"].write_to_stream(dict_text, None)
+                new_data.write(dict_text.getvalue()[2:-2])
+                new_data.write(b"ID ")
+                new_data.write(operands["data"])
+                new_data.write(b"EI")
             else:
                 for op in operands:
-                    op.write_to_stream(newdata, None)
-                    newdata.write(b" ")
-                newdata.write(b_(operator))
-            newdata.write(b"\n")
-        return newdata.getvalue()
+                    op.write_to_stream(new_data, None)
+                    new_data.write(b" ")
+                new_data.write(b_(operator))
+            new_data.write(b"\n")
+        return new_data.getvalue()
 
     @_data.setter
     def _data(self, value: Union[str, bytes]) -> None:
@@ -1162,6 +1199,13 @@ class Field(TreeObject):
                 self[NameObject(attr)] = data[attr]
             except KeyError:
                 pass
+        if isinstance(self.get("/V"), EncodedStreamObject):
+            d = cast(EncodedStreamObject, self[NameObject("/V")]).get_data()
+            if isinstance(d, bytes):
+                d = d.decode()
+            elif d is None:
+                d = ""
+            self[NameObject("/V")] = TextStringObject(d)
 
     # TABLE 8.69 Entries common to all field dictionaries
     @property
@@ -1231,8 +1275,10 @@ class Field(TreeObject):
 
     @property
     def flags(self) -> Optional[int]:
-        """Read-only property accessing the field flags, specifying various
-        characteristics of the field (see Table 8.70 of the PDF 1.7 reference)."""
+        """
+        Read-only property accessing the field flags, specifying various
+        characteristics of the field (see Table 8.70 of the PDF 1.7 reference).
+        """
         return self.get(FieldDictionaryAttributes.Ff)
 
     @property
@@ -1299,7 +1345,7 @@ class Destination(TreeObject):
     node: Optional[
         DictionaryObject
     ] = None  # node provide access to the original Object
-    childs: List[Any] = []  # used in PdfWriter
+    childs: List[Any] = []  # used in PdfWriter - TODO: should be children
 
     def __init__(
         self,
@@ -1330,12 +1376,12 @@ class Destination(TreeObject):
                 self[NameObject(TA.TOP)],
             ) = args
         elif typ in [TF.FIT_H, TF.FIT_BH]:
-            try:  # Prefered to be more robust not only to null parameters
+            try:  # Preferred to be more robust not only to null parameters
                 (self[NameObject(TA.TOP)],) = args
             except Exception:
                 (self[NameObject(TA.TOP)],) = (NullObject(),)
         elif typ in [TF.FIT_V, TF.FIT_BV]:
-            try:  # Prefered to be more robust not only to null parameters
+            try:  # Preferred to be more robust not only to null parameters
                 (self[NameObject(TA.LEFT)],) = args
             except Exception:
                 (self[NameObject(TA.LEFT)],) = (NullObject(),)
@@ -1446,6 +1492,6 @@ class Destination(TreeObject):
 
         positive = expanded
         negative = collapsed
-        absolute value = number of visible descendents at all levels
+        absolute value = number of visible descendants at all levels
         """
         return self.get("/Count", None)

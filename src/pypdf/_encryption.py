@@ -26,7 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import hashlib
-import random
+import secrets
 import struct
 from enum import IntEnum
 from typing import Any, Dict, Optional, Tuple, Union, cast
@@ -56,6 +56,14 @@ class CryptIdentity(CryptBase):
     pass
 
 
+def _randrange(lower_inclusive: int, upper_exclusive: int) -> int:
+    return secrets.choice(range(lower_inclusive, upper_exclusive))
+
+
+def _randint(lower_inclusive: int, upper_inclusive: int) -> int:
+    return secrets.choice(range(lower_inclusive, upper_inclusive + 1))
+
+
 try:
     from Crypto.Cipher import AES, ARC4  # type: ignore[import]
     from Crypto.Util.Padding import pad  # type: ignore[import]
@@ -75,13 +83,15 @@ try:
             self.key = key
 
         def encrypt(self, data: bytes) -> bytes:
-            iv = bytes(bytearray(random.randint(0, 255) for _ in range(16)))
+            iv = bytes(bytearray(_randint(0, 255) for _ in range(16)))
             p = 16 - len(data) % 16
             data += bytes(bytearray(p for _ in range(p)))
             aes = AES.new(self.key, AES.MODE_CBC, iv)
             return iv + aes.encrypt(data)
 
         def decrypt(self, data: bytes) -> bytes:
+            if len(data) == 0:
+                return data
             iv = data[:16]
             data = data[16:]
             aes = AES.new(self.key, AES.MODE_CBC, iv)
@@ -123,7 +133,7 @@ except ImportError:
 
         def encrypt(self, data: bytes) -> bytes:
             S = list(self.S)
-            out = list(0 for _ in range(len(data)))
+            out = [0 for _ in range(len(data))]
             i, j = 0, 0
             for k in range(len(data)):
                 i = (i + 1) % 256
@@ -184,8 +194,8 @@ class CryptFilter:
         elif isinstance(obj, StreamObject):
             obj._data = self.stmCrypt.decrypt(obj._data)
         elif isinstance(obj, DictionaryObject):
-            for dictkey, value in list(obj.items()):
-                obj[dictkey] = self.decrypt_object(value)
+            for key, value in obj.items():
+                obj[key] = self.decrypt_object(value)
         elif isinstance(obj, ArrayObject):
             for i in range(len(obj)):
                 obj[i] = self.decrypt_object(obj[i])
@@ -482,7 +492,7 @@ class AlgV4:
            to decrypt the document.
 
         Args:
-            user_password: The user passwort as a bytes stream
+            user_password: The user password as a bytes stream
             rev: The encryption revision (see PDF standard)
             key_size: The size of the key in bytes
             o_entry: The owner entry
@@ -771,7 +781,7 @@ class AlgV5:
         Returns:
             A tuple (u-value, ue value)
         """
-        random_bytes = bytes(random.randrange(0, 256) for _ in range(16))
+        random_bytes = bytes(_randrange(0, 256) for _ in range(16))
         val_salt = random_bytes[:8]
         key_salt = random_bytes[8:]
         u_value = hashlib.sha256(password + val_salt).digest() + val_salt + key_salt
@@ -814,7 +824,7 @@ class AlgV5:
         Returns:
             A tuple (O value, OE value)
         """
-        random_bytes = bytes(random.randrange(0, 256) for _ in range(16))
+        random_bytes = bytes(_randrange(0, 256) for _ in range(16))
         val_salt = random_bytes[:8]
         key_salt = random_bytes[8:]
         o_value = (
@@ -859,7 +869,7 @@ class AlgV5:
             The perms value
         """
         b8 = b"T" if metadata_encrypted else b"F"
-        rr = bytes(random.randrange(0, 256) for _ in range(4))
+        rr = bytes(_randrange(0, 256) for _ in range(4))
         data = struct.pack("<I", p) + b"\xff\xff\xff\xff" + b8 + b"adb" + rr
         perms = AES_ECB_encrypt(key, data)
         return perms
@@ -988,7 +998,7 @@ class Encryption:
         if isinstance(password, str):
             try:
                 pwd = password.encode("latin-1")
-            except Exception:  # noqa
+            except Exception:
                 pwd = password.encode("utf-8")
         else:
             pwd = password

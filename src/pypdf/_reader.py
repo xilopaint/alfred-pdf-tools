@@ -32,14 +32,16 @@ import re
 import struct
 import zlib
 from datetime import datetime
-from io import BytesIO
+from io import BytesIO, UnsupportedOperation
 from pathlib import Path
 from typing import (
     Any,
     Callable,
     Dict,
     Iterable,
+    Iterator,
     List,
+    Mapping,
     Optional,
     Tuple,
     Union,
@@ -65,10 +67,13 @@ from ._utils import (
 )
 from .constants import CatalogAttributes as CA
 from .constants import CatalogDictionary as CD
-from .constants import CheckboxRadioButtonAttributes
+from .constants import (
+    CheckboxRadioButtonAttributes,
+    FieldDictionaryAttributes,
+    GoToActionArguments,
+)
 from .constants import Core as CO
 from .constants import DocumentInformationAttributes as DI
-from .constants import FieldDictionaryAttributes, GoToActionArguments
 from .constants import PageAttributes as PG
 from .constants import PagesAttributes as PA
 from .constants import TrailerKeys as TK
@@ -340,9 +345,8 @@ class PdfReader:
                 # raise if password provided
                 raise WrongPasswordError("Wrong password")
             self._override_encryption = False
-        else:
-            if password is not None:
-                raise PdfReadError("Not encrypted file")
+        elif password is not None:
+            raise PdfReadError("Not encrypted file")
 
     @property
     def pdf_header(self) -> str:
@@ -356,7 +360,7 @@ class PdfReader:
         #       but that needs a deprecation
         loc = self.stream.tell()
         self.stream.seek(0, 0)
-        pdf_file_version = self.stream.read(8).decode("utf-8")
+        pdf_file_version = self.stream.read(8).decode("utf-8", "backslashreplace")
         self.stream.seek(loc, 0)  # return to where it was
         return pdf_file_version
 
@@ -430,8 +434,6 @@ class PdfReader:
     def _get_num_pages(self) -> int:
         """
         Calculate the number of pages in this PDF file.
-
-        Args:
 
         Returns:
             The number of pages of the parsed PDF file
@@ -757,9 +759,17 @@ class PdfReader:
         # TABLE 3.33 Entries in a name tree node dictionary (PDF 1.7 specs)
         elif CA.NAMES in tree:  # KIDS and NAMES are exclusives (PDF 1.7 specs p 162)
             names = cast(DictionaryObject, tree[CA.NAMES])
-            for i in range(0, len(names), 2):
+            i = 0
+            while i < len(names):
                 key = cast(str, names[i].get_object())
-                value = names[i + 1].get_object()
+                i += 1
+                if not isinstance(key, str):
+                    continue
+                try:
+                    value = names[i].get_object()
+                except IndexError:
+                    break
+                i += 1
                 if isinstance(value, DictionaryObject) and "/D" in value:
                     value = value["/D"]
                 dest = self._build_destination(key, value)  # type: ignore
@@ -768,6 +778,8 @@ class PdfReader:
         else:  # case where Dests is in root catalog (PDF 1.7 specs, §2 about PDF1.1
             for k__, v__ in tree.items():
                 val = v__.get_object()
+                if isinstance(val, DictionaryObject):
+                    val = val["/D"].get_object()
                 dest = self._build_destination(k__, val)
                 if dest is not None:
                     retval[k__] = dest
@@ -964,7 +976,6 @@ class PdfReader:
             or (isinstance(array, ArrayObject) and len(array) == 0)
             or array is None
         ):
-
             page = NullObject()
             return Destination(title, page, Fit.fit())
         else:
@@ -1262,8 +1273,8 @@ class PdfReader:
         This is equivalent to generic.IndirectObject(num,gen,self).get_object()
 
         Args:
-            num:
-            gen:
+            num: The object number of the indirect object.
+            gen: The generation number of the indirect object.
 
         Returns:
             A PdfObject
@@ -1428,7 +1439,7 @@ class PdfReader:
         stream.seek(-1, 1)
 
         # although it's not used, it might still be necessary to read
-        _obj = stream.read(3)  # noqa: F841
+        _obj = stream.read(3)
 
         read_non_whitespace(stream)
         stream.seek(-1, 1)
@@ -1513,7 +1524,7 @@ class PdfReader:
                     continue
                 xref_k = sorted(
                     xref_entry.keys()
-                )  # must ensure ascendant to prevent damange
+                )  # must ensure ascendant to prevent damage
                 for id in xref_k:
                     stream.seek(xref_entry[id], 0)
                     try:
@@ -1529,26 +1540,40 @@ class PdfReader:
             stream.seek(loc, 0)  # return to where it was
 
     def _basic_validation(self, stream: StreamType) -> None:
-        # start at the end:
-        stream.seek(0, os.SEEK_END)
-        if not stream.tell():
-            raise EmptyFileError("Cannot read an empty file")
-        if self.strict:
-            stream.seek(0, os.SEEK_SET)
+        """Ensure file is not empty. Read at most 5 bytes."""
+        stream.seek(0, os.SEEK_SET)
+        try:
             header_byte = stream.read(5)
-            if header_byte != b"%PDF-":
+        except UnicodeDecodeError:
+            raise UnsupportedOperation("cannot read header")
+        if header_byte == b"":
+            raise EmptyFileError("Cannot read an empty file")
+        elif header_byte != b"%PDF-":
+            if self.strict:
                 raise PdfReadError(
                     f"PDF starts with '{header_byte.decode('utf8')}', "
                     "but '%PDF-' expected"
                 )
-            stream.seek(0, os.SEEK_END)
+            else:
+                logger_warning(f"invalid pdf header: {header_byte}", __name__)
+        stream.seek(0, os.SEEK_END)
 
     def _find_eof_marker(self, stream: StreamType) -> None:
-        last_mb = 8  # to parse whole file
+        """
+        Jump to the %%EOF marker.
+
+        According to the specs, the %%EOF marker should be at the very end of
+        the file. Hence for standard-compliant PDF documents this function will
+        read only the last part (DEFAULT_BUFFER_SIZE).
+        """
+        HEADER_SIZE = 8  # to parse whole file, Header is e.g. '%PDF-1.6'
         line = b""
         while line[:5] != b"%%EOF":
-            if stream.tell() < last_mb:
-                raise PdfReadError("EOF marker not found")
+            if stream.tell() < HEADER_SIZE:
+                if self.strict:
+                    raise PdfReadError("EOF marker not found")
+                else:
+                    logger_warning("EOF marker not found", __name__)
             line = read_previous_line(stream)
 
     def _find_startxref_pos(self, stream: StreamType) -> int:
@@ -1583,10 +1608,10 @@ class PdfReader:
             raise PdfReadError("xref table read error")
         read_non_whitespace(stream)
         stream.seek(-1, 1)
-        firsttime = True  # check if the first time looking at the xref table
+        first_time = True  # check if the first time looking at the xref table
         while True:
             num = cast(int, read_object(stream, self))
-            if firsttime and num != 0:
+            if first_time and num != 0:
                 self.xref_index = num
                 if self.strict:
                     logger_warning(
@@ -1595,7 +1620,7 @@ class PdfReader:
                     )
                     # if table not zero indexed, could be due to error from when PDF was created
                     # which will lead to mismatched indices later on, only warned and corrected if self.strict==True
-            firsttime = False
+            first_time = False
             read_non_whitespace(stream)
             stream.seek(-1, 1)
             size = cast(int, read_object(stream, self))
@@ -1630,7 +1655,7 @@ class PdfReader:
 
                     offset, generation = int(offset_b), int(generation_b)
                 except Exception:
-                    # if something wrong occured
+                    # if something wrong occurred
                     if hasattr(stream, "getbuffer"):
                         buf = bytes(stream.getbuffer())  # type: ignore
                     else:
@@ -1678,8 +1703,8 @@ class PdfReader:
                 num += 1
             read_non_whitespace(stream)
             stream.seek(-1, 1)
-            trailertag = stream.read(7)
-            if trailertag != b"trailer":
+            trailer_tag = stream.read(7)
+            if trailer_tag != b"trailer":
                 # more xrefs!
                 stream.seek(-7, 1)
             else:
@@ -1784,7 +1809,7 @@ class PdfReader:
             return startxref
         # No explicit xref table, try finding a cross-reference stream.
         stream.seek(startxref, 0)
-        for look in range(5):
+        for look in range(25):  # value extended to cope with more linearized files
             if stream.read(1).isdigit():
                 # This is not a standard PDF, consider adding a warning
                 startxref += look
@@ -1854,6 +1879,8 @@ class PdfReader:
         """
         stream.seek(startxref - 1, 0)  # -1 to check character before
         line = stream.read(1)
+        if line == b"j":
+            line = stream.read(1)
         if line not in b"\r\n \t":
             return 1
         line = stream.read(4)
@@ -1986,7 +2013,8 @@ class PdfReader:
             password: The password to match.
 
         Returns:
-            A `PasswordType`.
+            An indicator if the document was decrypted and weather it was the
+            owner password or the user password.
         """
         if not self._encryption:
             raise PdfReadError("Not encrypted file")
@@ -2087,7 +2115,7 @@ class PdfReader:
         interim[NameObject("/Kids")] = acroform[NameObject("/Fields")]
         self.cache_indirect_object(
             0,
-            max([i for (g, i) in self.resolved_objects.keys() if g == 0]) + 1,
+            max([i for (g, i) in self.resolved_objects if g == 0]) + 1,
             interim,
         )
         arr = ArrayObject()
@@ -2129,6 +2157,112 @@ class PdfReader:
         )
         interim[NameObject("/T")] = TextStringObject(name)
         return interim
+
+    @property
+    def attachments(self) -> Mapping[str, List[bytes]]:
+        return LazyDict(
+            {
+                name: (self._get_attachment_list, name)
+                for name in self._list_attachments()
+            }
+        )
+
+    def _list_attachments(self) -> List[str]:
+        """
+        Retrieves the list of filenames of file attachments.
+
+        Returns:
+            list of filenames
+        """
+        catalog = cast(DictionaryObject, self.trailer["/Root"])
+        # From the catalog get the embedded file names
+        try:
+            filenames = cast(
+                ArrayObject,
+                cast(
+                    DictionaryObject,
+                    cast(DictionaryObject, catalog["/Names"])["/EmbeddedFiles"],
+                )["/Names"],
+            )
+        except KeyError:
+            return []
+        attachments_names = []
+        # Loop through attachments
+        for f in filenames:
+            if isinstance(f, str):
+                attachments_names.append(f)
+        return attachments_names
+
+    def _get_attachment_list(self, name: str) -> List[bytes]:
+        out = self._get_attachments(name)[name]
+        if isinstance(out, list):
+            return out
+        return [out]
+
+    def _get_attachments(
+        self, filename: Optional[str] = None
+    ) -> Dict[str, Union[bytes, List[bytes]]]:
+        """
+        Retrieves all or selected file attachments of the PDF as a dictionary of file names
+        and the file data as a bytestring.
+
+        Args:
+            filename: If filename is None, then a dictionary of all attachments
+                will be returned, where the key is the filename and the value
+                is the content. Otherwise, a dictionary with just a single key
+                - the filename - and its content will be returned.
+
+        Returns:
+            dictionary of filename -> Union[bytestring or List[ByteString]]
+            if the filename exists multiple times a List of the different version will be provided
+        """
+        catalog = cast(DictionaryObject, self.trailer["/Root"])
+        # From the catalog get the embedded file names
+        try:
+            filenames = cast(
+                ArrayObject,
+                cast(
+                    DictionaryObject,
+                    cast(DictionaryObject, catalog["/Names"])["/EmbeddedFiles"],
+                )["/Names"],
+            )
+        except KeyError:
+            return {}
+        attachments: Dict[str, Union[bytes, List[bytes]]] = {}
+        # Loop through attachments
+        for i in range(len(filenames)):
+            f = filenames[i]
+            if isinstance(f, str):
+                if filename is not None and f != filename:
+                    continue
+                name = f
+                f_dict = filenames[i + 1].get_object()
+                f_data = f_dict["/EF"]["/F"].get_data()
+                if name in attachments:
+                    if not isinstance(attachments[name], list):
+                        attachments[name] = [attachments[name]]  # type:ignore
+                    attachments[name].append(f_data)  # type:ignore
+                else:
+                    attachments[name] = f_data
+        return attachments
+
+
+class LazyDict(Mapping):
+    def __init__(self, *args: Any, **kw: Any) -> None:
+        self._raw_dict = dict(*args, **kw)
+
+    def __getitem__(self, key: str) -> Any:
+        func, arg = self._raw_dict.__getitem__(key)
+        return func(arg)
+
+    def __iter__(self) -> Iterator[Any]:
+        return iter(self._raw_dict)
+
+    def __len__(self) -> int:
+        return len(self._raw_dict)
+
+    def __str__(self) -> str:
+        return f"LazyDict(keys={list(self.keys())})"
 
 
 class PdfFileReader(PdfReader):  # deprecated

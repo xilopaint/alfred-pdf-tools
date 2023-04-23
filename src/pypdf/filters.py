@@ -38,16 +38,7 @@ import math
 import struct
 import zlib
 from io import BytesIO
-from typing import Any, Dict, Optional, Tuple, Union, cast
-
-from .generic import ArrayObject, DictionaryObject, IndirectObject, NameObject
-
-try:
-    from typing import Literal  # type: ignore[attr-defined]
-except ImportError:
-    # PEP 586 introduced typing.Literal with Python 3.8
-    # For older Python versions, the backport typing_extensions is necessary:
-    from typing_extensions import Literal  # type: ignore[misc]
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union, cast
 
 from ._utils import b_, deprecate_with_replacement, ord_, paeth_predictor
 from .constants import CcittFaxDecodeParameters as CCITT
@@ -59,9 +50,36 @@ from .constants import ImageAttributes as IA
 from .constants import LzwFilterParameters as LZW
 from .constants import StreamAttributes as SA
 from .errors import PdfReadError, PdfStreamError
+from .generic import (
+    ArrayObject,
+    DictionaryObject,
+    IndirectObject,
+    NullObject,
+)
+
+if TYPE_CHECKING:
+    try:
+        from typing import Literal  # type: ignore[attr-defined]
+    except ImportError:
+        # PEP 586 introduced typing.Literal with Python 3.8
+        # For older Python versions, the backport typing_extensions is necessary:
+        from typing_extensions import Literal  # type: ignore[misc, assignment]
 
 
 def decompress(data: bytes) -> bytes:
+    """
+    Decompress the given data using zlib.
+
+    This function attempts to decompress the input data using zlib. If the
+    decompression fails due to a zlib error, it falls back to using a
+    decompression object with a larger window size.
+
+    Args:
+        data: The input data to be decompressed.
+
+    Returns:
+        The decompressed data.
+    """
     try:
         return zlib.decompress(data)
     except zlib.error:
@@ -190,17 +208,28 @@ class FlateDecode:
 
     @staticmethod
     def encode(data: bytes) -> bytes:
+        """
+        Compress the input data using zlib.
+
+        Args:
+            data: The data to be compressed.
+
+        Returns:
+            The compressed data.
+        """
         return zlib.compress(data)
 
 
 class ASCIIHexDecode:
-    """The ASCIIHexDecode filter decodes data that has been encoded in ASCII
-    hexadecimal form into a base-7 ASCII format."""
+    """
+    The ASCIIHexDecode filter decodes data that has been encoded in ASCII
+    hexadecimal form into a base-7 ASCII format.
+    """
 
     @staticmethod
     def decode(
         data: str,
-        decode_parms: Union[None, ArrayObject, DictionaryObject] = None,  # noqa: F841
+        decode_parms: Union[None, ArrayObject, DictionaryObject] = None,
         **kwargs: Any,
     ) -> str:
         """
@@ -369,7 +398,7 @@ class ASCII85Decode:
         group_index = b = 0
         out = bytearray()
         for char in data:
-            if ord("!") <= char and char <= ord("u"):
+            if ord("!") <= char <= ord("u"):
                 group_index += 1
                 b = b * 85 + (char - 33)
                 if group_index == 5:
@@ -529,22 +558,44 @@ class CCITTFaxDecode:
 
 
 def decode_stream_data(stream: Any) -> Union[str, bytes]:  # utils.StreamObject
+    """
+    Decode the stream data based on the specified filters.
+
+    This function decodes the stream data using the filters provided in the
+    stream. It supports various filter types, including FlateDecode,
+    ASCIIHexDecode, LZWDecode, ASCII85Decode, DCTDecode, JPXDecode, and
+    CCITTFaxDecode.
+
+    Args:
+        stream: The input stream object containing the data and filters.
+
+    Returns:
+        The decoded stream data.
+
+    Raises:
+        NotImplementedError: If an unsupported filter type is encountered.
+    """
     filters = stream.get(SA.FILTER, ())
     if isinstance(filters, IndirectObject):
         filters = cast(ArrayObject, filters.get_object())
-    if len(filters) and not isinstance(filters[0], NameObject):
+    if not isinstance(filters, ArrayObject):
         # we have a single filter instance
         filters = (filters,)
+    decodparms = stream.get(SA.DECODE_PARMS, ({},) * len(filters))
+    if not isinstance(decodparms, (list, tuple)):
+        decodparms = (decodparms,)
     data: bytes = stream._data
     # If there is not data to decode we should not try to decode the data.
     if data:
-        for filter_type in filters:
+        for filter_type, params in zip(filters, decodparms):
+            if isinstance(params, NullObject):
+                params = {}
             if filter_type in (FT.FLATE_DECODE, FTA.FL):
-                data = FlateDecode.decode(data, stream.get(SA.DECODE_PARMS))
+                data = FlateDecode.decode(data, params)
             elif filter_type in (FT.ASCII_HEX_DECODE, FTA.AHx):
                 data = ASCIIHexDecode.decode(data)  # type: ignore
             elif filter_type in (FT.LZW_DECODE, FTA.LZW):
-                data = LZWDecode.decode(data, stream.get(SA.DECODE_PARMS))  # type: ignore
+                data = LZWDecode.decode(data, params)  # type: ignore
             elif filter_type in (FT.ASCII_85_DECODE, FTA.A85):
                 data = ASCII85Decode.decode(data)
             elif filter_type == FT.DCT_DECODE:
@@ -553,10 +604,9 @@ def decode_stream_data(stream: Any) -> Union[str, bytes]:  # utils.StreamObject
                 data = JPXDecode.decode(data)
             elif filter_type == FT.CCITT_FAX_DECODE:
                 height = stream.get(IA.HEIGHT, ())
-                data = CCITTFaxDecode.decode(data, stream.get(SA.DECODE_PARMS), height)
+                data = CCITTFaxDecode.decode(data, params, height)
             elif filter_type == "/Crypt":
-                decode_parms = stream.get(SA.DECODE_PARMS, {})
-                if "/Name" not in decode_parms and "/Type" not in decode_parms:
+                if "/Name" not in params and "/Type" not in params:
                     pass
                 else:
                     raise NotImplementedError(
@@ -569,6 +619,7 @@ def decode_stream_data(stream: Any) -> Union[str, bytes]:  # utils.StreamObject
 
 
 def decodeStreamData(stream: Any) -> Union[str, bytes]:  # deprecated
+    """Deprecated. Use decode_stream_data."""
     deprecate_with_replacement("decodeStreamData", "decode_stream_data", "4.0.0")
     return decode_stream_data(stream)
 
@@ -601,7 +652,7 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes]:
         and x_object_obj[IA.COLOR_SPACE] == ColorSpaces.DEVICE_RGB
     ):
         # https://pillow.readthedocs.io/en/stable/handbook/concepts.html#modes
-        mode: Literal["RGB", "P"] = "RGB"
+        mode: Literal["RGB", "P", "L", "RGBA"] = "RGB"
     else:
         mode = "P"
     extension = None
@@ -632,11 +683,29 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes]:
                 else:
                     img.putpalette(lookup.get_data())
                 img = img.convert("L" if base == ColorSpaces.DEVICE_GRAY else "RGB")
+            elif color_space is not None and color_space[0] == "/ICCBased":
+                # see Table 66 - Additional Entries Specific to an ICC Profile
+                # Stream Dictionary
+                icc_profile = color_space[1].get_object()
+                color_components = cast(int, icc_profile["/N"])
+                alternate_colorspace = icc_profile["/Alternate"]
+                color_space = alternate_colorspace
+                mode_map = {
+                    "/DeviceGray": "L",
+                    "/DeviceRGB": "RGB",
+                    "/DeviceCMYK": "RGBA",
+                }
+                mode = (
+                    mode_map.get(color_space)  # type: ignore
+                    or {1: "L", 3: "RGB", 4: "RGBA"}.get(color_components)
+                    or mode
+                )  # type: ignore
+                img = Image.frombytes(mode, size, data)
             if G.S_MASK in x_object_obj:  # add alpha channel
                 alpha = Image.frombytes("L", size, x_object_obj[G.S_MASK].get_data())
                 img.putalpha(alpha)
             img_byte_arr = BytesIO()
-            img.save(img_byte_arr, format="PNG")
+            img.convert("RGBA").save(img_byte_arr, format="PNG")
             data = img_byte_arr.getvalue()
         elif x_object_obj[SA.FILTER] in (
             [FT.LZW_DECODE],

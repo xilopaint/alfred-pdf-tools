@@ -72,7 +72,7 @@ StrByteType = Union[str, StreamType]
 
 DEPR_MSG_NO_REPLACEMENT = "{} is deprecated and will be removed in pypdf {}."
 DEPR_MSG_NO_REPLACEMENT_HAPPENED = "{} is deprecated and was removed in pypdf {}."
-DEPR_MSG = "{} is deprecated and will be removed in pypdf 3.0.0. Use {} instead."
+DEPR_MSG = "{} is deprecated and will be removed in pypdf {}. Use {} instead."
 DEPR_MSG_HAPPENED = "{} is deprecated and was removed in pypdf {}. Use {} instead."
 
 
@@ -178,10 +178,10 @@ def read_until_regex(stream: StreamType, regex: Pattern[bytes]) -> bytes:
         tok = stream.read(16)
         if not tok:
             return name
-        m = regex.search(tok)
+        m = regex.search(name + tok)
         if m is not None:
-            name += tok[: m.start()]
-            stream.seek(m.start() - len(tok), 1)
+            stream.seek(m.start() - (len(name) + len(tok)), 1)
+            name = (name + tok)[: m.start()]
             break
         name += tok
     return name
@@ -387,7 +387,7 @@ def deprecate_with_replacement(
     old_name: str, new_name: str, removed_in: str = "3.0.0"
 ) -> None:
     """Raise an exception that a feature will be removed, but has a replacement."""
-    deprecate(DEPR_MSG.format(old_name, new_name, removed_in), 4)
+    deprecate(DEPR_MSG.format(old_name, removed_in, new_name), 4)
 
 
 def deprecation_with_replacement(
@@ -428,15 +428,16 @@ def logger_warning(msg: str, src: str) -> None:
 
 def deprecation_bookmark(**aliases: str) -> Callable:
     """
-    Decorator for deprecated term "bookmark"
+    Decorator for deprecated term "bookmark".
+
     To be used for methods and function arguments
         outline_item = a bookmark
-        outline = a collection of outline items
+        outline = a collection of outline items.
     """
 
-    def decoration(func: Callable):  # type: ignore
+    def decoration(func: Callable) -> Any:  # type: ignore
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):  # type: ignore
+        def wrapper(*args: Any, **kwargs: Any) -> Any:  # type: ignore
             rename_kwargs(func.__name__, kwargs, aliases, fail=True)
             return func(*args, **kwargs)
 
@@ -447,7 +448,7 @@ def deprecation_bookmark(**aliases: str) -> Callable:
 
 def rename_kwargs(  # type: ignore
     func_name: str, kwargs: Dict[str, Any], aliases: Dict[str, str], fail: bool = False
-):
+) -> None:
     """
     Helper function to deprecate arguments.
 
@@ -457,7 +458,6 @@ def rename_kwargs(  # type: ignore
         aliases:
         fail:
     """
-
     for old_term, new_term in aliases.items():
         if old_term in kwargs:
             if fail:
