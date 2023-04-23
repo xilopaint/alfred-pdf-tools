@@ -48,9 +48,10 @@ from docopt import docopt
 from pypdf import PageObject, PageRange, PdfReader, PdfWriter, errors
 from workflow import ICON_ERROR, Variables, Workflow, notify
 
+UPDATE_SETTINGS = {"github_slug": "xilopaint/alfred-pdf-tools"}
 HELP_URL = "https://github.com/xilopaint/alfred-pdf-tools"
 
-wf = Workflow(help_url=HELP_URL)
+wf = Workflow(update_settings=UPDATE_SETTINGS, help_url=HELP_URL)
 
 
 class AlfredPdfToolsError(Exception):
@@ -600,6 +601,12 @@ def main(wf):  # pylint: disable=redefined-outer-name  # pragma: no cover
         crop(pdf_paths)
     elif args["--scale"]:
         scale(pdf_paths)
+
+    if wf.update_available:
+        notify.notify(
+            "Alfred PDF Tools", "A newer version of the workflow is available.", "Glass"
+        )
+        wf.start_update()
 
 
 if __name__ == "__main__":
