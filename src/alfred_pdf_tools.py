@@ -73,7 +73,7 @@ class MultiplePathsError(AlfredPdfToolsError):
 def handle_exceptions(func):
     """Decorator to handle exceptions in the wrapper function."""
 
-    def wrapper(*args, **kwargs):  # pragma: no cover
+    def wrapper(*args, **kwargs):
         """Wrapper function."""
         try:
             func(*args, **kwargs)
@@ -137,11 +137,11 @@ def optimize(resolution, pdf_paths):
         pdf_paths (list): Paths to selected PDF files.
     """
     if int(resolution) < 0:
-        raise ValueError  # pragma: no cover
+        raise ValueError
 
     for pdf_path in pdf_paths:
         if '"' in pdf_path:
-            raise DoubleQuotesPathError  # pragma: no cover
+            raise DoubleQuotesPathError
 
         cmd = f"'{Path(__file__).parent}/bin/k2pdfopt' {shlex.quote(pdf_path)} -ui- -as -mode copy -dpi {resolution} -o '%s [optimized].pdf' -x"
         returncode = run_k2pdfopt(cmd)
@@ -163,7 +163,7 @@ def deskew(pdf_paths):
     """
     for pdf_path in pdf_paths:
         if '"' in pdf_path:
-            raise DoubleQuotesPathError  # pragma: no cover
+            raise DoubleQuotesPathError
 
         cmd = f"'{Path(__file__).parent}/bin/k2pdfopt' {shlex.quote(pdf_path)} -ui- -as -mode copy -n -o '%s [deskewed].pdf' -x"
         returncode = run_k2pdfopt(cmd)
@@ -265,7 +265,7 @@ def decrypt(pwd, pdf_paths):
         except errors.PdfReadError:
             notify.notify("Alfred PDF Tools", "The entered password is not valid.")
             sys.exit(1)
-        except errors.DependencyError:
+        except errors.DependencyError:  # pragma: no cover
             print(f"pip3 install pycryptodome -t '{Path(__file__).parent}'", end="")
             sys.exit(1)
 
@@ -288,10 +288,10 @@ def merge(out_filename, pdf_paths):
     parent_paths = [Path(pdf_path).parent for pdf_path in pdf_paths]
 
     if len(pdf_paths) < 2:
-        raise SelectionError  # pragma: no cover
+        raise SelectionError
 
     if not parent_paths[1:] == parent_paths[:-1]:
-        raise MultiplePathsError  # pragma: no cover
+        raise MultiplePathsError
 
     writer = PdfWriter()
 
@@ -315,7 +315,7 @@ def split_count(max_pages, abs_path, suffix):
         suffix (str): Suffix for the output filenames.
     """
     if int(max_pages) < 0:
-        raise ValueError  # pragma: no cover
+        raise ValueError
 
     reader = PdfReader(abs_path)
 
@@ -339,7 +339,7 @@ def split_size(max_size, abs_path, suffix):
         suffix (str): Suffix for the output filenames.
     """
     if float(max_size) < 0:
-        raise ValueError  # pragma: no cover
+        raise ValueError
 
     max_chunk_sz = float(max_size) * 1000000
     reader = PdfReader(abs_path)
@@ -447,14 +447,14 @@ def slice_(query, abs_path, is_single, suffix):
     """
     # Query parameter validation.
     if re.search(r"^\D|^0.|\D0\D|\D0$", query):
-        raise ValueError  # pragma: no cover
+        raise ValueError
 
     pg_ranges = [x.split("-") for x in query.split(",")]
 
     for pg_range in pg_ranges:
         if len(pg_range) > 1 and pg_range[1] != "":
             if int(pg_range[0]) > int(pg_range[1]):
-                raise ValueError  # pragma: no cover
+                raise ValueError
 
     reader = PdfReader(abs_path)
     pg_cnt = len(reader.pages)
