@@ -418,16 +418,10 @@ def split_size(max_size, abs_path, suffix):
                     if chunk_size + next_page < max_chunk_sz:
                         os.remove(out_file_name)
                         chunk_size_real = chunk_size / (stop - start)
-
-                        pg_sizes_real = []
-
-                        for i in range(pg_cnt):
-                            if start <= i < stop:
-                                pg_sizes_real.append(chunk_size_real)
-                            else:
-                                pg_sizes_real.append(pg_sizes[i])
-
-                        pg_sizes = pg_sizes_real
+                        pg_sizes = [
+                            chunk_size_real if start <= i < stop else pg_size
+                            for i, pg_size in enumerate(pg_sizes)
+                        ]
                         stop += 1
                     else:
                         start = stop
