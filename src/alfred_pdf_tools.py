@@ -367,7 +367,7 @@ def split_size(max_size, abs_path, suffix):
     stop = 1
     pg_num = 0
 
-    if quotient > 0.95:  # pylint: disable=too-many-nested-blocks
+    if quotient > 0.95:
         pg_chunks = [[(0, pg_sizes.pop(0))]]
 
         for n, pg_size in enumerate(pg_sizes, 1):
