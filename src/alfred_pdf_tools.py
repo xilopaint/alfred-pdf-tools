@@ -500,6 +500,8 @@ def crop(pdf_paths):
             x2, y2 = floor(x2), floor(y2)
             x3, y3 = x1 + floor((x2 - x1) / 2), y1 + floor((y2 - y1) / 2)
 
+            # The new mediabox will cover half the width for horizontal pages
+            # and half the height for vertical pages.
             if (x2 - x1) > (y2 - y1):
                 # Horizontal
                 page_copy_1.mediabox.lower_left = (x1, y1)
