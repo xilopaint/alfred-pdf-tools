@@ -26,7 +26,7 @@ from pypdf import PdfReader
 class AlfredPdfToolsTests(unittest.TestCase):
     @patch("alfred_pdf_tools.wf.cache_data")
     @patch("workflow.notify.notify")
-    def test_optimize(self, notify, cache_data):
+    def test_optimize(self, notify, cache_data) -> None:
         """Test optimize file action."""
         self.assertIsNone(optimize("-150", ["./resources/crazyones.pdf"]))
         self.assertIsNone(optimize("150", ['./resources/"crazyones".pdf']))
@@ -35,27 +35,27 @@ class AlfredPdfToolsTests(unittest.TestCase):
 
     @patch("alfred_pdf_tools.wf.cache_data")
     @patch("workflow.notify.notify")
-    def test_deskew(self, notify, cache_data):
+    def test_deskew(self, notify, cache_data) -> None:
         """Test deskew file action."""
         self.assertIsNone(deskew(['./resources/"crazyones".pdf']))
         self.assertIsNone(deskew(["./resources/crazyones.pdf"]))
         self.assertIsNone(deskew(["./resources/corrupted.pdf"]))
 
     @patch("workflow.notify.notify")
-    def test_encrypt(self, notify):
+    def test_encrypt(self, notify) -> None:
         """Test encrypt file action."""
         self.assertIsNone(encrypt("hunter2", ["./resources/encrypted.pdf"]))
         self.assertIsNone(encrypt("hunter2", ["./resources/crazyones.pdf"]))
 
     @patch("workflow.notify.notify")
-    def test_decrypt(self, notify):
+    def test_decrypt(self, notify) -> None:
         """Test decrypt file action."""
         with self.assertRaises(SystemExit):
             decrypt("hunter2", ["./resources/encrypted.pdf"])
         self.assertIsNone(decrypt("test", ["./resources/encrypted.pdf"]))
 
     @patch("workflow.notify.notify")
-    def test_merge(self, notify):
+    def test_merge(self, notify) -> None:
         """Test merge file action."""
         self.assertIsNone(merge("tmp_1", ["./resources/file_1.pdf"]))
         self.assertIsNone(
@@ -81,7 +81,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
             self.assertEqual(int(page.extract_text()), n)
 
     @patch("workflow.notify.notify")
-    def test_split_count(self, notify):
+    def test_split_count(self, notify) -> None:
         """Test split by page count file action."""
         self.assertIsNone(
             split_count(
@@ -116,7 +116,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
             self.assertEqual(int(page.extract_text()), n)
 
     @patch("workflow.notify.notify")
-    def test_split_size(self, notify):
+    def test_split_size(self, notify) -> None:
         """Test split by page count file action."""
         self.assertIsNone(
             split_size(
@@ -174,7 +174,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
         reader = PdfReader("./resources/mult_pages_3 [part 3].pdf")
 
     @patch("workflow.notify.notify")
-    def test_slice(self, notify):
+    def test_slice(self, notify) -> None:
         """Test slice file action."""
         self.assertIsNone(
             slice_(
@@ -236,7 +236,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
         for i, page in enumerate(reader.pages):
             self.assertEqual(int(page.extract_text()), pages[i])
 
-    def test_crop(self):
+    def test_crop(self) -> None:
         """Test crop file action."""
         self.assertIsNone(crop(["./resources/landscape.pdf"]))
         reader = PdfReader("./resources/landscape [cropped].pdf")
@@ -258,7 +258,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
             else:
                 self.assertEqual(list(page.mediabox), [0.0, 396, 612, 792])
 
-    def test_scale(self):
+    def test_scale(self) -> None:
         """Test scale file action."""
         sys.argv = [None, None, "8.3", "11.7"]
         self.assertIsNone(scale(["./resources/mult_pages_1.pdf"]))
@@ -271,7 +271,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
             self.assertEqual(float(page.mediabox.height), 11.7 * 72)
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         """Clean up resources."""
         Path("./resources/crazyones [optimized].pdf").unlink(missing_ok=True)
         Path("./resources/crazyones [deskewed].pdf").unlink(missing_ok=True)

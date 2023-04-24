@@ -1,0 +1,9 @@
+{
+    "reportGeneralTypeIssues": false,
+    "reportOptionalIterable": false,
+    "reportUnknownParameterType": false,
+    "reportUnknownArgumentType": false,
+    "reportUnknownLambdaType": false,
+    "reportUnknownMemberType": false,
+    "reportUnknownVariableType": false
+}

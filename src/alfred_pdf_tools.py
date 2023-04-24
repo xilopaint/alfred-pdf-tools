@@ -43,6 +43,7 @@ import tempfile
 from copy import copy
 from math import floor
 from pathlib import Path
+from typing import Any, Callable
 
 from docopt import docopt
 from pypdf import PageObject, PageRange, PdfReader, PdfWriter, errors
@@ -70,10 +71,10 @@ class MultiplePathsError(AlfredPdfToolsError):
     """Raised when the user selects PDF files from diferent dirnames."""
 
 
-def handle_exceptions(func):
+def handle_exceptions(func: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator to handle exceptions in the wrapper function."""
 
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         """Wrapper function."""
         try:
             func(*args, **kwargs)
@@ -98,7 +99,7 @@ def handle_exceptions(func):
     return wrapper
 
 
-def run_k2pdfopt(cmd):
+def run_k2pdfopt(cmd: str) -> int:
     """Execute k2pdfopt with the provided command caching the page numbers of the PDF
     file to track the progress of the process.
 
@@ -129,7 +130,7 @@ def run_k2pdfopt(cmd):
 
 
 @handle_exceptions
-def optimize(resolution, pdf_paths):
+def optimize(resolution: str, pdf_paths: list[str]) -> None:
     """Optimize PDF files.
 
     Args:
@@ -155,7 +156,7 @@ def optimize(resolution, pdf_paths):
 
 
 @handle_exceptions
-def deskew(pdf_paths):
+def deskew(pdf_paths: list[str]) -> None:
     """Deskew PDF files.
 
     Args:
@@ -174,7 +175,7 @@ def deskew(pdf_paths):
             notify.notify("Alfred PDF Tools", "Deskew process failed.")
 
 
-def get_progress():  # pragma: no cover
+def get_progress() -> None:  # pragma: no cover
     """Show enhancement progress."""
     wf.rerun = 1
     pg_num = wf.cached_data("page_number", max_age=0)
@@ -213,7 +214,7 @@ def get_progress():  # pragma: no cover
     wf.send_feedback()
 
 
-def progress_bar(count):  # pragma: no cover
+def progress_bar(count: int) -> str:  # pragma: no cover
     """Generate progress bar."""
     prog_bar = ["\u25CB"] * 5
     i = count % 5
@@ -222,7 +223,7 @@ def progress_bar(count):  # pragma: no cover
 
 
 @handle_exceptions
-def encrypt(pwd, pdf_paths):
+def encrypt(pwd: str, pdf_paths: list[str]) -> None:
     """Encrypt PDF files.
 
     Args:
@@ -246,7 +247,7 @@ def encrypt(pwd, pdf_paths):
 
 
 @handle_exceptions
-def decrypt(pwd, pdf_paths):
+def decrypt(pwd: str, pdf_paths: list[str]) -> None:
     """Decrypt PDF files.
 
     Args:
@@ -278,7 +279,7 @@ def decrypt(pwd, pdf_paths):
 
 
 @handle_exceptions
-def merge(out_filename, pdf_paths):
+def merge(out_filename: str, pdf_paths: list[str]):
     """Merge PDF files.
 
     Args:
@@ -306,7 +307,7 @@ def merge(out_filename, pdf_paths):
 
 
 @handle_exceptions
-def split_count(max_pages, abs_path, suffix):
+def split_count(max_pages: str, abs_path: str, suffix: str) -> None:
     """Split PDF file by page count.
 
     Args:
@@ -330,7 +331,7 @@ def split_count(max_pages, abs_path, suffix):
 
 
 @handle_exceptions
-def split_size(max_size, abs_path, suffix):
+def split_size(max_size: str, abs_path: str, suffix: str) -> None:
     """Split PDF file by file size.
 
     Args:
@@ -430,7 +431,7 @@ def split_size(max_size, abs_path, suffix):
 
 
 @handle_exceptions
-def slice_(query, abs_path, is_single, suffix):
+def slice_(query: str, abs_path: str, is_single: bool, suffix: str) -> None:
     """Slice PDF files.
 
     Args:
@@ -474,7 +475,7 @@ def slice_(query, abs_path, is_single, suffix):
 
 
 @handle_exceptions
-def crop(pdf_paths):
+def crop(pdf_paths: list[str]) -> None:
     """Crop two-column pages.
 
     Args:
@@ -535,7 +536,7 @@ def crop(pdf_paths):
 
 
 @handle_exceptions
-def scale(pdf_paths):
+def scale(pdf_paths: list[str]) -> None:
     """Scale PDF files to a given page size.
 
     Args:
@@ -560,7 +561,7 @@ def scale(pdf_paths):
             writer.write(f)
 
 
-def main(wf):  # pylint: disable=redefined-outer-name  # pragma: no cover
+def main(wf) -> None:  # type: ignore[param-type] # pylint: disable=redefined-outer-name # pragma: no cover
     """Run workflow."""
     args = docopt(__doc__)
     query = wf.args[1] if len(wf.args) > 1 else None
