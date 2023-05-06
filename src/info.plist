@@ -188,7 +188,18 @@
 			</dict>
 		</array>
 		<key>576B0800-54DF-4371-8890-B0F77231DE58</key>
-		<array/>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>AEFB6E34-E6C4-4750-9BDC-2F3C039F3AEC</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<array>
 			<dict>
@@ -554,6 +565,25 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>acceptsmulti</key>
+				<integer>1</integer>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Optimize</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>1C706960-938F-4C14-899F-4A2675685FBB</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -590,25 +620,6 @@
 			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
 			<string>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>acceptsmulti</key>
-				<integer>1</integer>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Optimize</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>1C706960-938F-4C14-899F-4A2675685FBB</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -652,6 +663,25 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>acceptsmulti</key>
+				<integer>1</integer>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Deskew</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>8D609CB2-2D7C-468B-A754-C9958CFBB5C4</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -671,25 +701,6 @@
 			<string>D940F7C5-23FC-4B9E-B63E-8362677448F6</string>
 			<key>version</key>
 			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>acceptsmulti</key>
-				<integer>1</integer>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Deskew</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>8D609CB2-2D7C-468B-A754-C9958CFBB5C4</string>
-			<key>version</key>
-			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -764,44 +775,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<integer>1</integer>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Encrypt</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>8C94D95D-1805-46BC-91D1-29027BFD475E</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string></string>
-				<key>text</key>
-				<string>Enter a password.</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -825,6 +798,44 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string></string>
+				<key>text</key>
+				<string>Enter a password.</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>BC2CDCE9-1989-4801-A7CA-4F5C268B2790</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<integer>1</integer>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Encrypt</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>8C94D95D-1805-46BC-91D1-29027BFD475E</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>passthroughargument</key>
@@ -839,6 +850,21 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>A3993CDF-ED16-4F35-9D9C-BDA5B3C7C1E3</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>{query}</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.terminalcommand</string>
+			<key>uid</key>
+			<string>2231BAA3-18FD-4EAC-A91A-553C8FEFD61C</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -906,21 +932,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>escaping</key>
-				<integer>0</integer>
-				<key>script</key>
-				<string>{query}</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.terminalcommand</string>
-			<key>uid</key>
-			<string>2231BAA3-18FD-4EAC-A91A-553C8FEFD61C</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>button1</key>
 				<string>Install</string>
 				<key>button2</key>
@@ -936,6 +947,26 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>alfred.workflow.utility.dialog</string>
 			<key>uid</key>
 			<string>CC45B4E2-40C5-4F6F-869C-337462CD93AC</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>passthroughargument</key>
+				<false/>
+				<key>variables</key>
+				<dict>
+					<key>abs_path</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>E6AF12C3-58F7-4D9C-AC62-7AEB33EBA71B</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -974,26 +1005,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>passthroughargument</key>
-				<false/>
-				<key>variables</key>
-				<dict>
-					<key>abs_path</key>
-					<string>{query}</string>
-				</dict>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
-			<key>uid</key>
-			<string>E6AF12C3-58F7-4D9C-AC62-7AEB33EBA71B</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -1001,7 +1012,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>script</key>
 				<string>python3 alfred_pdf_tools.py --mrg $1</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string>merge.py</string>
 				<key>type</key>
@@ -1013,25 +1024,6 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>CF8EFD70-FC46-46DA-85B7-5C40E39C3722</string>
 			<key>version</key>
 			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>acceptsmulti</key>
-				<integer>2</integer>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Merge</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>A6A91646-8622-45F4-B763-4A6ACBAFD08C</string>
-			<key>version</key>
-			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1049,6 +1041,25 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
 			<string>CEBD82BA-6268-426D-9BFE-62BCD4C27471</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<integer>2</integer>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Merge</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>A6A91646-8622-45F4-B763-4A6ACBAFD08C</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1075,6 +1086,21 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>tasksettings</key>
+				<dict/>
+				<key>taskuid</key>
+				<string>com.alfredapp.automation.core/files-and-folders/path.trash</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.automation.task</string>
+			<key>uid</key>
+			<string>AEFB6E34-E6C4-4750-9BDC-2F3C039F3AEC</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -1082,7 +1108,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>script</key>
 				<string>python3 alfred_pdf_tools.py --mrg-trash $1</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string>merge_trash.py</string>
 				<key>type</key>
@@ -1094,6 +1120,44 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>576B0800-54DF-4371-8890-B0F77231DE58</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string></string>
+				<key>text</key>
+				<string>Enter the maximum amount of pages for each PDF file.</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<integer>0</integer>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Split by Page Count</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>91D78E37-51F7-43B9-B831-D41856B0B7A6</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1121,44 +1185,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<integer>0</integer>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Split by Page Count</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>91D78E37-51F7-43B9-B831-D41856B0B7A6</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string></string>
-				<key>text</key>
-				<string>Enter the maximum amount of pages for each PDF file.</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>D2DB7889-9B91-46E7-BED1-ED9A8C9585C4</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>passthroughargument</key>
@@ -1173,25 +1199,6 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>AF48E08D-4D41-4835-B7D2-FD131E6D7E23</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string></string>
-				<key>text</key>
-				<string>Enter the maximum file size in MB for each PDF file.</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>92E0C5E5-35E4-4521-BAE0-B9BD9EA493CC</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1240,6 +1247,25 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string></string>
+				<key>text</key>
+				<string>Enter the maximum file size in MB for each PDF file.</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>92E0C5E5-35E4-4521-BAE0-B9BD9EA493CC</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>passthroughargument</key>
@@ -1260,6 +1286,25 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>acceptsmulti</key>
+				<integer>0</integer>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Slice in Multiple Files</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>E2104ACC-6C1D-407E-A787-182694534FBA</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -1267,7 +1312,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>script</key>
 				<string>python3 alfred_pdf_tools.py --slice-multi $1</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string>slice_multi.py</string>
 				<key>type</key>
@@ -1302,25 +1347,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<integer>0</integer>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Slice in Multiple Files</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>E2104ACC-6C1D-407E-A787-182694534FBA</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argument</key>
 				<string></string>
 				<key>passthroughargument</key>
@@ -1341,25 +1367,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>subtext</key>
-				<string>e.g. "2, 5-8, 20-"</string>
-				<key>text</key>
-				<string>Enter page numbers and/or page ranges.</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>49850373-29CA-4A8D-AFF0-0BD2336ECF48</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>acceptsmulti</key>
 				<integer>0</integer>
 				<key>filetypes</key>
@@ -1373,6 +1380,25 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>alfred.workflow.trigger.action</string>
 			<key>uid</key>
 			<string>5357A0C2-9D29-4B99-AF5E-89D679CA7534</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>subtext</key>
+				<string>e.g. "2, 5-8, 20-"</string>
+				<key>text</key>
+				<string>Enter page numbers and/or page ranges.</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>49850373-29CA-4A8D-AFF0-0BD2336ECF48</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1422,25 +1448,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>acceptsmulti</key>
-				<integer>1</integer>
-				<key>filetypes</key>
-				<array>
-					<string>com.adobe.pdf</string>
-				</array>
-				<key>name</key>
-				<string>Crop</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.action</string>
-			<key>uid</key>
-			<string>820BE1DD-B58C-4745-8429-4572451D931D</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -1460,6 +1467,25 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>BC33847E-333E-4CCB-A37B-8346C6E24ED1</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsmulti</key>
+				<integer>1</integer>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Crop</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>820BE1DD-B58C-4745-8429-4572451D931D</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1503,6 +1529,29 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python3 alfred_pdf_tools.py --scale $1 $2</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>5</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argumenttrimmode</key>
 				<integer>0</integer>
 				<key>argumenttype</key>
@@ -1528,29 +1577,6 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>943A590E-F14A-43F8-839C-0D6F07453AE7</string>
 			<key>version</key>
 			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>python3 alfred_pdf_tools.py --scale $1 $2</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>5</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>B9CFD6E8-5F60-4DBF-AB8C-211F8C30C5F7</string>
-			<key>version</key>
-			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1596,27 +1622,6 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>2</integer>
-				<key>keyword</key>
-				<string>!diagnostic</string>
-				<key>subtext</key>
-				<string>Result will be copied to the clipboard</string>
-				<key>text</key>
-				<string>Get troubleshooting information.</string>
-				<key>withspace</key>
-				<false/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>DEBC8E93-1F47-4097-AEAB-D5EBDBF45685</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>autopaste</key>
 				<false/>
 				<key>clipboardtext</key>
@@ -1655,6 +1660,27 @@ python3 alfred_pdf_tools.py --progress</string>
 			<string>2BF82EED-74B1-4F14-972A-FFC146041D08</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>!diagnostic</string>
+				<key>subtext</key>
+				<string>Result will be copied to the clipboard</string>
+				<key>text</key>
+				<string>Get troubleshooting information.</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>DEBC8E93-1F47-4097-AEAB-D5EBDBF45685</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 	</array>
 	<key>readme</key>
@@ -2034,6 +2060,13 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 			<real>395</real>
 			<key>ypos</key>
 			<real>50</real>
+		</dict>
+		<key>AEFB6E34-E6C4-4750-9BDC-2F3C039F3AEC</key>
+		<dict>
+			<key>xpos</key>
+			<real>650</real>
+			<key>ypos</key>
+			<real>830</real>
 		</dict>
 		<key>AF48E08D-4D41-4835-B7D2-FD131E6D7E23</key>
 		<dict>
