@@ -84,8 +84,6 @@ def applescriptify(string):
 def run_command(cmd, **kwargs):
     """Run a command and return the output.
 
-    .. versionadded:: 1.31
-
     A thin wrapper around :func:`subprocess.check_output` that ensures
     all arguments are encoded to UTF-8 first.
 

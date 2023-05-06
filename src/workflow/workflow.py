@@ -1313,7 +1313,6 @@ class Workflow:
             "workflow_uid",
             "workflow_version",
         ):
-
             value = os.getenv("alfred_" + key, "")
 
             if value:
@@ -1391,7 +1390,6 @@ class Workflow:
 
         """
         if self._version is UNSET:
-
             version = None
             # environment variable has priority
             if self.alfred_env.get("workflow_version"):
@@ -1791,6 +1789,7 @@ class Workflow:
         :returns: data in datastore or ``None``
 
         """
+
         # Ensure deletion is not interrupted by SIGTERM
         @uninterruptible
         def delete_paths(paths):
@@ -1902,8 +1901,7 @@ class Workflow:
 
     def clear_session_cache(self, current=False):
         """Remove session data from the cache.
-        .. versionadded:: 1.25
-        .. versionchanged:: 1.27
+
         By default, data belonging to the current session won't be
         deleted. Set ``current=True`` to also clear current session.
         Args:
@@ -2867,6 +2865,7 @@ class Workflow:
 
     def _register_default_magic(self):
         """Register the built-in magic arguments."""
+
         # TODO: refactor & simplify
         # Wrap callback and message with callable
         def callback(func, msg):

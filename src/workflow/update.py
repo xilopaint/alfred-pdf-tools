@@ -99,8 +99,8 @@ class Download:
                 dls.append(Download(url, filename, version, release["prerelease"]))
 
             valid = True
-            for ext, n in list(dupes.items()):
-                if n > 1:
+            for ext, count in list(dupes.items()):
+                if count > 1:
                     wf.logger.debug(
                         'ignored release "%s": multiple assets with extension "%s"',
                         tag,
@@ -308,19 +308,21 @@ class Version:
             if other.suffix and not self.suffix:
                 return False
 
-            self_suffix = self._parse_dotted_string(self.suffix)
-            other_suffix = self._parse_dotted_string(other.suffix)
+            self_suffixes = self._parse_dotted_string(self.suffix)
+            other_suffixes = self._parse_dotted_string(other.suffix)
 
-            for s, o in zip_longest(self_suffix, other_suffix):
-                if s is None:  # shorter value wins
+            for self_suffix, other_suffix in zip_longest(self_suffixes, other_suffixes):
+                if self_suffix is None:  # shorter value wins
                     return True
-                if o is None:  # longer value loses
+                if other_suffix is None:  # longer value loses
                     return False
-                if isinstance(s, str) != isinstance(o, str):  # type coersion
-                    s, o = str(s), str(o)
-                elif s == o:  # next if the same compare
+                if isinstance(self_suffix, str) != isinstance(
+                    other_suffix, str
+                ):  # type coersion
+                    self_suffix, other_suffix = str(self_suffix), str(other_suffix)
+                elif self_suffix == other_suffix:  # next if the same compare
                     continue
-                return s < o  # finally compare
+                return self_suffix < other_suffix  # finally compare
 
         return False
 
