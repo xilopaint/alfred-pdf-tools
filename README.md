@@ -59,7 +59,7 @@ pull request][4].
 ## Credits
 
 This workflow relies on [pypdf][5] library by Martin Thoma, [docopt][6] by
-Vladimir Keleshev and [K2pdfopt][7] by Johannes Buchnerand.
+Vladimir Keleshev and [K2pdfopt][7] by willus.
 
 [1]:http://www.alfredapp.com/
 [2]:https://www.alfredapp.com/blog/tips-and-tricks/file-actions-from-alfred-or-finder/
