@@ -63,10 +63,6 @@ class DoubleQuotesPathError(AlfredPdfToolsError):
     """Raised when a PDF file has double quotes in its path."""
 
 
-class SelectionError(AlfredPdfToolsError):
-    """Raised when the user selects less than two PDF files."""
-
-
 class MultiplePathsError(AlfredPdfToolsError):
     """Raised when the user selects PDF files from diferent dirnames."""
 
@@ -86,10 +82,6 @@ def handle_exceptions(func: Callable[..., Any]) -> Callable[..., Any]:
             notify.notify(
                 "Alfred PDF Tools",
                 "This file action cannot handle a file path with double quotes.",
-            )
-        except SelectionError:
-            notify.notify(
-                "Alfred PDF Tools", "You must select at least two PDF files to merge."
             )
         except MultiplePathsError:
             notify.notify(
@@ -287,9 +279,6 @@ def merge(out_filename: str, pdf_paths: list[str]):
         pdf_paths (list): Paths to selected PDF files.
     """
     parent_paths = [Path(pdf_path).parent for pdf_path in pdf_paths]
-
-    if len(pdf_paths) < 2:
-        raise SelectionError
 
     if not parent_paths[1:] == parent_paths[:-1]:
         raise MultiplePathsError

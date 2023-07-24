@@ -57,7 +57,6 @@ class AlfredPdfToolsTests(unittest.TestCase):
     @patch("workflow.notify.notify")
     def test_merge(self, notify) -> None:
         """Test merge file action."""
-        self.assertIsNone(merge("tmp_1", ["./resources/file_1.pdf"]))
         self.assertIsNone(
             merge("tmp_1", ["./resources/file_1.pdf", "./resources_mock/file_2.pdf"])
         )
