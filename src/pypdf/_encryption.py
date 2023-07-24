@@ -24,11 +24,10 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
 import hashlib
 import secrets
 import struct
-from enum import IntEnum
+from enum import Enum, IntEnum
 from typing import Any, Dict, Optional, Tuple, Union, cast
 
 from ._utils import logger_warning
@@ -37,6 +36,8 @@ from .generic import (
     ArrayObject,
     ByteStringObject,
     DictionaryObject,
+    NameObject,
+    NumberObject,
     PdfObject,
     StreamObject,
     TextStringObject,
@@ -54,14 +55,6 @@ class CryptBase:
 
 class CryptIdentity(CryptBase):
     pass
-
-
-def _randrange(lower_inclusive: int, upper_exclusive: int) -> int:
-    return secrets.choice(range(lower_inclusive, upper_exclusive))
-
-
-def _randint(lower_inclusive: int, upper_inclusive: int) -> int:
-    return secrets.choice(range(lower_inclusive, upper_inclusive + 1))
 
 
 try:
@@ -83,7 +76,7 @@ try:
             self.key = key
 
         def encrypt(self, data: bytes) -> bytes:
-            iv = bytes(bytearray(_randint(0, 255) for _ in range(16)))
+            iv = secrets.token_bytes(16)
             p = 16 - len(data) % 16
             data += bytes(bytearray(p for _ in range(p)))
             aes = AES.new(self.key, AES.MODE_CBC, iv)
@@ -184,8 +177,25 @@ class CryptFilter:
         self.efCrypt = efCrypt
 
     def encrypt_object(self, obj: PdfObject) -> PdfObject:
-        # TODO
-        return NotImplemented
+        if isinstance(obj, ByteStringObject):
+            data = self.strCrypt.encrypt(obj.original_bytes)
+            obj = ByteStringObject(data)
+        if isinstance(obj, TextStringObject):
+            data = self.strCrypt.encrypt(obj.get_encoded_bytes())
+            obj = ByteStringObject(data)
+        elif isinstance(obj, StreamObject):
+            obj2 = StreamObject()
+            obj2.update(obj)
+            obj2._data = self.stmCrypt.encrypt(obj._data)
+            obj = obj2
+        elif isinstance(obj, DictionaryObject):
+            obj2 = DictionaryObject()  # type: ignore
+            for key, value in obj.items():
+                obj2[key] = self.encrypt_object(value)
+            obj = obj2
+        elif isinstance(obj, ArrayObject):
+            obj = ArrayObject(self.encrypt_object(x) for x in obj)  # type: ignore
+        return obj
 
     def decrypt_object(self, obj: PdfObject) -> PdfObject:
         if isinstance(obj, (ByteStringObject, TextStringObject)):
@@ -320,7 +330,7 @@ class AlgV4:
         u_hash.update(o_entry)
         u_hash.update(struct.pack("<I", P))
         u_hash.update(id1_entry)
-        if rev >= 4 and metadata_encrypted is False:
+        if rev >= 4 and not metadata_encrypted:
             u_hash.update(b"\xff\xff\xff\xff")
         u_hash_digest = u_hash.digest()
         length = key_size // 8
@@ -739,14 +749,17 @@ class AlgV5:
 
     @staticmethod
     def generate_values(
+        R: int,
         user_password: bytes,
         owner_password: bytes,
         key: bytes,
         p: int,
         metadata_encrypted: bool,
     ) -> Dict[Any, Any]:
-        u_value, ue_value = AlgV5.compute_U_value(user_password, key)
-        o_value, oe_value = AlgV5.compute_O_value(owner_password, key, u_value)
+        user_password = user_password[:127]
+        owner_password = owner_password[:127]
+        u_value, ue_value = AlgV5.compute_U_value(R, user_password, key)
+        o_value, oe_value = AlgV5.compute_O_value(R, owner_password, key, u_value)
         perms = AlgV5.compute_Perms_value(key, p, metadata_encrypted)
         return {
             "/U": u_value,
@@ -757,7 +770,7 @@ class AlgV5:
         }
 
     @staticmethod
-    def compute_U_value(password: bytes, key: bytes) -> Tuple[bytes, bytes]:
+    def compute_U_value(R: int, password: bytes, key: bytes) -> Tuple[bytes, bytes]:
         """
         Algorithm 3.8 Computing the encryption dictionary’s U (user password)
         and UE (user encryption key) values.
@@ -775,25 +788,26 @@ class AlgV5:
            as the UE key.
 
         Args:
+            R:
             password:
             key:
 
         Returns:
             A tuple (u-value, ue value)
         """
-        random_bytes = bytes(_randrange(0, 256) for _ in range(16))
+        random_bytes = secrets.token_bytes(16)
         val_salt = random_bytes[:8]
         key_salt = random_bytes[8:]
-        u_value = hashlib.sha256(password + val_salt).digest() + val_salt + key_salt
+        u_value = AlgV5.calculate_hash(R, password, val_salt, b"") + val_salt + key_salt
 
-        tmp_key = hashlib.sha256(password + key_salt).digest()
+        tmp_key = AlgV5.calculate_hash(R, password, key_salt, b"")
         iv = bytes(0 for _ in range(16))
         ue_value = AES_CBC_encrypt(tmp_key, iv, key)
         return u_value, ue_value
 
     @staticmethod
     def compute_O_value(
-        password: bytes, key: bytes, u_value: bytes
+        R: int, password: bytes, key: bytes, u_value: bytes
     ) -> Tuple[bytes, bytes]:
         """
         Algorithm 3.9 Computing the encryption dictionary’s O (owner password)
@@ -815,6 +829,7 @@ class AlgV5:
            The resulting 32-byte string is stored as the OE key.
 
         Args:
+            R:
             password:
             key:
             u_value: A 32-byte string, based on the user password, that shall be
@@ -824,14 +839,13 @@ class AlgV5:
         Returns:
             A tuple (O value, OE value)
         """
-        random_bytes = bytes(_randrange(0, 256) for _ in range(16))
+        random_bytes = secrets.token_bytes(16)
         val_salt = random_bytes[:8]
         key_salt = random_bytes[8:]
         o_value = (
-            hashlib.sha256(password + val_salt + u_value).digest() + val_salt + key_salt
+            AlgV5.calculate_hash(R, password, val_salt, u_value) + val_salt + key_salt
         )
-
-        tmp_key = hashlib.sha256(password + key_salt + u_value).digest()
+        tmp_key = AlgV5.calculate_hash(R, password, key_salt, u_value[:48])
         iv = bytes(0 for _ in range(16))
         oe_value = AES_CBC_encrypt(tmp_key, iv, key)
         return o_value, oe_value
@@ -869,7 +883,7 @@ class AlgV5:
             The perms value
         """
         b8 = b"T" if metadata_encrypted else b"F"
-        rr = bytes(_randrange(0, 256) for _ in range(4))
+        rr = secrets.token_bytes(4)
         data = struct.pack("<I", p) + b"\xff\xff\xff\xff" + b8 + b"adb" + rr
         perms = AES_ECB_encrypt(key, data)
         return perms
@@ -881,36 +895,110 @@ class PasswordType(IntEnum):
     OWNER_PASSWORD = 2
 
 
+class EncryptAlgorithm(tuple, Enum):  # noqa: SLOT001
+    # V, R, Length
+    RC4_40 = (1, 2, 40)
+    RC4_128 = (2, 3, 128)
+    AES_128 = (4, 4, 128)
+    AES_256_R5 = (5, 5, 256)
+    AES_256 = (5, 6, 256)
+
+
+class EncryptionValues:
+    O: bytes  # noqa
+    U: bytes
+    OE: bytes
+    UE: bytes
+    Perms: bytes
+
+
 class Encryption:
+    """
+    Collects and manages parameters for PDF document encryption and decryption.
+
+    Args:
+        V: A code specifying the algorithm to be used in encrypting and
+           decrypting the document.
+        R: The revision of the standard security handler.
+        Length: The length of the encryption key in bits.
+        P: A set of flags specifying which operations shall be permitted
+           when the document is opened with user access
+        entry: The encryption dictionary object.
+        EncryptMetadata: Whether to encrypt metadata in the document.
+        first_id_entry: The first 16 bytes of the file's original ID.
+        StmF: The name of the crypt filter that shall be used by default
+              when decrypting streams.
+        StrF: The name of the crypt filter that shall be used when decrypting
+              all strings in the document.
+        EFF: The name of the crypt filter that shall be used when
+             encrypting embedded file streams that do not have their own
+             crypt filter specifier.
+        values: Additional encryption parameters.
+    """
+
     def __init__(
         self,
-        algV: int,
-        algR: int,
+        V: int,
+        R: int,
+        Length: int,
+        P: int,
         entry: DictionaryObject,
+        EncryptMetadata: bool,
         first_id_entry: bytes,
         StmF: str,
         StrF: str,
         EFF: str,
+        values: Optional[EncryptionValues],
     ) -> None:
         # See TABLE 3.18 Entries common to all encryption dictionaries
-        self.algV = algV
-        self.algR = algR
-        self.entry = entry
-        self.key_size = entry.get("/Length", 40)
+        # use same name as keys of encryption dictionaries entries
+        self.V = V
+        self.R = R
+        self.Length = Length  # key_size
+        self.P = (P + 0x100000000) % 0x100000000  # maybe P < 0
+        self.EncryptMetadata = EncryptMetadata
         self.id1_entry = first_id_entry
         self.StmF = StmF
         self.StrF = StrF
         self.EFF = EFF
+        self.values: EncryptionValues = values if values else EncryptionValues()
 
-        # 1 => owner password
-        # 2 => user password
         self._password_type = PasswordType.NOT_DECRYPTED
         self._key: Optional[bytes] = None
 
     def is_decrypted(self) -> bool:
         return self._password_type != PasswordType.NOT_DECRYPTED
 
+    def encrypt_object(self, obj: PdfObject, idnum: int, generation: int) -> PdfObject:
+        # skip calculate key
+        if not self._is_encryption_object(obj):
+            return obj
+
+        cf = self._make_crypt_filter(idnum, generation)
+        return cf.encrypt_object(obj)
+
     def decrypt_object(self, obj: PdfObject, idnum: int, generation: int) -> PdfObject:
+        # skip calculate key
+        if not self._is_encryption_object(obj):
+            return obj
+
+        cf = self._make_crypt_filter(idnum, generation)
+        return cf.decrypt_object(obj)
+
+    @staticmethod
+    def _is_encryption_object(obj: PdfObject) -> bool:
+        return isinstance(
+            obj,
+            (
+                ByteStringObject,
+                TextStringObject,
+                StreamObject,
+                ArrayObject,
+                DictionaryObject,
+            ),
+        )
+
+    def _make_crypt_filter(self, idnum: int, generation: int) -> CryptFilter:
         """
         Algorithm 1: Encryption of data using the RC4 or AES algorithms.
 
@@ -949,21 +1037,13 @@ class Encryption:
            16 bytes, and the initialization vector is a 16-byte random number
            that is stored as the first 16 bytes of the encrypted stream or string.
            The output is the encrypted data to be stored in the PDF file.
-
-        Args:
-            obj:
-            idnum:
-            generation:
-
-        Returns:
-            The PdfObject
         """
         pack1 = struct.pack("<i", idnum)[:3]
         pack2 = struct.pack("<i", generation)[:2]
 
         assert self._key
         key = self._key
-        n = 5 if self.algV == 1 else self.key_size // 8
+        n = 5 if self.V == 1 else self.Length // 8
         key_data = key[:n] + pack1 + pack2
         key_hash = hashlib.md5(key_data)
         rc4_key = key_hash.digest()[: min(n + 5, 16)]
@@ -978,8 +1058,7 @@ class Encryption:
         StrCrypt = self._get_crypt(self.StrF, rc4_key, aes128_key, aes256_key)
         efCrypt = self._get_crypt(self.EFF, rc4_key, aes128_key, aes256_key)
 
-        cf = CryptFilter(stmCrypt, StrCrypt, efCrypt)
-        return cf.decrypt_object(obj)
+        return CryptFilter(stmCrypt, StrCrypt, efCrypt)
 
     @staticmethod
     def _get_crypt(
@@ -994,7 +1073,8 @@ class Encryption:
         else:
             return CryptRC4(rc4_key)
 
-    def verify(self, password: Union[bytes, str]) -> PasswordType:
+    @staticmethod
+    def _encode_password(password: Union[bytes, str]) -> bytes:
         if isinstance(password, str):
             try:
                 pwd = password.encode("latin-1")
@@ -1002,45 +1082,39 @@ class Encryption:
                 pwd = password.encode("utf-8")
         else:
             pwd = password
+        return pwd
 
-        key, rc = self.verify_v4(pwd) if self.algV <= 4 else self.verify_v5(pwd)
+    def verify(self, password: Union[bytes, str]) -> PasswordType:
+        pwd = self._encode_password(password)
+        key, rc = self.verify_v4(pwd) if self.V <= 4 else self.verify_v5(pwd)
         if rc != PasswordType.NOT_DECRYPTED:
             self._password_type = rc
             self._key = key
         return rc
 
     def verify_v4(self, password: bytes) -> Tuple[bytes, PasswordType]:
-        R = cast(int, self.entry["/R"])
-        P = cast(int, self.entry["/P"])
-        P = (P + 0x100000000) % 0x100000000  # maybe < 0
-        # make type(metadata_encrypted) == bool
-        em = self.entry.get("/EncryptMetadata")
-        metadata_encrypted = em.value if em else True
-        o_entry = cast(ByteStringObject, self.entry["/O"].get_object()).original_bytes
-        u_entry = cast(ByteStringObject, self.entry["/U"].get_object()).original_bytes
-
         # verify owner password first
         key = AlgV4.verify_owner_password(
             password,
-            R,
-            self.key_size,
-            o_entry,
-            u_entry,
-            P,
+            self.R,
+            self.Length,
+            self.values.O,
+            self.values.U,
+            self.P,
             self.id1_entry,
-            metadata_encrypted,
+            self.EncryptMetadata,
         )
         if key:
             return key, PasswordType.OWNER_PASSWORD
         key = AlgV4.verify_user_password(
             password,
-            R,
-            self.key_size,
-            o_entry,
-            u_entry,
-            P,
+            self.R,
+            self.Length,
+            self.values.O,
+            self.values.U,
+            self.P,
             self.id1_entry,
-            metadata_encrypted,
+            self.EncryptMetadata,
         )
         if key:
             return key, PasswordType.USER_PASSWORD
@@ -1048,30 +1122,94 @@ class Encryption:
 
     def verify_v5(self, password: bytes) -> Tuple[bytes, PasswordType]:
         # TODO: use SASLprep process
-        o_entry = cast(ByteStringObject, self.entry["/O"].get_object()).original_bytes
-        u_entry = cast(ByteStringObject, self.entry["/U"].get_object()).original_bytes
-        oe_entry = cast(ByteStringObject, self.entry["/OE"].get_object()).original_bytes
-        ue_entry = cast(ByteStringObject, self.entry["/UE"].get_object()).original_bytes
-
         # verify owner password first
         key = AlgV5.verify_owner_password(
-            self.algR, password, o_entry, oe_entry, u_entry
+            self.R, password, self.values.O, self.values.OE, self.values.U
         )
         rc = PasswordType.OWNER_PASSWORD
         if not key:
-            key = AlgV5.verify_user_password(self.algR, password, u_entry, ue_entry)
+            key = AlgV5.verify_user_password(
+                self.R, password, self.values.U, self.values.UE
+            )
             rc = PasswordType.USER_PASSWORD
         if not key:
             return b"", PasswordType.NOT_DECRYPTED
 
         # verify Perms
-        perms = cast(ByteStringObject, self.entry["/Perms"].get_object()).original_bytes
-        P = cast(int, self.entry["/P"])
-        P = (P + 0x100000000) % 0x100000000  # maybe < 0
-        metadata_encrypted = self.entry.get("/EncryptMetadata", True)
-        if not AlgV5.verify_perms(key, perms, P, metadata_encrypted):
+        if not AlgV5.verify_perms(key, self.values.Perms, self.P, self.EncryptMetadata):
             logger_warning("ignore '/Perms' verify failed", __name__)
         return key, rc
+
+    def write_entry(
+        self, user_password: str, owner_password: Optional[str]
+    ) -> DictionaryObject:
+        user_pwd = self._encode_password(user_password)
+        owner_pwd = self._encode_password(owner_password) if owner_password else None
+        if owner_pwd is None:
+            owner_pwd = user_pwd
+
+        if self.V <= 4:
+            self.compute_values_v4(user_pwd, owner_pwd)
+        else:
+            self._key = secrets.token_bytes(self.Length // 8)
+            values = AlgV5.generate_values(
+                self.R, user_pwd, owner_pwd, self._key, self.P, self.EncryptMetadata
+            )
+            self.values.O = values["/O"]
+            self.values.U = values["/U"]
+            self.values.OE = values["/OE"]
+            self.values.UE = values["/UE"]
+            self.values.Perms = values["/Perms"]
+
+        dictObj = DictionaryObject()
+        dictObj[NameObject("/V")] = NumberObject(self.V)
+        dictObj[NameObject("/R")] = NumberObject(self.R)
+        dictObj[NameObject("/Length")] = NumberObject(self.Length)
+        dictObj[NameObject("/P")] = NumberObject(self.P)
+        dictObj[NameObject("/Filter")] = NameObject("/Standard")
+        # ignore /EncryptMetadata
+
+        dictObj[NameObject("/O")] = ByteStringObject(self.values.O)
+        dictObj[NameObject("/U")] = ByteStringObject(self.values.U)
+
+        if self.V >= 4:
+            # TODO: allow different method
+            StdCF = DictionaryObject()
+            StdCF[NameObject("/AuthEvent")] = NameObject("/DocOpen")
+            StdCF[NameObject("/CFM")] = NameObject(self.StmF)
+            StdCF[NameObject("/Length")] = NumberObject(self.Length // 8)
+            CF = DictionaryObject()
+            CF[NameObject("/StdCF")] = StdCF
+            dictObj[NameObject("/CF")] = CF
+            dictObj[NameObject("/StmF")] = NameObject("/StdCF")
+            dictObj[NameObject("/StrF")] = NameObject("/StdCF")
+            # ignore EFF
+            # dictObj[NameObject("/EFF")] = NameObject("/StdCF")
+
+        if self.V >= 5:
+            dictObj[NameObject("/OE")] = ByteStringObject(self.values.OE)
+            dictObj[NameObject("/UE")] = ByteStringObject(self.values.UE)
+            dictObj[NameObject("/Perms")] = ByteStringObject(self.values.Perms)
+        return dictObj
+
+    def compute_values_v4(self, user_password: bytes, owner_password: bytes) -> None:
+        rc4_key = AlgV4.compute_O_value_key(owner_password, self.R, self.Length)
+        o_value = AlgV4.compute_O_value(rc4_key, user_password, self.R)
+
+        key = AlgV4.compute_key(
+            user_password,
+            self.R,
+            self.Length,
+            o_value,
+            self.P,
+            self.id1_entry,
+            self.EncryptMetadata,
+        )
+        u_value = AlgV4.compute_U_value(key, self.R, self.id1_entry)
+
+        self._key = key
+        self.values.O = o_value
+        self.values.U = u_value
 
     @staticmethod
     def read(encryption_entry: DictionaryObject, first_id_entry: bytes) -> "Encryption":
@@ -1106,11 +1244,61 @@ class Encryption:
 
             allowed_methods = ("/Identity", "/V2", "/AESV2", "/AESV3")
             if StmF not in allowed_methods:
-                raise NotImplementedError("StmF Method {StmF} NOT supported!")
+                raise NotImplementedError(f"StmF Method {StmF} NOT supported!")
             if StrF not in allowed_methods:
                 raise NotImplementedError(f"StrF Method {StrF} NOT supported!")
             if EFF not in allowed_methods:
                 raise NotImplementedError(f"EFF Method {EFF} NOT supported!")
 
         R = cast(int, encryption_entry["/R"])
-        return Encryption(V, R, encryption_entry, first_id_entry, StmF, StrF, EFF)
+        P = cast(int, encryption_entry["/P"])
+        Length = encryption_entry.get("/Length", 40)
+        EncryptMetadata = encryption_entry.get("/EncryptMetadata")
+        EncryptMetadata = EncryptMetadata.value if EncryptMetadata is not None else True
+        values = EncryptionValues()
+        values.O = cast(ByteStringObject, encryption_entry["/O"]).original_bytes
+        values.U = cast(ByteStringObject, encryption_entry["/U"]).original_bytes
+        values.OE = encryption_entry.get("/OE", ByteStringObject()).original_bytes
+        values.UE = encryption_entry.get("/UE", ByteStringObject()).original_bytes
+        values.Perms = encryption_entry.get("/Perms", ByteStringObject()).original_bytes
+        return Encryption(
+            V=V,
+            R=R,
+            Length=Length,
+            P=P,
+            EncryptMetadata=EncryptMetadata,
+            first_id_entry=first_id_entry,
+            values=values,
+            StrF=StrF,
+            StmF=StmF,
+            EFF=EFF,
+            entry=encryption_entry,  # Dummy entry for the moment; will get removed
+        )
+
+    @staticmethod
+    def make(
+        alg: EncryptAlgorithm, permissions: int, first_id_entry: bytes
+    ) -> "Encryption":
+        V, R, Length = cast(tuple, alg)
+        P = permissions
+
+        StmF, StrF, EFF = "/V2", "/V2", "/V2"
+
+        if alg == EncryptAlgorithm.AES_128:
+            StmF, StrF, EFF = "/AESV2", "/AESV2", "/AESV2"
+        elif alg in (EncryptAlgorithm.AES_256_R5, EncryptAlgorithm.AES_256):
+            StmF, StrF, EFF = "/AESV3", "/AESV3", "/AESV3"
+
+        return Encryption(
+            V=V,
+            R=R,
+            Length=Length,
+            P=P,
+            EncryptMetadata=True,
+            first_id_entry=first_id_entry,
+            values=None,
+            StrF=StrF,
+            StmF=StmF,
+            EFF=EFF,
+            entry=DictionaryObject(),  # Dummy entry for the moment; will get removed
+        )

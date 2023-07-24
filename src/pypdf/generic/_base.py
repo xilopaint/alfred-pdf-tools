@@ -24,22 +24,21 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
+import binascii
 import codecs
 import hashlib
 import re
 from binascii import unhexlify
 from math import log10
-from typing import Any, Callable, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, ClassVar, Dict, Optional, Sequence, Union, cast
 
 from .._codecs import _pdfdoc_encoding_rev
 from .._protocols import PdfObjectProtocol, PdfWriterProtocol
 from .._utils import (
     StreamType,
     b_,
+    deprecate_no_replacement,
     deprecation_with_replacement,
-    hex_str,
-    hexencode,
     logger_warning,
     read_non_whitespace,
     read_until_regex,
@@ -72,7 +71,7 @@ class PdfObject(PdfObjectProtocol):
         self,
         pdf_dest: PdfWriterProtocol,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "PdfObject":
         """
         clone object into pdf_dest (PdfWriterProtocol which is an interface for PdfWriter)
@@ -81,6 +80,10 @@ class PdfObject(PdfObjectProtocol):
             a new copy is always performed
         ignore_fields : list/tuple of Fields names (for dictionaries that will
             be ignored during cloning (apply also to childs duplication)
+            if fields are to be considered for a limited number of levels
+            you have to add it as integer:
+            eg  [1,"/B","/TOTO"] means "/B" will be ignored at first level only
+            but "/TOTO" on all levels
         in standard, clone function call _reference_clone (see _reference)
 
         Args:
@@ -91,7 +94,9 @@ class PdfObject(PdfObjectProtocol):
         Returns:
           The cloned PdfObject
         """
-        raise Exception("clone PdfObject")
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement .clone so far"
+        )
 
     def _reference_clone(
         self, clone: Any, pdf_dest: PdfWriterProtocol, force_duplicate: bool = False
@@ -146,7 +151,7 @@ class PdfObject(PdfObjectProtocol):
         return self.get_object()
 
     def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
     ) -> None:
         raise NotImplementedError
 
@@ -156,7 +161,7 @@ class NullObject(PdfObject):
         self,
         pdf_dest: PdfWriterProtocol,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "NullObject":
         """Clone object into pdf_dest."""
         return cast(
@@ -164,8 +169,12 @@ class NullObject(PdfObject):
         )
 
     def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
     ) -> None:
+        if encryption_key is not None:  # deprecated
+            deprecate_no_replacement(
+                "the encryption_key parameter of write_to_stream", "5.0.0"
+            )
         stream.write(b"null")
 
     @staticmethod
@@ -179,7 +188,7 @@ class NullObject(PdfObject):
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # deprecated
         deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
-        self.write_to_stream(stream, encryption_key)
+        self.write_to_stream(stream)
 
     def __repr__(self) -> str:
         return "NullObject"
@@ -198,7 +207,7 @@ class BooleanObject(PdfObject):
         self,
         pdf_dest: PdfWriterProtocol,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "BooleanObject":
         """Clone object into pdf_dest."""
         return cast(
@@ -218,8 +227,12 @@ class BooleanObject(PdfObject):
         return "True" if self.value else "False"
 
     def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
     ) -> None:
+        if encryption_key is not None:  # deprecated
+            deprecate_no_replacement(
+                "the encryption_key parameter of write_to_stream", "5.0.0"
+            )
         if self.value:
             stream.write(b"true")
         else:
@@ -229,7 +242,7 @@ class BooleanObject(PdfObject):
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # deprecated
         deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
-        self.write_to_stream(stream, encryption_key)
+        self.write_to_stream(stream)
 
     @staticmethod
     def read_from_stream(stream: StreamType) -> "BooleanObject":
@@ -258,7 +271,7 @@ class IndirectObject(PdfObject):
         self,
         pdf_dest: PdfWriterProtocol,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "IndirectObject":
         """Clone object into pdf_dest."""
         if self.pdf == pdf_dest and not force_duplicate:
@@ -311,15 +324,19 @@ class IndirectObject(PdfObject):
         return not self.__eq__(other)
 
     def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
     ) -> None:
+        if encryption_key is not None:  # deprecated
+            deprecate_no_replacement(
+                "the encryption_key parameter of write_to_stream", "5.0.0"
+            )
         stream.write(b_(f"{self.idnum} {self.generation} R"))
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # deprecated
         deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
-        self.write_to_stream(stream, encryption_key)
+        self.write_to_stream(stream)
 
     @staticmethod
     def read_from_stream(stream: StreamType, pdf: Any) -> "IndirectObject":  # PdfReader
@@ -344,7 +361,7 @@ class IndirectObject(PdfObject):
         r = read_non_whitespace(stream)
         if r != b"R":
             raise PdfReadError(
-                f"Error reading indirect object reference at byte {hex_str(stream.tell())}"
+                f"Error reading indirect object reference at byte {hex(stream.tell())}"
             )
         return IndirectObject(int(idnum), int(generation), pdf)
 
@@ -375,7 +392,7 @@ class FloatObject(float, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "FloatObject":
         """Clone object into pdf_dest."""
         return cast(
@@ -397,15 +414,19 @@ class FloatObject(float, PdfObject):
         return float(self)
 
     def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
     ) -> None:
+        if encryption_key is not None:  # deprecated
+            deprecate_no_replacement(
+                "the encryption_key parameter of write_to_stream", "5.0.0"
+            )
         stream.write(self.myrepr().encode("utf8"))
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # deprecated
         deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
-        self.write_to_stream(stream, encryption_key)
+        self.write_to_stream(stream)
 
 
 class NumberObject(int, PdfObject):
@@ -422,7 +443,7 @@ class NumberObject(int, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "NumberObject":
         """Clone object into pdf_dest."""
         return cast(
@@ -434,15 +455,19 @@ class NumberObject(int, PdfObject):
         return int(repr(self).encode("utf8"))
 
     def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
     ) -> None:
+        if encryption_key is not None:  # deprecated
+            deprecate_no_replacement(
+                "the encryption_key parameter of write_to_stream", "5.0.0"
+            )
         stream.write(repr(self).encode("utf8"))
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # deprecated
         deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
-        self.write_to_stream(stream, encryption_key)
+        self.write_to_stream(stream)
 
     @staticmethod
     def read_from_stream(stream: StreamType) -> Union["NumberObject", "FloatObject"]:
@@ -472,7 +497,7 @@ class ByteStringObject(bytes, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "ByteStringObject":
         """Clone object into pdf_dest."""
         return cast(
@@ -488,25 +513,24 @@ class ByteStringObject(bytes, PdfObject):
         return self
 
     def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
     ) -> None:
-        bytearr = self
-        if encryption_key:
-            from .._security import RC4_encrypt
-
-            bytearr = RC4_encrypt(encryption_key, bytearr)  # type: ignore
+        if encryption_key is not None:  # deprecated
+            deprecate_no_replacement(
+                "the encryption_key parameter of write_to_stream", "5.0.0"
+            )
         stream.write(b"<")
-        stream.write(hexencode(bytearr))
+        stream.write(binascii.hexlify(self))
         stream.write(b">")
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # deprecated
         deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
-        self.write_to_stream(stream, encryption_key)
+        self.write_to_stream(stream)
 
 
-class TextStringObject(str, PdfObject):
+class TextStringObject(str, PdfObject):  # noqa: SLOT000
     """
     A string object that has been decoded into a real unicode string.
 
@@ -519,7 +543,7 @@ class TextStringObject(str, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "TextStringObject":
         """Clone object into pdf_dest."""
         obj = TextStringObject(self)
@@ -555,9 +579,7 @@ class TextStringObject(str, PdfObject):
         else:
             raise Exception("no information about original bytes")
 
-    def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
-    ) -> None:
+    def get_encoded_bytes(self) -> bytes:
         # Try to write the string out as a PDFDocEncoding encoded string.  It's
         # nicer to look at in the PDF file.  Sadly, we take a performance hit
         # here for trying...
@@ -565,40 +587,44 @@ class TextStringObject(str, PdfObject):
             bytearr = encode_pdfdocencoding(self)
         except UnicodeEncodeError:
             bytearr = codecs.BOM_UTF16_BE + self.encode("utf-16be")
-        if encryption_key:
-            from .._security import RC4_encrypt
+        return bytearr
 
-            bytearr = RC4_encrypt(encryption_key, bytearr)
-            obj = ByteStringObject(bytearr)
-            obj.write_to_stream(stream, None)
-        else:
-            stream.write(b"(")
-            for c in bytearr:
-                if not chr(c).isalnum() and c != b" ":
-                    # This:
-                    #   stream.write(b_(rf"\{c:0>3o}"))
-                    # gives
-                    #   https://github.com/davidhalter/parso/issues/207
-                    stream.write(b_("\\%03o" % c))
-                else:
-                    stream.write(b_(chr(c)))
-            stream.write(b")")
+    def write_to_stream(
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
+    ) -> None:
+        if encryption_key is not None:  # deprecated
+            deprecate_no_replacement(
+                "the encryption_key parameter of write_to_stream", "5.0.0"
+            )
+        bytearr = self.get_encoded_bytes()
+        stream.write(b"(")
+        for c in bytearr:
+            if not chr(c).isalnum() and c != b" ":
+                # This:
+                #   stream.write(b_(rf"\{c:0>3o}"))
+                # gives
+                #   https://github.com/davidhalter/parso/issues/207
+                stream.write(b_("\\%03o" % c))
+            else:
+                stream.write(b_(chr(c)))
+        stream.write(b")")
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # deprecated
         deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
-        self.write_to_stream(stream, encryption_key)
+        self.write_to_stream(stream)
 
 
-class NameObject(str, PdfObject):
+class NameObject(str, PdfObject):  # noqa: SLOT000
     delimiter_pattern = re.compile(rb"\s+|[\(\)<>\[\]{}/%]")
     surfix = b"/"
-    renumber_table = {
+    renumber_table: ClassVar[Dict[str, bytes]] = {
         "#": b"#23",
         "(": b"#28",
         ")": b"#29",
         "/": b"#2F",
+        "%": b"#25",
         **{chr(i): f"#{i:02X}".encode() for i in range(33)},
     }
 
@@ -606,7 +632,7 @@ class NameObject(str, PdfObject):
         self,
         pdf_dest: Any,
         force_duplicate: bool = False,
-        ignore_fields: Union[Tuple[str, ...], List[str], None] = (),
+        ignore_fields: Optional[Sequence[Union[str, int]]] = (),
     ) -> "NameObject":
         """Clone object into pdf_dest."""
         return cast(
@@ -615,15 +641,19 @@ class NameObject(str, PdfObject):
         )
 
     def write_to_stream(
-        self, stream: StreamType, encryption_key: Union[None, str, bytes]
+        self, stream: StreamType, encryption_key: Union[None, str, bytes] = None
     ) -> None:
+        if encryption_key is not None:  # deprecated
+            deprecate_no_replacement(
+                "the encryption_key parameter of write_to_stream", "5.0.0"
+            )
         stream.write(self.renumber())  # b_(renumber(self)))
 
     def writeToStream(
         self, stream: StreamType, encryption_key: Union[None, str, bytes]
     ) -> None:  # deprecated
         deprecation_with_replacement("writeToStream", "write_to_stream", "3.0.0")
-        self.write_to_stream(stream, encryption_key)
+        self.write_to_stream(stream)
 
     def renumber(self) -> bytes:
         out = self[0].encode("utf-8")
@@ -672,13 +702,11 @@ class NameObject(str, PdfObject):
             raise UnicodeDecodeError("", name, 0, 0, "Code Not Found")
         except (UnicodeEncodeError, UnicodeDecodeError) as e:
             if not pdf.strict:
-                logger_warning(
-                    f"Illegal character in Name Object ({repr(name)})", __name__
-                )
+                logger_warning(f"Illegal character in Name Object ({name!r})", __name__)
                 return NameObject(name.decode("charmap"))
             else:
                 raise PdfReadError(
-                    f"Illegal character in Name Object ({repr(name)})"
+                    f"Illegal character in Name Object ({name!r})"
                 ) from e
 
     @staticmethod
