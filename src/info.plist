@@ -610,9 +610,9 @@
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>subtext</key>
-				<string></string>
+				<string>e.g. "100"</string>
 				<key>text</key>
-				<string>Enter a resolution in dpi (e.g. 100) or just ↩ for 150 dpi.</string>
+				<string>Enter a resolution in dpi or just ↩ for 150 dpi.</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -1029,11 +1029,11 @@ python3 alfred_pdf_tools.py --progress</string>
 			<key>config</key>
 			<dict>
 				<key>argumenttype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>subtext</key>
 				<string></string>
 				<key>text</key>
-				<string>Enter the output filename without extension.</string>
+				<string>Enter the output filename or just ↩ for the first PDF document filename.</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -2253,6 +2253,8 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 			<string>optimization_progress_keyword</string>
 		</dict>
 	</array>
+	<key>variablesdontexport</key>
+	<array/>
 	<key>version</key>
 	<string>4.3.1</string>
 	<key>webaddress</key>

@@ -7,8 +7,8 @@ Usage:
     alfred_pdf_tools.py --progress
     alfred_pdf_tools.py --encrypt <pwd>
     alfred_pdf_tools.py --decrypt <pwd>
-    alfred_pdf_tools.py --mrg <filename>
-    alfred_pdf_tools.py --mrg-trash <filename>
+    alfred_pdf_tools.py --mrg [<filename>]
+    alfred_pdf_tools.py --mrg-trash [<filename>]
     alfred_pdf_tools.py --split-count <max_pages>
     alfred_pdf_tools.py --split-size <max_size>
     alfred_pdf_tools.py --slice-multi <query>
@@ -24,8 +24,8 @@ Options:
     --progress                   Track the enhancement progress.
     --encrypt <pwd>              Encrypt PDF files.
     --decrypt <pwd>              Decrypt PDF files.
-    --mrg <filename>             Merge PDF files.
-    --mrg-trash <filename>       Merge PDF files and move them to trash.
+    [--mrg <filename>]           Merge PDF files.
+    [--mrg-trash <filename>]     Merge PDF files and move them to trash.
     --split-count <max_pages>    Split PDF file by page count.
     --split-size <max_size>      Split PDF file by file size.
     --slice-multi <query>        Multi-slice PDF files.
@@ -289,7 +289,10 @@ def merge(out_filename: str, pdf_paths: list[str]):
         reader = PdfReader(pdf_path)
         writer.append(reader)
 
-    writer.write(f"{parent_paths[0]}/{out_filename}.pdf")
+    if out_filename:
+        writer.write(f"{parent_paths[0]}/{out_filename}.pdf")
+    else:
+        writer.write(f"{Path(pdf_paths[0]).with_suffix('')} [merged].pdf")
 
     v = Variables(pdf_paths)
     print(json.dumps(v.obj))

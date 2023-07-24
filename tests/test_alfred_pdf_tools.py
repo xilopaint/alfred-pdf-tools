@@ -67,6 +67,14 @@ class AlfredPdfToolsTests(unittest.TestCase):
         for n, page in enumerate(reader.pages, 1):
             self.assertEqual(int(page.extract_text()), n)
 
+        self.assertIsNone(
+            merge("", ["./resources/file_1.pdf", "./resources/file_2.pdf"])
+        )
+        reader = PdfReader("./resources/file_1 [merged].pdf")
+
+        for n, page in enumerate(reader.pages, 1):
+            self.assertEqual(int(page.extract_text()), n)
+
     @patch("workflow.notify.notify")
     def test_split_count(self, notify) -> None:
         """Test split by page count file action."""
@@ -265,6 +273,7 @@ class AlfredPdfToolsTests(unittest.TestCase):
         Path("./resources/crazyones [encrypted].pdf").unlink(missing_ok=True)
         Path("./resources/encrypted [decrypted].pdf").unlink(missing_ok=True)
         Path("./resources/tmp_1.pdf").unlink(missing_ok=True)
+        Path("./resources/file_1 [merged].pdf").unlink(missing_ok=True)
         Path("./resources/mult_pages_1 [part 1].pdf").unlink(missing_ok=True)
         Path("./resources/mult_pages_1 [part 2].pdf").unlink(missing_ok=True)
         Path("./resources/mult_pages_1 [part 3].pdf").unlink(missing_ok=True)
