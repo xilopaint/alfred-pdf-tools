@@ -595,7 +595,7 @@
 				<key>scriptfile</key>
 				<string>optimize.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -693,7 +693,7 @@
 				<key>scriptfile</key>
 				<string>optimize.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -786,7 +786,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>encrypt.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -920,7 +920,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>encrypt.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -1016,7 +1016,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>merge.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -1112,7 +1112,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>merge_trash.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -1173,7 +1173,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>split_page_count.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -1235,7 +1235,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>split_file_size.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -1316,7 +1316,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>slice_multi.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -1416,7 +1416,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>slice_single.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -1459,7 +1459,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string>slice_single.py</string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -1540,7 +1540,7 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>scriptfile</key>
 				<string></string>
 				<key>type</key>
-				<integer>5</integer>
+				<integer>11</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
@@ -2253,8 +2253,6 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 			<string>optimization_progress_keyword</string>
 		</dict>
 	</array>
-	<key>variablesdontexport</key>
-	<array/>
 	<key>version</key>
 	<string>4.3.1</string>
 	<key>webaddress</key>
