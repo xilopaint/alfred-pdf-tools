@@ -13,7 +13,7 @@ python3 --version | awk '{print $NF}'
 
 echo
 echo '### PyCryptodome version'
-output=$(python3 -c "import Crypto; print(Crypto.__version__)")
+output=$(python3 -c "import Crypto; print(Crypto.__version__)" 2>/dev/null)
 if [[ -n $output ]]; then
     printf "%s\n" "$output"
 else
