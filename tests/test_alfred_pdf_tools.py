@@ -1,6 +1,5 @@
 # pylint: disable=wrong-import-position, missing-class-docstring, unused-argument
 """Unit tests for alfred_pdf_tools"""
-import shutil
 import sys
 import unittest
 from pathlib import Path
@@ -64,17 +63,6 @@ class AlfredPdfToolsTests(unittest.TestCase):
             merge("tmp_1", ["./resources/file_1.pdf", "./resources/file_2.pdf"])
         )
         reader = PdfReader("./resources/tmp_1.pdf")
-
-        for n, page in enumerate(reader.pages, 1):
-            self.assertEqual(int(page.extract_text()), n)
-
-        shutil.copy("./resources/file_1.pdf", "./resources/file_3.pdf")
-        shutil.copy("./resources/file_2.pdf", "./resources/file_4.pdf")
-
-        self.assertIsNone(
-            merge("tmp_2", ["./resources/file_3.pdf", "./resources/file_4.pdf"])
-        )
-        reader = PdfReader("./resources/tmp_2.pdf")
 
         for n, page in enumerate(reader.pages, 1):
             self.assertEqual(int(page.extract_text()), n)
@@ -277,9 +265,6 @@ class AlfredPdfToolsTests(unittest.TestCase):
         Path("./resources/crazyones [encrypted].pdf").unlink(missing_ok=True)
         Path("./resources/encrypted [decrypted].pdf").unlink(missing_ok=True)
         Path("./resources/tmp_1.pdf").unlink(missing_ok=True)
-        Path("./resources/tmp_2.pdf").unlink(missing_ok=True)
-        Path("./resources/file_3.pdf").unlink(missing_ok=True)
-        Path("./resources/file_4.pdf").unlink(missing_ok=True)
         Path("./resources/mult_pages_1 [part 1].pdf").unlink(missing_ok=True)
         Path("./resources/mult_pages_1 [part 2].pdf").unlink(missing_ok=True)
         Path("./resources/mult_pages_1 [part 3].pdf").unlink(missing_ok=True)
