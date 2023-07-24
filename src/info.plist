@@ -2254,7 +2254,7 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 		</dict>
 	</array>
 	<key>version</key>
-	<string>4.3.1</string>
+	<string>4.4</string>
 	<key>webaddress</key>
 	<string>https://github.com/xilopaint/alfred-pdf-tools</string>
 </dict>
