@@ -143,3 +143,6 @@ Makefile
 
 # PyCryptodome
 Crypto/
+
+# Pixelmator Pro Sidecar File
+icon_sidecar.png
