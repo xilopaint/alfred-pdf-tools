@@ -738,7 +738,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>{var:optimization_progress_keyword}</string>
+				<string>{var:progress_keyword}</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -759,9 +759,9 @@ python3 alfred_pdf_tools.py --progress</string>
 				<key>subtext</key>
 				<string></string>
 				<key>title</key>
-				<string>Track the enhancement progress</string>
+				<string>Track the progress status of the processing task.</string>
 				<key>type</key>
-				<integer>0</integer>
+				<integer>11</integer>
 				<key>withspace</key>
 				<false/>
 			</dict>
@@ -1684,13 +1684,9 @@ python3 alfred_pdf_tools.py --progress</string>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string># Alfred PDF Tools
+	<string>## Usage
 
-Optimize, encrypt and manipulate PDF files using [Alfred](http://www.alfredapp.com/).
-
-## Usage
-
-**Alfred PDF Tools** can be used by the following [file actions](https://www.alfredapp.com/blog/tips-and-tricks/file-actions-from-alfred-or-finder/):
+The workflow can be used through the following [file actions](https://www.alfredapp.com/blog/tips-and-tricks/file-actions-from-alfred-or-finder/):
 
 * `Optimize`: Optimize the selected PDF files by entering the intended resolution of the output file (150 dpi is used if no value is input) and the document will be improved with increased contrast and straightened text;
 * `Deskew`: Straighten the selected PDF files with no further appearance changes;
@@ -1703,15 +1699,7 @@ Optimize, encrypt and manipulate PDF files using [Alfred](http://www.alfredapp.c
 * `Slice in Multiple Files`: Slice the selected PDF file in multiple files by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-);
 * `Slice in a Single File`: Slice the selected PDF file in a single file by entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-);
 * `Crop`: Convert two-column pages in single pages;
-* `Scale`: Scale the selected PDF files to a given paper size.
-
-## Contribute
-
-To report a bug or request a feature, please [create an issue](https://github.com/xilopaint/alfred-pdf-tools/issues) or [submit a pull request](https://github.com/xilopaint/alfred-pdf-tools/pulls).
-
-## Credits
-
-This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Martin Thoma, [docopt](https://github.com/docopt/docopt) by Vladimir Keleshev and [K2pdfopt](http://www.willus.com/k2pdfopt/) by willus.</string>
+* `Scale`: Scale the selected PDF files to a given paper size.</string>
 	<key>uidata</key>
 	<dict>
 		<key>01BD5A6C-0E09-40B3-AFDB-AFE7A834CEA7</key>
@@ -2223,7 +2211,7 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>Text used in the tag appended to the output PDF filenames for Split and Slice file actions.</string>
+			<string>Suffix appended to the output PDF filenames in Split and Slice file actions.</string>
 			<key>label</key>
 			<string>Suffix</string>
 			<key>type</key>
@@ -2244,13 +2232,13 @@ This workflow relies on [PyPDF2](https://github.com/py-pdf/PyPDF2) library by Ma
 				<true/>
 			</dict>
 			<key>description</key>
-			<string></string>
+			<string>Keyword used to track the progress status of Optimize and Deskew file actions</string>
 			<key>label</key>
-			<string>Optimization Progress Keyword</string>
+			<string>Progress Keyword</string>
 			<key>type</key>
 			<string>textfield</string>
 			<key>variable</key>
-			<string>optimization_progress_keyword</string>
+			<string>progress_keyword</string>
 		</dict>
 	</array>
 	<key>version</key>
