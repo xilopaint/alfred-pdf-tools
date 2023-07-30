@@ -134,8 +134,8 @@ Makefile
 *.code-workspace
 
 # Alfred
-*.alfredworkflow
 .alfredversionchecked
+prefs.plist
 /cache
 
 # Desktop Services Store
