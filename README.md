@@ -27,7 +27,7 @@ Optimize, encrypt and manipulate PDF files using [Alfred][1].
 
 ## Usage
 
-**Alfred PDF Tools** can be used by the following [file actions][2]:
+**Alfred PDF Tools** can be used through the following [file actions][2]:
 
 * `Optimize`: Optimize the selected PDF files by entering the intended
   resolution of the output file (150 dpi is used if no value is input) and the
