@@ -167,51 +167,49 @@ def deskew(pdf_paths: list[str]) -> None:
             notify.notify("Alfred PDF Tools", "Deskew process failed.")
 
 
-def get_progress() -> None:  # pragma: no cover
-    """Show enhancement progress."""
+def display_progress() -> None:  # pragma: no cover
+    """Update and display the progress status of the processing task."""
+
+    def generate_progress_bar(percentage: float, bar_length: int = 25) -> str:
+        """Generate a string that represents a progress bar.
+
+        Args:
+            percentage (float): The completion percentage of the task. This should be a value between 0 and 1.
+            bar_length (int, optional): The total length of the progress bar, in characters. Default is 20.
+
+        Returns:
+            str: A string representing the progress bar."""
+        completed = "▄" * int(bar_length * percentage)
+        remaining = "▁" * (bar_length - len(completed))
+
+        return f"{completed}{remaining}"
+
     wf.rerun = 1
     pg_num = wf.cached_data("page_number", max_age=0)
     pg_cnt = wf.cached_data("page_count", max_age=0)
 
-    try:
-        count = int(os.environ["count"])
-    except KeyError:
-        count = 0
-
     if not pg_cnt and not pg_num:
-        title = "No enhancement action is running."
+        title = "Standing by..."
         wf.add_item(valid=True, title=title, icon=ICON_ERROR)
 
     if pg_cnt and not pg_num:
-        title = "Reading the PDF file..."
-        subtitle = progress_bar(count)
+        title = "Initializing PDF file processing..."
+        subtitle = generate_progress_bar(0)
         wf.add_item(valid=True, title=title, subtitle=subtitle)
 
     if pg_cnt and pg_num:
-        pct = str(int(round((float(pg_num) / float(pg_cnt)) * 100)))
+        percentage = float(pg_num) / float(pg_cnt)
 
-        if pg_num != pg_cnt:
-            title = f"Page {pg_num} of {pg_cnt} processed ({pct}% completed)"
-            subtitle = progress_bar(count)
+        if percentage < 1.0:
+            title = f"Page {pg_num}/{pg_cnt} ({percentage * 100:.1f}%)"
+            subtitle = generate_progress_bar(percentage)
             wf.add_item(valid=True, title=title, subtitle=subtitle)
         else:
             wf.rerun = 0  # Stop re-running.
-            title = f"Page {pg_cnt} of {pg_cnt} processed (100% completed)"
+            title = "Processing completed!"
             wf.add_item(valid=True, title=title, icon="checkmark.png")
 
-    count += 1
-
-    wf.setvar("count", count)
-
     wf.send_feedback()
-
-
-def progress_bar(count: int) -> str:  # pragma: no cover
-    """Generate progress bar."""
-    prog_bar = ["\u25CB"] * 5
-    i = count % 5
-    prog_bar[i] = "\u25CF"
-    return "".join(prog_bar)
 
 
 @handle_exceptions
@@ -566,7 +564,7 @@ def main(wf) -> None:  # type: ignore[param-type] # pylint: disable=redefined-ou
     elif args["--deskew"]:
         deskew(pdf_paths)
     elif args["--progress"]:
-        get_progress()
+        display_progress()
     elif args["--encrypt"]:
         encrypt(query, pdf_paths)
     elif args["--decrypt"] is not None:
