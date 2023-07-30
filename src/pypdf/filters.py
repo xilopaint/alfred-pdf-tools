@@ -245,10 +245,10 @@ class ASCIIHexDecode:
 
     @staticmethod
     def decode(
-        data: str,
+        data: Union[str, bytes],
         decode_parms: Union[None, ArrayObject, DictionaryObject] = None,
         **kwargs: Any,
-    ) -> str:
+    ) -> bytes:
         """
         Decode an ASCII-Hex encoded data stream.
 
@@ -268,25 +268,86 @@ class ASCIIHexDecode:
         if "decodeParms" in kwargs:  # deprecated
             deprecate_with_replacement("decodeParms", "parameters", "4.0.0")
             decode_parms = kwargs["decodeParms"]  # noqa: F841
-        retval = ""
-        hex_pair = ""
+        if isinstance(data, str):
+            data = data.encode()
+        retval = b""
+        hex_pair = b""
         index = 0
         while True:
             if index >= len(data):
                 raise PdfStreamError("Unexpected EOD in ASCIIHexDecode")
-            char = data[index]
-            if char == ">":
+            char = data[index : index + 1]
+            if char == b">":
                 break
             elif char.isspace():
                 index += 1
                 continue
             hex_pair += char
             if len(hex_pair) == 2:
-                retval += chr(int(hex_pair, base=16))
-                hex_pair = ""
+                retval += bytes((int(hex_pair, base=16),))
+                hex_pair = b""
             index += 1
-        assert hex_pair == ""
+        assert hex_pair == b""
         return retval
+
+
+class RunLengthDecode:
+    """
+    The RunLengthDecode filter decodes data that has been encoded in a
+    simple byte-oriented format based on run length.
+    The encoded data is a sequence of runs, where each run consists of
+    a length byte followed by 1 to 128 bytes of data. If the length byte is
+    in the range 0 to 127,
+    the following length + 1 (1 to 128) bytes are copied literally during
+    decompression.
+    If length is in the range 129 to 255, the following single byte is to be
+    copied 257 − length (2 to 128) times during decompression. A length value
+    of 128 denotes EOD.
+    """
+
+    @staticmethod
+    def decode(
+        data: bytes,
+        decode_parms: Union[None, ArrayObject, DictionaryObject] = None,
+        **kwargs: Any,
+    ) -> bytes:
+        """
+        Decode an ASCII-Hex encoded data stream.
+
+        Args:
+          data: a bytes sequence of length/data
+          decode_parms: ignored.
+
+        Returns:
+          A bytes decompressed sequence.
+
+        Raises:
+          PdfStreamError:
+        """
+        if "decodeParms" in kwargs:  # deprecated
+            deprecate_with_replacement("decodeParms", "parameters", "4.0.0")
+            decode_parms = kwargs["decodeParms"]  # noqa: F841
+        lst = []
+        index = 0
+        while True:
+            if index >= len(data):
+                raise PdfStreamError("Unexpected EOD in RunLengthDecode")
+            length = data[index]
+            index += 1
+            if length == 128:
+                if index < len(data):
+                    raise PdfStreamError("early EOD in RunLengthDecode")
+                else:
+                    break
+            elif length < 128:
+                length += 1
+                lst.append(data[index : (index + length)])
+                index += length
+            else:  # >128
+                length = 257 - length
+                lst.append(bytes((data[index],)) * length)
+                index += 1
+        return b"".join(lst)
 
 
 class LZWDecode:
@@ -580,7 +641,7 @@ def decode_stream_data(stream: Any) -> Union[str, bytes]:  # utils.StreamObject
 
     This function decodes the stream data using the filters provided in the
     stream. It supports various filter types, including FlateDecode,
-    ASCIIHexDecode, LZWDecode, ASCII85Decode, DCTDecode, JPXDecode, and
+    ASCIIHexDecode, RunLengthDecode, LZWDecode, ASCII85Decode, DCTDecode, JPXDecode, and
     CCITTFaxDecode.
 
     Args:
@@ -611,6 +672,8 @@ def decode_stream_data(stream: Any) -> Union[str, bytes]:  # utils.StreamObject
                 data = FlateDecode.decode(data, params)
             elif filter_type in (FT.ASCII_HEX_DECODE, FTA.AHx):
                 data = ASCIIHexDecode.decode(data)  # type: ignore
+            elif filter_type in (FT.RUN_LENGTH_DECODE, FTA.RL):
+                data = RunLengthDecode.decode(data)
             elif filter_type in (FT.LZW_DECODE, FTA.LZW):
                 data = LZWDecode.decode(data, params)  # type: ignore
             elif filter_type in (FT.ASCII_85_DECODE, FTA.A85):
@@ -650,8 +713,12 @@ def _get_imagemode(
     color_space: Union[str, List[Any], Any],
     color_components: int,
     prev_mode: mode_str_type,
-) -> mode_str_type:
-    """Returns the image mode not taking into account mask(transparency)"""
+) -> Tuple[mode_str_type, bool]:
+    """
+    Returns
+        Image mode not taking into account mask(transparency)
+        ColorInversion is required (like for some DeviceCMYK)
+    """
     if isinstance(color_space, str):
         pass
     elif not isinstance(color_space, list):
@@ -668,12 +735,16 @@ def _get_imagemode(
         color_space = color_space[1]
         if isinstance(color_space, IndirectObject):
             color_space = color_space.get_object()
-        mode2 = _get_imagemode(color_space, color_components, prev_mode)
+        mode2, invert_color = _get_imagemode(color_space, color_components, prev_mode)
         if mode2 in ("RGB", "CMYK"):
             mode2 = "P"
-        return mode2
+        return mode2, invert_color
     elif color_space[0] == "/Separation":
         color_space = color_space[2]
+        if isinstance(color_space, IndirectObject):
+            color_space = color_space.get_object()
+        mode2, invert_color = _get_imagemode(color_space, color_components, prev_mode)
+        return mode2, True
     elif color_space[0] == "/DeviceN":
         color_components = len(color_space[1])
         color_space = color_space[2]
@@ -694,7 +765,7 @@ def _get_imagemode(
         or list(mode_map.values())[color_components]
         or prev_mode
     )  # type: ignore
-    return mode
+    return mode, mode == "CMYK"
 
 
 def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, Any]:
@@ -724,10 +795,10 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         mode: mode_str_type,
         color_space: str,
         colors: int,
-    ) -> Tuple[Image.Image, str, str]:
+    ) -> Tuple[Image.Image, str, str, bool]:
         """
         Process image encoded in flateEncode
-        Returns img, image_format, extension
+        Returns img, image_format, extension, color inversion
         """
 
         def bits2byte(data: bytes, size: Tuple[int, int], bits: int) -> bytes:
@@ -764,9 +835,11 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
             data = bits2byte(data, size, 4)
         img = Image.frombytes(mode, size, data)
         if color_space == "/Indexed":
-            from .generic import ByteStringObject
+            from .generic import TextStringObject
 
-            if isinstance(lookup, ByteStringObject):
+            if isinstance(lookup, TextStringObject):
+                lookup = lookup.original_bytes
+            if isinstance(lookup, bytes):
                 try:
                     nb, conv, mode = {  # type: ignore
                         "1": (0, "", ""),
@@ -774,7 +847,7 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
                         "P": (0, "", ""),
                         "RGB": (3, "P", "RGB"),
                         "CMYK": (4, "P", "CMYK"),
-                    }[_get_imagemode(base, 0, "")]
+                    }[_get_imagemode(base, 0, "")[0]]
                 except KeyError:  # pragma: no cover
                     logger_warning(
                         f"Base {base} not coded please share the pdf file with pypdf dev team",
@@ -800,7 +873,7 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         elif not isinstance(color_space, NullObject) and color_space[0] == "/ICCBased":
             # see Table 66 - Additional Entries Specific to an ICC Profile
             # Stream Dictionary
-            mode2 = _get_imagemode(color_space, colors, mode)
+            mode2 = _get_imagemode(color_space, colors, mode)[0]
             if mode != mode2:
                 img = Image.frombytes(
                     mode2, size, data
@@ -808,7 +881,7 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         if mode == "CMYK":
             extension = ".tif"
             image_format = "TIFF"
-        return img, image_format, extension
+        return img, image_format, extension, False
 
     def _handle_jpx(
         size: Tuple[int, int],
@@ -816,14 +889,14 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         mode: mode_str_type,
         color_space: str,
         colors: int,
-    ) -> Tuple[Image.Image, str, str]:
+    ) -> Tuple[Image.Image, str, str, bool]:
         """
         Process image encoded in flateEncode
-        Returns img, image_format, extension
+        Returns img, image_format, extension, inversion
         """
         extension = ".jp2"  # mime_type = "image/x-jp2"
         img1 = Image.open(BytesIO(data), formats=("JPEG2000",))
-        mode = _get_imagemode(color_space, colors, mode)
+        mode, invert_color = _get_imagemode(color_space, colors, mode)
         if img1.mode == "RGBA" and mode == "RGB":
             mode = "RGBA"
         # we need to convert to the good mode
@@ -840,7 +913,7 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         if img.mode == "CMYK":
             img = img.convert("RGB")
         image_format = "JPEG2000"
-        return img, image_format, extension
+        return img, image_format, extension, invert_color
 
     # for error reporting
     if (
@@ -852,8 +925,12 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
 
     size = (x_object_obj[IA.WIDTH], x_object_obj[IA.HEIGHT])
     data = x_object_obj.get_data()  # type: ignore
+    if isinstance(data, str):  # pragma: no cover
+        data = data.encode()
     colors = x_object_obj.get("/Colors", 1)
     color_space: Any = x_object_obj.get("/ColorSpace", NullObject()).get_object()
+    if isinstance(color_space, list) and len(color_space) == 1:
+        color_space = color_space[0].get_object()
     if (
         IA.COLOR_SPACE in x_object_obj
         and x_object_obj[IA.COLOR_SPACE] == ColorSpaces.DEVICE_RGB
@@ -861,9 +938,11 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         # https://pillow.readthedocs.io/en/stable/handbook/concepts.html#modes
         mode: mode_str_type = "RGB"
     if x_object_obj.get("/BitsPerComponent", 8) < 8:
-        mode = _get_imagemode(f"{x_object_obj.get('/BitsPerComponent', 8)}bit", 0, "")
+        mode, invert_color = _get_imagemode(
+            f"{x_object_obj.get('/BitsPerComponent', 8)}bit", 0, ""
+        )
     else:
-        mode = _get_imagemode(
+        mode, invert_color = _get_imagemode(
             color_space,
             2
             if (
@@ -881,7 +960,7 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
     filters = x_object_obj.get(SA.FILTER, [None])
     lfilters = filters[-1] if isinstance(filters, list) else filters
     if lfilters == FT.FLATE_DECODE:
-        img, image_format, extension = _handle_flate(
+        img, image_format, extension, invert_color = _handle_flate(
             size,
             data,
             mode,
@@ -902,25 +981,33 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         img = Image.open(BytesIO(data), formats=("TIFF", "PNG"))
     elif lfilters == FT.DCT_DECODE:
         img, image_format, extension = Image.open(BytesIO(data)), "JPEG", ".jpg"
+        # invert_color kept unchanged
     elif lfilters == FT.JPX_DECODE:
-        img, image_format, extension = _handle_jpx(
+        img, image_format, extension, invert_color = _handle_jpx(
             size, data, mode, color_space, colors
         )
     elif lfilters == FT.CCITT_FAX_DECODE:
-        img, image_format, extension = (
+        img, image_format, extension, invert_color = (
             Image.open(BytesIO(data), formats=("TIFF",)),
             "TIFF",
             ".tiff",
+            False,
         )
-    elif lfilters is None:
-        img, image_format, extension = Image.frombytes(mode, size, data), "PNG", ".png"
+    else:
+        img, image_format, extension, invert_color = (
+            Image.frombytes(mode, size, data),
+            "PNG",
+            ".png",
+            False,
+        )
 
-    # CMYK image without decode requires reverting scale (cf p243,2§ last sentence)
+    # CMYK image and other colorspaces without decode
+    # requires reverting scale (cf p243,2§ last sentence)
     decode = x_object_obj.get(
         IA.DECODE,
         ([1.0, 0.0] * len(img.getbands()))
         if (
-            (img.mode == "CMYK" or (mode == "CMYK" and img.mode == "L"))
+            (img.mode == "CMYK" or (invert_color and img.mode == "L"))
             and lfilters in (FT.DCT_DECODE, FT.JPX_DECODE)
         )
         else None,
