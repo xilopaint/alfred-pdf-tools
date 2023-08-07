@@ -15,8 +15,6 @@
   <img src="https://app.codacy.com/project/badge/Grade/3b9d7ae47ec34509a2ba833b0e0d5cc0"></a>
   <a href="https://www.codacy.com/gh/xilopaint/alfred-pdf-tools/dashboard">
   <img src="https://app.codacy.com/project/badge/Coverage/3b9d7ae47ec34509a2ba833b0e0d5cc0"/></a>
-  <a href="https://github.com/xilopaint/alfred-pdf-tools/blob/main/LICENSE.md">
-  <img src="https://img.shields.io/github/license/xilopaint/alfred-pdf-tools"></a>
 </p>
 
 <p align="center">
