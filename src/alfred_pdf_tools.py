@@ -175,7 +175,7 @@ def display_progress() -> None:  # pragma: no cover
 
         Args:
             percentage (float): The completion percentage of the task. This should be a value between 0 and 1.
-            bar_length (int, optional): The total length of the progress bar, in characters. Default is 20.
+            bar_length (int, optional): The total length of the progress bar, in characters. Default is 25.
 
         Returns:
             str: A string representing the progress bar."""
