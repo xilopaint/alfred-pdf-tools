@@ -41,11 +41,9 @@ from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from ._utils import (
-    b_,
     deprecate_with_replacement,
     logger_warning,
     ord_,
-    paeth_predictor,
 )
 from .constants import CcittFaxDecodeParameters as CCITT
 from .constants import ColorSpaces
@@ -57,6 +55,7 @@ from .constants import StreamAttributes as SA
 from .errors import PdfReadError, PdfStreamError
 from .generic import (
     ArrayObject,
+    DecodedStreamObject,
     DictionaryObject,
     IndirectObject,
     NullObject,
@@ -181,17 +180,15 @@ class FlateDecode:
         return str_data
 
     @staticmethod
-    def _decode_png_prediction(data: str, columns: int, rowlength: int) -> bytes:
-        output = BytesIO()
+    def _decode_png_prediction(data: bytes, columns: int, rowlength: int) -> bytes:
         # PNG prediction can vary from row to row
         if len(data) % rowlength != 0:
             raise PdfReadError("Image data is not rectangular")
+        output = []
         prev_rowdata = (0,) * rowlength
         bpp = (rowlength - 1) // columns  # recomputed locally to not change params
-        for row in range(len(data) // rowlength):
-            rowdata = [
-                ord_(x) for x in data[(row * rowlength) : ((row + 1) * rowlength)]
-            ]
+        for row in range(0, len(data), rowlength):
+            rowdata: List[int] = list(data[row : row + rowlength])
             filter_byte = rowdata[0]
 
             if filter_byte == 0:
@@ -203,16 +200,38 @@ class FlateDecode:
                 for i in range(1, rowlength):
                     rowdata[i] = (rowdata[i] + prev_rowdata[i]) % 256
             elif filter_byte == 3:
-                for i in range(1, rowlength):
-                    left = rowdata[i - bpp] if i > bpp else 0
-                    floor = math.floor(left + prev_rowdata[i]) / 2
-                    rowdata[i] = (rowdata[i] + int(floor)) % 256
+                for i in range(1, bpp + 1):
+                    # left = 0
+                    floor = prev_rowdata[i] // 2
+                    rowdata[i] = (rowdata[i] + floor) % 256
+                for i in range(bpp + 1, rowlength):
+                    left = rowdata[i - bpp]
+                    floor = (left + prev_rowdata[i]) // 2
+                    rowdata[i] = (rowdata[i] + floor) % 256
             elif filter_byte == 4:
-                for i in range(1, rowlength):
-                    left = rowdata[i - bpp] if i > bpp else 0
+                for i in range(1, bpp + 1):
+                    # left = 0
                     up = prev_rowdata[i]
-                    up_left = prev_rowdata[i - bpp] if i > bpp else 0
-                    paeth = paeth_predictor(left, up, up_left)
+                    # up_left = 0
+                    paeth = up
+                    rowdata[i] = (rowdata[i] + paeth) % 256
+                for i in range(bpp + 1, rowlength):
+                    left = rowdata[i - bpp]
+                    up = prev_rowdata[i]
+                    up_left = prev_rowdata[i - bpp]
+
+                    p = left + up - up_left
+                    dist_left = abs(p - left)
+                    dist_up = abs(p - up)
+                    dist_up_left = abs(p - up_left)
+
+                    if dist_left <= dist_up and dist_left <= dist_up_left:
+                        paeth = left
+                    elif dist_up <= dist_up_left:
+                        paeth = up
+                    else:
+                        paeth = up_left
+
                     rowdata[i] = (rowdata[i] + paeth) % 256
             else:
                 # unsupported PNG filter
@@ -220,21 +239,22 @@ class FlateDecode:
                     f"Unsupported PNG filter {filter_byte!r}"
                 )  # pragma: no cover
             prev_rowdata = tuple(rowdata)
-            output.write(bytearray(rowdata[1:]))
-        return output.getvalue()
+            output.extend(rowdata[1:])
+        return bytes(output)
 
     @staticmethod
-    def encode(data: bytes) -> bytes:
+    def encode(data: bytes, level: int = -1) -> bytes:
         """
         Compress the input data using zlib.
 
         Args:
             data: The data to be compressed.
+            level: See https://docs.python.org/3/library/zlib.html#zlib.compress
 
         Returns:
             The compressed data.
         """
-        return zlib.compress(data)
+        return zlib.compress(data, level)
 
 
 class ASCIIHexDecode:
@@ -635,7 +655,7 @@ class CCITTFaxDecode:
         return tiff_header + data
 
 
-def decode_stream_data(stream: Any) -> Union[str, bytes]:  # utils.StreamObject
+def decode_stream_data(stream: Any) -> bytes:  # utils.StreamObject
     """
     Decode the stream data based on the specified filters.
 
@@ -719,6 +739,8 @@ def _get_imagemode(
         Image mode not taking into account mask(transparency)
         ColorInversion is required (like for some DeviceCMYK)
     """
+    if isinstance(color_space, NullObject):
+        return "", False
     if isinstance(color_space, str):
         pass
     elif not isinstance(color_space, list):
@@ -837,23 +859,43 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         if color_space == "/Indexed":
             from .generic import TextStringObject
 
+            if isinstance(lookup, DecodedStreamObject):
+                lookup = lookup.get_data()
             if isinstance(lookup, TextStringObject):
                 lookup = lookup.original_bytes
-            if isinstance(lookup, bytes):
-                try:
-                    nb, conv, mode = {  # type: ignore
-                        "1": (0, "", ""),
-                        "L": (1, "P", "L"),
-                        "P": (0, "", ""),
-                        "RGB": (3, "P", "RGB"),
-                        "CMYK": (4, "P", "CMYK"),
-                    }[_get_imagemode(base, 0, "")[0]]
-                except KeyError:  # pragma: no cover
-                    logger_warning(
-                        f"Base {base} not coded please share the pdf file with pypdf dev team",
-                        __name__,
+            if isinstance(lookup, str):
+                lookup = lookup.encode()
+            try:
+                nb, conv, mode = {  # type: ignore
+                    "1": (0, "", ""),
+                    "L": (1, "P", "L"),
+                    "P": (0, "", ""),
+                    "RGB": (3, "P", "RGB"),
+                    "CMYK": (4, "P", "CMYK"),
+                }[_get_imagemode(base, 0, "")[0]]
+            except KeyError:  # pragma: no cover
+                logger_warning(
+                    f"Base {base} not coded please share the pdf file with pypdf dev team",
+                    __name__,
+                )
+                lookup = None
+            else:
+                if img.mode == "1":
+                    colors_arr = [
+                        lookup[x - nb : x] for x in range(nb, len(lookup), nb)
+                    ]
+                    arr = b"".join(
+                        [
+                            b"".join(
+                                [
+                                    colors_arr[1 if img.getpixel((x, y)) > 127 else 0]
+                                    for x in range(img.size[0])
+                                ]
+                            )
+                            for y in range(img.size[1])
+                        ]
                     )
-                    lookup = None
+                    img = Image.frombytes(mode, img.size, arr)
                 else:
                     img = img.convert(conv)
                     if len(lookup) != (hival + 1) * nb:
@@ -865,11 +907,23 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
                         # gray lookup does not work : it is converted to a similar RGB lookup
                         lookup = b"".join([bytes([b, b, b]) for b in lookup])
                         mode = "RGB"
+                    # TODO : cf https://github.com/py-pdf/pypdf/pull/2039
+                    # this is a work around until PIL is able to process CMYK images
+                    elif mode == "CMYK":
+                        _rgb = []
+                        for _c, _m, _y, _k in (
+                            lookup[n : n + 4]
+                            for n in range(0, 4 * (len(lookup) // 4), 4)
+                        ):
+                            _r = int(255 * (1 - _c / 255) * (1 - _k / 255))
+                            _g = int(255 * (1 - _m / 255) * (1 - _k / 255))
+                            _b = int(255 * (1 - _y / 255) * (1 - _k / 255))
+                            _rgb.append(bytes((_r, _g, _b)))
+                        lookup = b"".join(_rgb)
+                        mode = "RGB"
                     if lookup is not None:
                         img.putpalette(lookup, rawmode=mode)
-            else:
-                img.putpalette(lookup.get_data())
-            img = img.convert("L" if base == ColorSpaces.DEVICE_GRAY else "RGB")
+                img = img.convert("L" if base == ColorSpaces.DEVICE_GRAY else "RGB")
         elif not isinstance(color_space, NullObject) and color_space[0] == "/ICCBased":
             # see Table 66 - Additional Entries Specific to an ICC Profile
             # Stream Dictionary
@@ -897,6 +951,9 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         extension = ".jp2"  # mime_type = "image/x-jp2"
         img1 = Image.open(BytesIO(data), formats=("JPEG2000",))
         mode, invert_color = _get_imagemode(color_space, colors, mode)
+        if mode == "":
+            mode = cast(mode_str_type, img1.mode)
+            invert_color = mode in ("CMYK",)
         if img1.mode == "RGBA" and mode == "RGB":
             mode = "RGBA"
         # we need to convert to the good mode
@@ -977,7 +1034,6 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
         else:
             extension = ".png"  # mime_type = "image/png"
             image_format = "PNG"
-        data = b_(data)
         img = Image.open(BytesIO(data), formats=("TIFF", "PNG"))
     elif lfilters == FT.DCT_DECODE:
         img, image_format, extension = Image.open(BytesIO(data)), "JPEG", ".jpg"
@@ -994,6 +1050,8 @@ def _xobj_to_image(x_object_obj: Dict[str, Any]) -> Tuple[Optional[str], bytes, 
             False,
         )
     else:
+        if mode == "":
+            raise PdfReadError(f"ColorSpace field not found in {x_object_obj}")
         img, image_format, extension, invert_color = (
             Image.frombytes(mode, size, data),
             "PNG",

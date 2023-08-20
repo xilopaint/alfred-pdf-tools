@@ -477,8 +477,18 @@ class PageObject(DictionaryObject):
         return images_extracted
 
     def _get_ids_image(
-        self, obj: Optional[DictionaryObject] = None, ancest: Optional[List[str]] = None
+        self,
+        obj: Optional[DictionaryObject] = None,
+        ancest: Optional[List[str]] = None,
+        call_stack: Optional[List[Any]] = None,
     ) -> List[Union[str, List[str]]]:
+        if call_stack is None:
+            call_stack = []
+        _i = getattr(obj, "indirect_reference", None)
+        if _i in call_stack:
+            return []
+        else:
+            call_stack.append(_i)
         if self.inline_images_keys is None:
             nb_inlines = len(
                 re.findall(
@@ -502,7 +512,7 @@ class PageObject(DictionaryObject):
             if x_object[o][IA.SUBTYPE] == "/Image":
                 lst.append(o if len(ancest) == 0 else ancest + [o])
             else:  # is a form with possible images inside
-                lst.extend(self._get_ids_image(x_object[o], ancest + [o]))
+                lst.extend(self._get_ids_image(x_object[o], ancest + [o], call_stack))
         return lst + self.inline_images_keys
 
     def _get_image(
@@ -557,13 +567,14 @@ class PageObject(DictionaryObject):
         Examples:
             reader.pages[0].images[0]        # return fist image
             reader.pages[0].images['/I0']    # return image '/I0'
-            reader.pages[0].images['/TP1','/Image1'] # return image '/Image1'
-                                                            within '/TP1' Xobject/Form
+            # return image '/Image1' within '/TP1' Xobject/Form:
+            reader.pages[0].images['/TP1','/Image1']
             for img in reader.pages[0].images: # loop within all objects
 
         images.keys() and images.items() can be used.
 
         The ImageFile has the following properties:
+
             `.name` : name of the object
             `.data` : bytes of the object
             `.image`  : PIL Image Object
@@ -692,7 +703,7 @@ class PageObject(DictionaryObject):
         return rotate_obj if isinstance(rotate_obj, int) else rotate_obj.get_object()
 
     @rotation.setter
-    def rotation(self, r: Union[int, float]) -> None:
+    def rotation(self, r: float) -> None:
         self[NameObject(PG.ROTATE)] = NumberObject((((int(r) + 45) // 90) * 90) % 360)
 
     def transfer_rotation_to_content(self) -> None:
@@ -871,12 +882,17 @@ class PageObject(DictionaryObject):
 
     @staticmethod
     def _push_pop_gs(
-        contents: Any, pdf: Union[None, PdfReaderProtocol, PdfWriterProtocol]
+        contents: Any,
+        pdf: Union[None, PdfReaderProtocol, PdfWriterProtocol],
+        use_original: bool = True,
     ) -> ContentStream:
         # adds a graphics state "push" and "pop" to the beginning and end
         # of a content stream.  This isolates it from changes such as
         # transformation matricies.
-        stream = ContentStream(contents, pdf)
+        if use_original:
+            stream = contents
+        else:
+            stream = ContentStream(contents, pdf)
         stream.operations.insert(0, ([], "q"))
         stream.operations.append(([], "Q"))
         return stream
@@ -1109,7 +1125,7 @@ class PageObject(DictionaryObject):
         original_content = self.get_contents()
         if original_content is not None:
             new_content_array.append(
-                PageObject._push_pop_gs(original_content, self.pdf)
+                PageObject._push_pop_gs(original_content, self.pdf, use_original=True)
             )
 
         page2content = page2.get_contents()
@@ -1763,7 +1779,7 @@ class PageObject(DictionaryObject):
         deprecation_with_replacement("scaleTo", "scale_to", "3.0.0")
         self.scale_to(width, height)
 
-    def compress_content_streams(self) -> None:
+    def compress_content_streams(self, level: int = -1) -> None:
         """
         Compress the size of this page by joining all content streams and
         applying a FlateDecode filter.
@@ -1773,7 +1789,7 @@ class PageObject(DictionaryObject):
         """
         content = self.get_contents()
         if content is not None:
-            content_obj = content.flate_encode()
+            content_obj = content.flate_encode(level)
             try:
                 content.indirect_reference.pdf._objects[  # type: ignore
                     content.indirect_reference.idnum - 1  # type: ignore
@@ -1925,7 +1941,7 @@ class PageObject(DictionaryObject):
             1.0,
             0.0,
             0.0,
-        ]  # will store cm_matrix * tm_matrix
+        ]  # will store previous tm_matrix
         char_scale = 1.0
         space_scale = 1.0
         _space_width: float = 500.0  # will be set correctly at first Tf
