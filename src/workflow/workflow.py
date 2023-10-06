@@ -2348,7 +2348,7 @@ class Workflow:
             # Set last version run to current version after a successful
             # run
             self.set_last_version()
-        except Exception as err:  # pylint: disable=broad-except
+        except Exception as err:
             self.logger.exception(err)
 
             if self.help_url:

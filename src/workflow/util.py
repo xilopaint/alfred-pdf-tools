@@ -450,22 +450,22 @@ class LockFile:
 
     def release(self):
         """Release the lock by deleting `self.lockfile`."""
-        if not self._lock.is_set():
-            return False
-
-        try:
-            fcntl.lockf(self._lockfile, fcntl.LOCK_UN)
-        except IOError:  # pragma: no cover
-            pass
-        finally:
-            self._lock.clear()
-            self._lockfile = None
+        result = False
+        if self._lock.is_set():
             try:
-                os.unlink(self.lockfile)
-            except (IOError, OSError):  # pragma: no cover
+                fcntl.lockf(self._lockfile, fcntl.LOCK_UN)
+            except IOError:  # pragma: no cover
                 pass
+            finally:
+                self._lock.clear()
+                self._lockfile = None
+                try:
+                    os.unlink(self.lockfile)
+                except (IOError, OSError):  # pragma: no cover
+                    pass
 
-            return True  # pylint: disable=lost-exception
+                result = True
+        return result
 
     def __enter__(self):
         """Acquire lock."""
