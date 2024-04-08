@@ -32,7 +32,8 @@ Optimize, encrypt and manipulate PDF files using [Alfred][1].
   document will be improved with increased contrast and straightened text;
 * `Deskew`: Straighten the selected PDF files with no further appearance changes;
 
-> Tip: Invoke Alfred and type the `progress` keyword to track the enhancement
+> [!TIP]
+> Invoke Alfred and type the `progress` keyword to track the enhancement
 > process from either of the first two mentioned file actions.
 
 * `Encrypt`: Encrypt the selected PDF files by entering a password;
