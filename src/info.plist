@@ -57,7 +57,20 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>46BD9FA8-04E5-4E19-A678-52E06AAA79F7</string>
+				<string>70B1D57A-6C15-4C9F-A030-57B50F29C21D</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>32DA6622-28BB-4295-906A-4696487AE178</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>70B1D57A-6C15-4C9F-A030-57B50F29C21D</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -192,6 +205,19 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>AEFB6E34-E6C4-4750-9BDC-2F3C039F3AEC</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>5D870191-1276-4371-A991-98E56A0BFFF7</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>ED803BBA-9233-4131-8980-47E1E6CDCBBB</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -530,6 +556,19 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>D140F6E3-C77D-4119-A49C-D3361FE9F46B</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>ED803BBA-9233-4131-8980-47E1E6CDCBBB</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>32DA6622-28BB-4295-906A-4696487AE178</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -1622,6 +1661,68 @@ python3 alfred_pdf_tools.py --progress</string>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>acceptsmulti</key>
+				<integer>1</integer>
+				<key>filetypes</key>
+				<array>
+					<string>com.adobe.pdf</string>
+				</array>
+				<key>name</key>
+				<string>Extract Text</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>5D870191-1276-4371-A991-98E56A0BFFF7</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>python3 alfred_pdf_tools.py --extract-text</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>32DA6622-28BB-4295-906A-4696487AE178</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>passthroughargument</key>
+				<false/>
+				<key>variables</key>
+				<dict>
+					<key>abs_path</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>ED803BBA-9233-4131-8980-47E1E6CDCBBB</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>autopaste</key>
 				<false/>
 				<key>clipboardtext</key>
@@ -1634,7 +1735,7 @@ python3 alfred_pdf_tools.py --progress</string>
 			<key>type</key>
 			<string>alfred.workflow.output.clipboard</string>
 			<key>uid</key>
-			<string>46BD9FA8-04E5-4E19-A678-52E06AAA79F7</string>
+			<string>70B1D57A-6C15-4C9F-A030-57B50F29C21D</string>
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
@@ -1780,6 +1881,17 @@ The workflow can be used through the following [file actions](https://www.alfred
 			<key>xpos</key>
 			<real>460</real>
 			<key>ypos</key>
+			<real>1960</real>
+		</dict>
+		<key>32DA6622-28BB-4295-906A-4696487AE178</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>note</key>
+			<string>Extract Text</string>
+			<key>xpos</key>
+			<real>460</real>
+			<key>ypos</key>
 			<real>1820</real>
 		</dict>
 		<key>338AF90E-9867-42D0-A94A-1FF88BD3FD5C</key>
@@ -1836,15 +1948,6 @@ The workflow can be used through the following [file actions](https://www.alfred
 			<key>ypos</key>
 			<real>580</real>
 		</dict>
-		<key>46BD9FA8-04E5-4E19-A678-52E06AAA79F7</key>
-		<dict>
-			<key>colorindex</key>
-			<integer>1</integer>
-			<key>xpos</key>
-			<real>650</real>
-			<key>ypos</key>
-			<real>1820</real>
-		</dict>
 		<key>49850373-29CA-4A8D-AFF0-0BD2336ECF48</key>
 		<dict>
 			<key>colorindex</key>
@@ -1894,6 +1997,15 @@ The workflow can be used through the following [file actions](https://www.alfred
 			<key>ypos</key>
 			<real>830</real>
 		</dict>
+		<key>5D870191-1276-4371-A991-98E56A0BFFF7</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>xpos</key>
+			<real>30</real>
+			<key>ypos</key>
+			<real>1820</real>
+		</dict>
 		<key>66FA4E4A-8144-4562-A253-E299707EBD64</key>
 		<dict>
 			<key>colorindex</key>
@@ -1931,6 +2043,13 @@ The workflow can be used through the following [file actions](https://www.alfred
 			<real>460</real>
 			<key>ypos</key>
 			<real>20</real>
+		</dict>
+		<key>70B1D57A-6C15-4C9F-A030-57B50F29C21D</key>
+		<dict>
+			<key>xpos</key>
+			<real>650</real>
+			<key>ypos</key>
+			<real>1890</real>
 		</dict>
 		<key>79C0A050-CA6C-4B0F-B567-3EA24D625B98</key>
 		<dict>
@@ -2168,7 +2287,7 @@ The workflow can be used through the following [file actions](https://www.alfred
 			<key>xpos</key>
 			<real>30</real>
 			<key>ypos</key>
-			<real>1820</real>
+			<real>1960</real>
 		</dict>
 		<key>E2104ACC-6C1D-407E-A787-182694534FBA</key>
 		<dict>
@@ -2187,6 +2306,15 @@ The workflow can be used through the following [file actions](https://www.alfred
 			<real>180</real>
 			<key>ypos</key>
 			<real>580</real>
+		</dict>
+		<key>ED803BBA-9233-4131-8980-47E1E6CDCBBB</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>9</integer>
+			<key>xpos</key>
+			<real>180</real>
+			<key>ypos</key>
+			<real>1850</real>
 		</dict>
 		<key>F2F788C0-6F9B-4AD0-A281-1B07D497BEAA</key>
 		<dict>

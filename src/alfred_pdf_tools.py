@@ -15,6 +15,7 @@ Usage:
     alfred_pdf_tools.py --slice-single <query>
     alfred_pdf_tools.py --crop
     alfred_pdf_tools.py --scale <width> <height>
+    alfred_pdf_tools.py --extract-text
 
 Optimize, encrypt and manipulate PDF files.
 
@@ -32,6 +33,7 @@ Options:
     --slice-single <query>       Single-slice PDF files.
     --crop                       Crop two-column pages.
     --scale <width> <height>     Scale PDF files to a given page size.
+    --extract-text               Extract text from PDF files.
 """
 import json
 import os
@@ -445,9 +447,11 @@ def slice_(query: str, abs_path: str, is_single: bool, suffix: str) -> None:
     pg_cnt = len(reader.pages)
 
     slices = [
-        (int(x[0]) - 1, int(x[1] or pg_cnt))
-        if len(x) > 1
-        else (int(x[0]) - 1, int(x[0]))
+        (
+            (int(x[0]) - 1, int(x[1] or pg_cnt))
+            if len(x) > 1
+            else (int(x[0]) - 1, int(x[0]))
+        )
         for x in pg_ranges
     ]
 
@@ -551,6 +555,21 @@ def scale(pdf_paths: list[str]) -> None:
             writer.write(f)
 
 
+@handle_exceptions
+def extract_text(pdf_paths: list[str]) -> None:
+    """Extract text from PDF files.
+
+    Args:
+        pdf_paths (list): Paths to selected PDF files.
+    """
+    for pdf_path in pdf_paths:
+        reader = PdfReader(pdf_path)
+        for page in reader.pages:
+            print(page.extract_text(extraction_mode="layout") + "\n")
+
+    notify.notify("Alfred PDF Tools", "Extracted text copied to clipboard.")
+
+
 def main(wf) -> None:  # type: ignore[param-type] # pylint: disable=redefined-outer-name # pragma: no cover
     """Run workflow."""
     args = docopt(__doc__)
@@ -585,6 +604,8 @@ def main(wf) -> None:  # type: ignore[param-type] # pylint: disable=redefined-ou
         crop(pdf_paths)
     elif args["--scale"]:
         scale(pdf_paths)
+    elif args["--extract-text"]:
+        extract_text(pdf_paths)
 
     if wf.update_available:
         notify.notify(

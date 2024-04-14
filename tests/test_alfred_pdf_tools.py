@@ -3,7 +3,7 @@
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 sys.path.append("./src")
 
@@ -12,6 +12,7 @@ from alfred_pdf_tools import (
     decrypt,
     deskew,
     encrypt,
+    extract_text,
     merge,
     optimize,
     scale,
@@ -264,6 +265,25 @@ class AlfredPdfToolsTests(unittest.TestCase):
             self.assertEqual(int(page.extract_text()), n)
             self.assertEqual(float(page.mediabox.width), 8.3 * 72)
             self.assertEqual(float(page.mediabox.height), 11.7 * 72)
+
+    @patch("workflow.notify.notify")
+    def test_extract_text(self, notify) -> None:
+        """Test extract text file action."""
+        with patch("builtins.print") as mock_print:
+            extract_text(["./resources/mult_pages_1.pdf"])
+            expected_calls = [
+                call("1\n"),
+                call("2\n"),
+                call("3\n"),
+                call("4\n"),
+                call("5\n"),
+                call("6\n"),
+                call("7\n"),
+                call("8\n"),
+                call("9\n"),
+                call("10\n"),
+            ]
+            mock_print.assert_has_calls(expected_calls)
 
     @classmethod
     def tearDownClass(cls) -> None:

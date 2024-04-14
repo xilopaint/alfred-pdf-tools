@@ -29,26 +29,27 @@ Optimize, encrypt and manipulate PDF files using [Alfred][1].
 
 * `Optimize`: Optimize the selected PDF files by entering the intended
   resolution of the output file (150 dpi is used if no value is input) and the
-  document will be improved with increased contrast and straightened text;
-* `Deskew`: Straighten the selected PDF files with no further appearance changes;
+  document will be improved with increased contrast and straightened text.
+* `Deskew`: Straighten the selected PDF files with no further appearance changes.
 
 > [!TIP]
 > Invoke Alfred and type the `progress` keyword to track the enhancement
 > process from either of the first two mentioned file actions.
 
-* `Encrypt`: Encrypt the selected PDF files by entering a password;
+* `Encrypt`: Encrypt the selected PDF files by entering a password.
 * `Decrypt`: Decrypt the selected PDF files by entering their password or just
-  `↩` if they're not password protected;
+  `↩` if they're not password protected.
 * `Merge`: Merge the selected PDF files. Use the `⌘` modifier key if you also
-  want to move the source files to Trash;
-* `Split by Page Count`: Split the selected PDF file by page count;
-* `Split by File Size`: Split the selected PDF file by file size;
+  want to move the source files to Trash.
+* `Split by Page Count`: Split the selected PDF file by page count.
+* `Split by File Size`: Split the selected PDF file by file size.
 * `Slice in Multiple Files`: Slice the selected PDF file in multiple files by
-   entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-);
+   entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-).
 * `Slice in a Single File`: Slice the selected PDF file in a single file by
-  entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-);
-* `Crop`: Convert two-column pages in single pages;
+  entering page numbers and/or page ranges separated by commas (e.g. 2, 5-8, 20-).
+* `Crop`: Convert two-column pages in single pages.
 * `Scale`: Scale the selected PDF files to a given paper size.
+* `Extract Text`: Extract the text from the selected PDF files.
 
 ## Contribute
 
